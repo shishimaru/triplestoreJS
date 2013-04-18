@@ -1,0 +1,11 @@
+* RDFa wrapper API for WebStorage
+
+* License
+
+ - W3C Software Notice and License[1]
+
+* Author
+
+ - Hitoshi Uchida <uchida@w3.org>
+
+[1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
