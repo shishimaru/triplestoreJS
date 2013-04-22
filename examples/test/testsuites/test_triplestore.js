@@ -2,12 +2,12 @@ console = jstestdriver.console;
 
 TestCase('Test push show', {
   setUp: function() {
-    this.st = new RDFaStorage();
+    this.st = new Triplestore();
   },
   tearDown: function() {
     this.st.removeSubject();
   },
-  'test push for store triple': function() {
+  'test push to save triples into WebStorage': function() {
     {
       this.st.push("s1", "name", "Bob");
       

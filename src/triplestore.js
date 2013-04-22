@@ -1,16 +1,17 @@
 /*
  * $Id$
  * See Copyright for the status of this software.
+ * uchida@w3.org
  */
+
 /**
- * RDFa wrapper for HTML5 WebStorage.
- * @main RDFaStorage
- * @class RDFaStorage
+ * Triplestore wrapper for HTML5 WebStorage.
+ * @main Triplestore
+ * @class Triplestore
  * @constructor
  * @uses localStorage
- * @author uchida@w3.org
  */
-var RDFaStorage = function() {
+var Triplestore = function() {
   this.st = localStorage;
   this.prefixMapping = {};
 };
@@ -63,7 +64,7 @@ var RDFaStorage = function() {
    * @example
    *   st.setMapping("foaf", "http://xmlns.com/foaf/0.1/");
    */
-  RDFaStorage.prototype.setMapping = function(mapping, iri) {
+  Triplestore.prototype.setMapping = function(mapping, iri) {
     this.prefixMapping[mapping] = iri;
   };
   /**
@@ -76,7 +77,7 @@ var RDFaStorage = function() {
    * @example
    *   st.getSubjects("foaf:name", "Bob");
    */
-  RDFaStorage.prototype.getSubjects = function(property, value) {
+  Triplestore.prototype.getSubjects = function(property, value) {
     //init
     property = resolveQName(this.prefixMapping, property);
     value = resolveQName(this.prefixMapping, value);
@@ -116,7 +117,7 @@ var RDFaStorage = function() {
    * @example
    *   st.getProperties("http://sample.org/bob");
    */
-  RDFaStorage.prototype.getProperties = function(subject) {
+  Triplestore.prototype.getProperties = function(subject) {
     if(subject) {
       //init
       subject = resolveQName(this.prefixMapping, subject);
@@ -154,7 +155,7 @@ var RDFaStorage = function() {
    * @example
    *   st.getValues("http://sample.org/bob", "foaf:name");
    */
-  RDFaStorage.prototype.getValues = function(subject, property) {
+  Triplestore.prototype.getValues = function(subject, property) {
     //init
     subject = resolveQName(this.prefixMapping, subject);
     property = resolveQName(this.prefixMapping, property);
@@ -197,7 +198,7 @@ var RDFaStorage = function() {
    * @example
    *   st.push("http://sample.org/bob", "foaf:name", "Bob");
    */
-  RDFaStorage.prototype.push = function(subject, property, object) {
+  Triplestore.prototype.push = function(subject, property, object) {
     //init
     subject = resolveQName(this.prefixMapping, subject);
     property = resolveQName(this.prefixMapping, property);
@@ -221,7 +222,7 @@ var RDFaStorage = function() {
    * @example
    *   st.removeSubject("http://sample.org/bob");
    */
-  RDFaStorage.prototype.removeSubject = function(subject) {
+  Triplestore.prototype.removeSubject = function(subject) {
     subject = resolveQName(this.prefixMapping, subject);
     if(subject) {
       this.st.removeItem(subject);
@@ -237,7 +238,7 @@ var RDFaStorage = function() {
    * @example
    *   st.removeProperty("foaf:name", "Bob");
    */
-  RDFaStorage.prototype.removeProperty = function(property, value) {
+  Triplestore.prototype.removeProperty = function(property, value) {
     //init
     property = resolveQName(this.prefixMapping, property);
     value = resolveQName(this.prefixMapping, value);
@@ -263,7 +264,7 @@ var RDFaStorage = function() {
    * Print the content of the storage.
    * @method show
    */
-  RDFaStorage.prototype.show = function() {
+  Triplestore.prototype.show = function() {
     for(var i = 0; i < this.st.length; i++) {
       var subject = this.st.key(i);
       console.log(subject + ":" + this.st.getItem(subject));
