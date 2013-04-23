@@ -5,7 +5,7 @@ TestCase('Test push show', {
     this.st = new Triplestore();
   },
   tearDown: function() {
-    this.st.removeSubject();
+    this.st.remove();
   },
   'test push to save triples into WebStorage': function() {
     {
@@ -322,18 +322,20 @@ TestCase('Test push show', {
       }
     }
   },
-  'test removeSubject': function() {
+  'test remove subject': function() {
     {
+      this.st.remove();
       this.st.setMapping("a", "http://a.org/");
       this.st.setMapping("b", "http://b.org/");
       this.st.push("a:bob", "a:name", "a:Bob");
       this.st.push("a:bob", "a:address", "Cambridge");
+      this.st.push("a:bob", "a:phone", "617");      
       this.st.push("b:john", "a:name", "b:John");
       this.st.push("b:john", "b:address", "Cambridge");
       
       //check
       {
-        this.st.removeSubject("xxx");
+        this.st.remove("xxx");
         
         subjects = this.st.getSubjects();
         assertEquals(2, subjects.length);
@@ -341,7 +343,7 @@ TestCase('Test push show', {
         assertEquals("http://b.org/john", subjects[1]);
       }
       {
-        this.st.removeSubject("bob");
+        this.st.remove("bob");
         
         subjects = this.st.getSubjects();
         assertEquals(2, subjects.length);
@@ -349,7 +351,7 @@ TestCase('Test push show', {
         assertEquals("http://b.org/john", subjects[1]);
       }
       {
-        this.st.removeSubject("b:bob");
+        this.st.remove("b:bob");
         
         subjects = this.st.getSubjects();
         assertEquals(2, subjects.length);
@@ -357,39 +359,21 @@ TestCase('Test push show', {
         assertEquals("http://b.org/john", subjects[1]);
       }
       {
-        this.st.removeSubject("a:bob");
+        this.st.remove("a:bob");
         
         subjects = this.st.getSubjects();
         assertEquals(1, subjects.length);
         assertEquals("http://b.org/john", subjects[0]);
       }
       {
-        this.st.removeSubject("b:john");
+        this.st.remove("b:john");
         
         subjects = this.st.getSubjects();
         assertEquals(0, subjects.length);
       }
     }
   },
-  'test localStorage.clear() with removeSubject': function() {
-    {
-      this.st.setMapping("a", "http://a.org/");
-      this.st.setMapping("b", "http://b.org/");
-      this.st.push("a:bob", "a:name", "a:Bob");
-      this.st.push("a:bob", "a:address", "Cambridge");
-      this.st.push("b:john", "a:name", "b:John");
-      this.st.push("b:john", "b:address", "Cambridge");
-      
-      //check
-      {
-        this.st.removeSubject();
-        
-        subjects = this.st.getSubjects();
-        assertEquals(0, subjects.length);
-      }
-    }
-  },
-  'test removeProperty': function() {
+  'test remove property': function() {
     {
       this.st.setMapping("a", "http://a.org/");
       this.st.setMapping("b", "http://b.org/");
@@ -401,7 +385,7 @@ TestCase('Test push show', {
       
       //check
       {
-        this.st.removeProperty("xxx");
+        this.st.remove("a:bob", "xxx");
         
         var properties = this.st.getProperties("a:bob");
         assertEquals(3, properties.length);
@@ -414,44 +398,62 @@ TestCase('Test push show', {
         assertEquals("http://b.org/address", properties[1]);
       }
       {
-        this.st.removeProperty("a:name", "xxx");
+        this.st.remove("a:bob", "a:address");
         
         var properties = this.st.getProperties("a:bob");
-        assertEquals(3, properties.length);
+        assertEquals(2, properties.length);
         assertEquals("http://a.org/name", properties[0]);
-        assertEquals("http://a.org/address", properties[1]);
-        assertEquals("http://a.org/phone", properties[2]);
+        assertEquals("http://a.org/phone", properties[1]);
         var properties = this.st.getProperties("b:john");
         assertEquals(2, properties.length);
         assertEquals("http://a.org/name", properties[0]);
         assertEquals("http://b.org/address", properties[1]);
       }
       {
-        this.st.removeProperty("xxx", "Cambridge");
+        try {
+          this.st.remove("xxx", "b:address");
+          fail("not reach");
+        } catch(e) {
+          assertEquals("Error", e.name);
+        }
         
         var properties = this.st.getProperties("a:bob");
-        assertEquals(3, properties.length);
+        assertEquals(2, properties.length);
         assertEquals("http://a.org/name", properties[0]);
-        assertEquals("http://a.org/address", properties[1]);
-        assertEquals("http://a.org/phone", properties[2]);
+        assertEquals("http://a.org/phone", properties[1]);
         var properties = this.st.getProperties("b:john");
         assertEquals(2, properties.length);
         assertEquals("http://a.org/name", properties[0]);
         assertEquals("http://b.org/address", properties[1]);
       }
       {
-        this.st.removeProperty("a:name");
+        this.st.remove("b:john", "b:address");
         
         var properties = this.st.getProperties("a:bob");
         assertEquals(2, properties.length);
-        assertEquals("http://a.org/address", properties[0]);
+        assertEquals("http://a.org/name", properties[0]);
         assertEquals("http://a.org/phone", properties[1]);
         var properties = this.st.getProperties("b:john");
         assertEquals(1, properties.length);
-        assertEquals("http://b.org/address", properties[0]);
+        assertEquals("http://a.org/name", properties[0]);
       }
       {
-        this.st.removeProperty(null, "Cambridge");
+        try {
+          this.st.remove(null, "xxx");
+        } catch(e) {
+          fail(e);
+        }
+        
+        var properties = this.st.getProperties("a:bob");
+        assertEquals(2, properties.length);
+        assertEquals("http://a.org/name", properties[0]);
+        assertEquals("http://a.org/phone", properties[1]);
+        var properties = this.st.getProperties("b:john");
+        assertEquals(1, properties.length);
+        assertEquals("http://a.org/name", properties[0]);
+      }
+      {
+        this.st.remove(null, "a:name");
         
         var properties = this.st.getProperties("a:bob");
         assertEquals(1, properties.length);
@@ -459,17 +461,11 @@ TestCase('Test push show', {
         var properties = this.st.getProperties("b:john");
         assertEquals(0, properties.length);
       }
-      {
-        this.st.removeProperty("a:phone", "617");
-        
-        var properties = this.st.getProperties("a:bob");
-        assertEquals(0, properties.length);
-        var properties = this.st.getProperties("b:john");
-        assertEquals(0, properties.length);
-      }
     }
-    {//remove all properties
-      this.st.removeSubject();
+  },
+  'test remove at once': function() {
+    {
+      this.st.remove();
       this.st.setMapping("a", "http://a.org/");
       this.st.setMapping("b", "http://b.org/");
       this.st.push("a:bob", "a:name", "a:Bob");
@@ -478,13 +474,12 @@ TestCase('Test push show', {
       this.st.push("b:john", "a:name", "b:John");
       this.st.push("b:john", "b:address", "Cambridge");
       
-      {//check
-        this.st.removeProperty();
+      //check
+      {
+        this.st.remove();
         
-        var properties = this.st.getProperties("a:bob");
-        assertEquals(0, properties.length);
-        var properties = this.st.getProperties("b:john");
-        assertEquals(0, properties.length);
+        subjects = this.st.getSubjects();
+        assertEquals(0, subjects.length);
       }
     }
   },

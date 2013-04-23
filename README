@@ -1,4 +1,4 @@
-* Triplestore wrapper for HTML5 WebStorage
+* Triplestore wrapper for HTML5 WebStorage [1]
 
  - This wrapper enables web applications to store triples
    subject-property-value into WebStorage
@@ -16,7 +16,7 @@
 
 * License
 
- - W3C Software Notice and License[1]
+ - W3C Software Notice and License[2]
 
 * Author
 

@@ -1,5 +1,6 @@
 /*
  * $Id$
+ * This library enables web applications to easily store triples into Web Storage.
  * See Copyright for the status of this software.
  * uchida@w3.org
  */
@@ -216,48 +217,42 @@ var Triplestore = function() {
     }
   };
   /**
-   * Remove an item from internal storage to match against.
-   * @method removeSubject
-   * @param [subject] {String} optional subject
-   * @example
-   *   st.removeSubject("http://sample.org/bob");
+   * Remove an subject or a property from internal storage to match against.
+   * @method remove
+   * @param [subject] {String} subject
+   * @param [property] {String} property
    */
-  Triplestore.prototype.removeSubject = function(subject) {
-    subject = resolveQName(this.prefixMapping, subject);
-    if(subject) {
-      this.st.removeItem(subject);
-    } else {
-      this.st.clear();
-    }
-  };
-  /**
-   * Remove a property from internal storage to match against.
-   * @method removeProperty
-   * @param property {String} property
-   * @param [value] {String} object
-   * @example
-   *   st.removeProperty("foaf:name", "Bob");
-   */
-  Triplestore.prototype.removeProperty = function(property, value) {
+  Triplestore.prototype.remove = function(subject, property) {
     //init
+    subject = resolveQName(this.prefixMapping, subject);
     property = resolveQName(this.prefixMapping, property);
-    value = resolveQName(this.prefixMapping, value);
     
-    for(var subject in this.st) {
-      var props_str = this.st[subject];
-      var props = JSON.parse(props_str);
-      if(property) {
-        if(!value || props[property] == value) {
+    if(subject) {
+      if(property) {/* remove the property */
+        var props_str = this.st[subject];
+        if(props_str) {
+          var props = JSON.parse(props_str);
           delete props[property];
+          this.st.setItem(subject, JSON.stringify(props));
+        } else {
+          throw Error("Not found " + subject + ":" + property);
         }
-      } else {
-        for(var prop in props) {
-          if(!value || props[prop] == value) {
-            delete props[prop];
+      } else {/* remove the subject */
+        this.st.removeItem(subject);
+      }
+    } else {
+      if(property) {/* remove all matched properties */
+        for(var subject in this.st) {
+          var props_str = this.st[subject];
+          var props = JSON.parse(props_str);
+          if(props[property]) {
+            delete props[property];
+            this.st.setItem(subject, JSON.stringify(props));
           }
         }
+      } else {
+        this.st.clear();  
       }
-      this.st.setItem(subject, JSON.stringify(props));
     }
   };
   /**
