@@ -221,6 +221,8 @@ var Triplestore = function() {
    * @method remove
    * @param [subject] {String} subject
    * @param [property] {String} property
+   * @example
+   *   st.remove("http://sample.org/bob", "foaf:name");
    */
   Triplestore.prototype.remove = function(subject, property) {
     //init
@@ -256,6 +258,24 @@ var Triplestore = function() {
     }
   };
   /**
+   * Retrieves a Projection given a subject
+   * @method getProjection
+   * @param subject {String} subject
+   * @return {Projection} projection
+   * @example
+   *   st.getProjection("http://sample.org/bob");
+   */
+  Triplestore.prototype.getProjection = function(subject) {
+    subject = resolveQName(this.prefixMapping, subject);
+    var props_str = this.st[subject];
+    var res = null;
+    if(props_str) {
+      var props = JSON.parse(props_str);
+      res = new Projection(this.prefixMapping, subject, props);
+    }
+    return res;
+  };
+  /**
    * Print the content of the storage.
    * @method show
    */
@@ -265,5 +285,54 @@ var Triplestore = function() {
       console.log(subject + ":" + this.st.getItem(subject));
     }
   };
+  
+  /**
+   * <a href="http://www.w3.org/TR/rdfa-api/#projections">
+   * Projection</a> class.
+   * @class Projection
+   * @constructor
+   */
+  var Projection = function(prefixMapping, subject, props) {
+    this.prefixMapping = prefixMapping;
+    this.subject = subject;
+    this.props = props;
+  };
+
+  /**
+   * Retrieves the list of properties that are available on
+   * the Projection. Each property must be an absolute URI.
+   * @method getProperties
+   * @return {Array} sequence&lt;String>
+   */
+  Projection.prototype.getProperties = function() {
+    var res = [];
+    for(var prop in this.props) {
+      res.push(prop);
+    }
+    return res;
+  };
+  /**
+   * Retrieves the subject URI of this Projection as a string,
+   * the value must be an absolute URI.
+   * @method getSubject
+   * @return {String}
+   */
+  Projection.prototype.getSubject = function() {
+    return this.subject;
+  };
+  /**
+   * Retrieves the first property with the given name as a
+   * language-native datatype.
+   * @method get
+   * @param property {String} property
+   * @return {String}
+   * @example
+   *   projection.get("foaf:name");
+   */
+  Projection.prototype.get = function(property) {
+    property = resolveQName(this.prefixMapping, property);
+    return this.props[property];
+  };
+  
 })();
  

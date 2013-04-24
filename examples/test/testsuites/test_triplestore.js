@@ -1,6 +1,6 @@
 console = jstestdriver.console;
 
-TestCase('Test push show', {
+TestCase('Test triplestore.js', {
   setUp: function() {
     this.st = new Triplestore();
   },
@@ -509,5 +509,5 @@ TestCase('Test push show', {
         assertEquals(0, values.length);
       }
     }
-  },
+  }
 });
