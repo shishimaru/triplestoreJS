@@ -7,7 +7,7 @@ TestCase('Test push show', {
   tearDown: function() {
     this.st.remove();
   },
-  'test push to save triples into WebStorage': function() {
+  'test save': function() {
     {
       this.st.push("s1", "name", "Bob");
       
@@ -44,6 +44,24 @@ TestCase('Test push show', {
       assertEquals("John", this.st.getValues("s2", "name"))[0];
       assertEquals("Boston", this.st.getValues("s2", "address")[0]);
       assertEquals("617", this.st.getValues("s2", "phone")[0]);
+    }
+  },
+  'test edit': function() {
+    {
+      this.st.push("s1", "name", "Bob");
+      this.st.push("s1", "address", "Cambridge");
+      
+      //check
+      assertEquals("Bob", this.st.getValues("s1", "name"));
+      assertEquals("Cambridge", this.st.getValues("s1", "address"));
+    }
+    {
+      this.st.push("s1", "name", "John");
+      this.st.push("s1", "address", "Boston");
+      
+      //check
+      assertEquals("John", this.st.getValues("s1", "name"));
+      assertEquals("Boston", this.st.getValues("s1", "address"));
     }
   },
   'test getProperties': function() {
@@ -480,6 +498,15 @@ TestCase('Test push show', {
         
         subjects = this.st.getSubjects();
         assertEquals(0, subjects.length);
+        
+        properties = this.st.getProperties("a:bob");
+        assertEquals(0, properties.length);
+        
+        properties = this.st.getProperties("b:john");
+        assertEquals(0, properties.length);
+        
+        values = this.st.getValues("a:bob", "a:name");
+        assertEquals(0, values.length);
       }
     }
   },
