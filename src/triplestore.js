@@ -195,24 +195,24 @@ var Triplestore = function() {
    * @method push
    * @param subject {String} subject
    * @param property {String} property
-   * @param object {String} object
+   * @param value {String} value
    * @example
    *   st.push("http://sample.org/bob", "foaf:name", "Bob");
    */
-  Triplestore.prototype.push = function(subject, property, object) {
+  Triplestore.prototype.push = function(subject, property, value) {
     //init
     subject = resolveQName(this.prefixMapping, subject);
     property = resolveQName(this.prefixMapping, property);
-    object = resolveQName(this.prefixMapping, object);
+    value = resolveQName(this.prefixMapping, value);
     
     var props_str = this.st[subject];
     if(props_str) {
       var props = JSON.parse(props_str);
-      props[property] = object;
+      props[property] = value;
       this.st.setItem(subject, JSON.stringify(props));
     } else {
       var props = {};
-      props[property] = object;
+      props[property] = value;
       this.st.setItem(subject, JSON.stringify(props)); 
     }
   };
@@ -333,6 +333,19 @@ var Triplestore = function() {
     property = resolveQName(this.prefixMapping, property);
     return this.props[property];
   };
-  
+  /**
+   * Retrieves the list of values for a property as an array
+   * of language-native datatypes.
+   * @param property {String} The name of the property to retrieve
+   * @return {Array} sequence&lt;String>
+   */
+  Projection.prototype.getAll = function(property) {
+    property = resolveQName(this.prefixMapping, property);
+    var res = [];
+    if(this.props[property]) {
+      res.push(this.props[property]);
+    }
+    return res;
+  };
 })();
  

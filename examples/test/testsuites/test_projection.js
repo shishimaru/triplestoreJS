@@ -68,6 +68,35 @@ TestCase('Test Projectoin', {
       }
     }
   },
+  'test getAll': function() {
+    {
+      this.st.remove();
+      this.st.setMapping("a", "http://a.org/");
+      this.st.setMapping("b", "http://b.org/");
+      this.st.push("a:bob", "a:name", "a:Bob");
+      this.st.push("a:bob", "a:address", "Cambridge");
+      this.st.push("a:bob", "a:phone", "617");      
+      this.st.push("b:john", "a:name", "b:John");
+      this.st.push("b:john", "b:address", "Cambridge");
+      
+      //check
+      {
+        var projection = this.st.getProjection("a:bob");
+        assertEquals(1, projection.getAll("a:name").length);
+        assertEquals("http://a.org/Bob", projection.getAll("a:name")[0]);
+        assertEquals(1, projection.getAll("a:address").length);
+        assertEquals("Cambridge", projection.getAll("a:address")[0]);
+      }
+      {
+        var projection = this.st.getProjection("a:bob");
+        assertEquals(0, projection.getAll("xxx").length);
+      }
+      {
+        var projection = this.st.getProjection("a:bob");
+        assertEquals(0, projection.getAll(null).length);
+      }
+    }
+  },
   'test getProperties': function() {
     {
       this.st.remove();
