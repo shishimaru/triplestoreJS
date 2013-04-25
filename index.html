@@ -5,7 +5,6 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-
   <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen"/>
   <link rel="stylesheet" href="stylesheets/pygment_trac.css"/>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
@@ -17,12 +16,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
 
 </head>
-
 <body>
-
   <div class="wrapper">
     <header>
-      <h1 class="title">Triplestorejs</h1>
+      <h1 class="title">
+	<a href="http://www.w3.org/"><img width="72" height="48" border="0" alt="W3C" src="http://www.w3.org/Icons/w3c_home" /></a>
+	<img border="0" alt="semweb tools" src="http://www.w3.org/Icons/WWW/Lib48x"/>TriplestoreJS
+      </h1>
     </header>
     <div id="container">
       <p class="tagline">Triplestore wrapper for HTML5 WebStorage</p>
@@ -36,44 +36,81 @@
         <span class="blc"></span><span class="trc"></span>
         </div>
         <article class="markdown-body">
-          <h3>Welcome to GitHub Pages.</h3>
+          <h3>Welcome to TriplestoreJS</h3>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+	  <p itemprop="description">
+	    This JavaScript wrapper library enables web applications to store triples subject-property-value into
+	    <a href="http://www.w3.org/TR/webstorage/">HTML5 Web Storage</a>.
+	    The API looks like an extension of <a href="http://www.w3.org/TR/rdfa-api/">W3C RDFa API</a>.
+	  </p>
+	  <ul>
+	    <li>Functionality</li>
+	    <ul>
+	      <li>Save semantic data as triples into WebStorage</li>
+	      <li>Get/Edit/Remove titples stored in WebStorage</li>
+	    </ul>
+	  </ul>	  
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+	  <h3>Create Triplestore instance</h3>
+	  <p>Call simple constructor.</p>
+<pre><code>var st = new Triplestore();
+</code></pre>
+	  <h3>Setup prefix mapping</h3>
+	  <p>Setup prefix and the corresponding URI mapping for further operations.</p>
+<pre><code>st.setMapping("foaf", "http://xmlns.com/foaf/0.1/");
+</code></pre>
+	  <h3>Store triples</h3>
+	  <p><b>push</b> function saves specified triples into WebStorage.</p>
+<pre><code>st.push("http://sample.org/people/#danbri", "foaf:name", "Dan Brickley");
+st.push("http://sample.org/people/#danbri", "foaf:homepage", "http://danbri.org/");
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+          <h3>Retrieve stored triples</h3>
+	  <p><b>get*</b> functions retrieve stored triples in WebStorage.</p>
+<pre><code>var subjects = st.getSubjects();
+for(var i = 0; i < subjects.length; i++) {
+  var subject = subjects[i];
+  var properties = st.getProperties(subject);
+  for(var j = 0; j < properties.length; j++) {
+    var property = properties[j];
+    var value = st.getValues(subject, property);
+    console.log(subject, property, value);
+  }
+}
+</code></pre>
+          <h3>Remove stored triples</h3>
+	  <p><b>remove</b> function delete the matched triples from WebStorage.</p>
+          <p>Remove a subject</p>
+<pre><code>this.st.remove("http://sample.org/people/#danbri");
+</code></pre>
+	  <p>Remove a property of a specified subject</p>
+<pre><code>this.st.remove("http://sample.org/people/#danbri", "foaf:homepage");
+</code></pre>
+	  <p>Remove a property from each subject</p>
+<pre><code>this.st.remove(null, "foaf:homepage");
+</code></pre>	  <p>Remove all subjects</p>
+<pre><code>this.st.remove();
+</code></pre>
 
-<h3>Designer Templates</h3>
-
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
         </article>
       </div>
     </div>
     <footer>
       <div class="owner">
       <p><a href="https://github.com/shishimaru" class="avatar"><img src="https://secure.gravatar.com/avatar/6b03469df4b268ff5c7d1ca1416e869b?s=30&amp;d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png" width="48" height="48"/></a> <a href="https://github.com/shishimaru">shishimaru</a> maintains <a href="https://github.com/shishimaru/triplestoreJS">Triplestorejs</a></p>
-
-
       </div>
       <div class="creds">
         <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br/>theme by <a href="http://twitter.com/jonrohan/">Jon Rohan</a></small>
       </div>
+      <hr>
+      <address>Hitoshi Uchida</address>
+      <p class="copyright"><a rel="Copyright" href="/Consortium/Legal/ipr-notice#Copyright" shape="rect">Copyright</a>©
+	2013 <a href="/" shape="rect"><acronym title="World Wide Web Consortium">W3C</acronym></a>
+	<sup>®</sup> (<a href="http://www.csail.mit.edu/" shape="rect"><acronym title="Massachusetts Institute of Technology">MIT</acronym></a>,
+	<a href="http://www.ercim.org/" shape="rect"><acronym title="European Research Consortium for Informatics and Mathematics">ERCIM</acronym></a>,
+	<a href="http://www.keio.ac.jp/" shape="rect">Keio</a>, <a href="http://ev.buaa.edu.cn/" shape="rect">Beihang</a>), All Rights
+	Reserved.</p>
+      <p>$Id: index.html,v 1.2 2013-04-23 22:18:33 hitoshi Exp $</p>
     </footer>
   </div>
   <div class="current-section">
@@ -81,7 +118,5 @@ $ git checkout gh-pages
     <a href="https://github.com/shishimaru/triplestoreJS/tarball/master" class="tar">tar</a><a href="https://github.com/shishimaru/triplestoreJS/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
     <p class="name"></p>
   </div>
-
-  
 </body>
 </html>
