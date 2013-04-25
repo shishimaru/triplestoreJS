@@ -1,0 +1,41 @@
+<!-- $Id$ -->
+<html>
+<head>
+<title>Sample of save operation</title>
+<script type="text/javascript" src="../../src/triplestore.js"></script>
+<script type="text/javascript"><!--
+window.addEventListener("load", function() {
+  var st = new Triplestore();
+  st.remove();
+  st.setMapping("foaf", "http://xmlns.com/foaf/0.1/");
+  
+  //save subject1
+  var s1 = "http://sample.org/people/#danbri";
+  st.push(s1, "foaf:name", "Dan Brickley");
+  st.push(s1, "foaf:homepage", "http://danbri.org/");
+  st.push(s1, "foaf:openid", "http://danbri.org/");
+  st.push(s1, "foaf:img", "/images/me.jpg");
+  
+  //save subject2
+  var s2 = "http://swordfish.rdfweb.org/people/libby/rdfweb/webwho.xrdf#me";
+  st.push(s2, "foaf:name", "Libby Miller");
+  st.push(s2, "foaf:homepage", "http://nicecupoftea.org");
+  st.push(s2, "foaf:img", "/images/me.jpg");
+  
+  //show
+  var subjects = st.getSubjects();
+  for(var i = 0; i < subjects.length; i++) {
+    var subject = subjects[i];
+    var properties = st.getProperties(subject);
+    for(var j = 0; j < properties.length; j++) {
+      var property = properties[j];
+      var value = st.getValues(subject, property);
+      console.log(subject, property, value);
+    }
+  }
+});
+--></script>
+</head>
+<body>
+</body>
+</html>

@@ -1,3 +1,4 @@
+/* $Id$ */
 TestCase('Test Projectoin', {
   setUp: function() {
     this.st = new Triplestore();
