@@ -1,3 +1,4 @@
+/* $Id$ */
 console = jstestdriver.console;
 
 TestCase('Test triplestore.js', {
