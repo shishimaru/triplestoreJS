@@ -11,11 +11,11 @@ TestCase('Test Projectoin', {
       this.st.remove();
       this.st.setMapping("a", "http://a.org/");
       this.st.setMapping("b", "http://b.org/");
-      this.st.push("a:bob", "a:name", "a:Bob");
-      this.st.push("a:bob", "a:address", "Cambridge");
-      this.st.push("a:bob", "a:phone", "617");      
-      this.st.push("b:john", "a:name", "b:John");
-      this.st.push("b:john", "b:address", "Cambridge");
+      this.st.set("a:bob", "a:name", "a:Bob");
+      this.st.set("a:bob", "a:address", "Cambridge");
+      this.st.set("a:bob", "a:phone", "617");      
+      this.st.set("b:john", "a:name", "b:John");
+      this.st.set("b:john", "b:address", "Cambridge");
       
       //check
       {
@@ -49,21 +49,18 @@ TestCase('Test Projectoin', {
       this.st.remove();
       this.st.setMapping("a", "http://a.org/");
       this.st.setMapping("b", "http://b.org/");
-      this.st.push("a:bob", "a:name", "a:Bob");
-      this.st.push("a:bob", "a:address", "Cambridge");
-      this.st.push("a:bob", "a:phone", "617");      
-      this.st.push("b:john", "a:name", "b:John");
-      this.st.push("b:john", "b:address", "Cambridge");
+      this.st.add("a:bob", "a:address", "A");
+      this.st.add("a:bob", "a:address", "B");
+      this.st.add("a:bob", "a:address", "C");
+      this.st.add("b:john", "b:address", "1");
+      this.st.add("b:john", "b:address", "2");
+      this.st.add("b:john", "b:address", "3");
       
       //check
       {
         var projection = this.st.getProjection("a:bob");
-        assertEquals("http://a.org/Bob", projection.get("a:name"));
-        assertEquals("Cambridge", projection.get("a:address"));
-        assertEquals("617", projection.get("a:phone"));
-        assertEquals("http://a.org/Bob", projection.get("http://a.org/name"));
-        assertEquals("Cambridge", projection.get("http://a.org/address"));
-        assertEquals("617", projection.get("http://a.org/phone"));
+        assertEquals("A", projection.get("a:address"));
+        assertEquals("A", projection.get("http://a.org/address"));
         assertEquals(null, projection.get("xxx"));
         assertEquals(null, projection.get(null));
       }
@@ -74,19 +71,27 @@ TestCase('Test Projectoin', {
       this.st.remove();
       this.st.setMapping("a", "http://a.org/");
       this.st.setMapping("b", "http://b.org/");
-      this.st.push("a:bob", "a:name", "a:Bob");
-      this.st.push("a:bob", "a:address", "Cambridge");
-      this.st.push("a:bob", "a:phone", "617");      
-      this.st.push("b:john", "a:name", "b:John");
-      this.st.push("b:john", "b:address", "Cambridge");
+      this.st.add("a:bob", "a:address", "A");
+      this.st.add("a:bob", "a:address", "B");
+      this.st.add("a:bob", "a:address", "C");
+      this.st.add("b:john", "b:address", "1");
+      this.st.add("b:john", "b:address", "2");
+      this.st.add("b:john", "b:address", "3");
       
       //check
       {
         var projection = this.st.getProjection("a:bob");
-        assertEquals(1, projection.getAll("a:name").length);
-        assertEquals("http://a.org/Bob", projection.getAll("a:name")[0]);
-        assertEquals(1, projection.getAll("a:address").length);
-        assertEquals("Cambridge", projection.getAll("a:address")[0]);
+        assertEquals(3, projection.getAll("a:address").length);
+        assertEquals("A", projection.getAll("a:address")[0]);
+        assertEquals("B", projection.getAll("a:address")[1]);
+        assertEquals("C", projection.getAll("a:address")[2]);
+      }
+      {
+        var projection = this.st.getProjection("b:john");
+        assertEquals(3, projection.getAll("b:address").length);
+        assertEquals("1", projection.getAll("b:address")[0]);
+        assertEquals("2", projection.getAll("b:address")[1]);
+        assertEquals("3", projection.getAll("b:address")[2]);
       }
       {
         var projection = this.st.getProjection("a:bob");
@@ -103,11 +108,11 @@ TestCase('Test Projectoin', {
       this.st.remove();
       this.st.setMapping("a", "http://a.org/");
       this.st.setMapping("b", "http://b.org/");
-      this.st.push("a:bob", "a:name", "a:Bob");
-      this.st.push("a:bob", "a:address", "Cambridge");
-      this.st.push("a:bob", "a:phone", "617");      
-      this.st.push("b:john", "a:name", "b:John");
-      this.st.push("b:john", "b:address", "Cambridge");
+      this.st.set("a:bob", "a:name", "a:Bob");
+      this.st.set("a:bob", "a:address", "Cambridge");
+      this.st.set("a:bob", "a:phone", "617");      
+      this.st.set("b:john", "a:name", "b:John");
+      this.st.set("b:john", "b:address", "Cambridge");
       
       //check
       {

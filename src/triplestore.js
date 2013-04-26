@@ -79,6 +79,15 @@ var Triplestore = function() {
    *   st.getSubjects("foaf:name", "Bob");
    */
   Triplestore.prototype.getSubjects = function(property, value) {
+    var hasValue = function(list, value) {
+      for(var i = 0; list && i < list.length; i++) {
+        if(list[i] == value) {
+          return true;
+        }
+      }
+      return false;
+    };
+    
     //init
     property = resolveQName(this.prefixMapping, property);
     value = resolveQName(this.prefixMapping, value);
@@ -90,7 +99,7 @@ var Triplestore = function() {
       
       if(property) {
         if(value) {
-          if(props[property] == value) {
+          if(hasValue(props[property], value)) {
             res.push(subject);
           }
         } else {
@@ -100,7 +109,7 @@ var Triplestore = function() {
         }
       } else {
         for(var prop in props) {
-          if(!value || props[prop] == value) {
+          if(!value || hasValue(props[prop], value)) {
             res.push(subject);
             break;
           }
@@ -179,11 +188,11 @@ var Triplestore = function() {
       
         if(property) {
           if(props[property]) {
-            res.push(props[property]);
+            res = res.concat(props[property]);
           }
         } else {
           for(var prop in props) {
-            res.push(props[prop]);
+            res = res.concat(props[prop]);
           }
         }
       }
@@ -191,15 +200,15 @@ var Triplestore = function() {
     return res;
   };
   /**
-   * Store a triple to localStorage.
-   * @method push
+   * Set a triple to localStorage. The old value of the property is overwritten.
+   * @method set
    * @param subject {String} subject
    * @param property {String} property
    * @param value {String} value
    * @example
-   *   st.push("http://sample.org/bob", "foaf:name", "Bob");
+   *   st.set("http://sample.org/bob", "foaf:name", "Bob");
    */
-  Triplestore.prototype.push = function(subject, property, value) {
+  Triplestore.prototype.set = function(subject, property, value) {
     //init
     subject = resolveQName(this.prefixMapping, subject);
     property = resolveQName(this.prefixMapping, property);
@@ -208,11 +217,42 @@ var Triplestore = function() {
     var props_str = this.st[subject];
     if(props_str) {
       var props = JSON.parse(props_str);
-      props[property] = value;
+      props[property] = new Array(value);
       this.st.setItem(subject, JSON.stringify(props));
     } else {
       var props = {};
-      props[property] = value;
+      props[property] = new Array(value);
+      this.st.setItem(subject, JSON.stringify(props)); 
+    }
+  };
+  /**
+   * Add a triple to localStorage. If the property has already values,
+   * the new value is concatenated to them.
+   * @method add
+   * @param subject {String} subject
+   * @param property {String} property
+   * @param value {String} value
+   * @example
+   *   st.add("http://sample.org/bob", "foaf:name", "Bob");
+   */
+  Triplestore.prototype.add = function(subject, property, value) {
+    //init
+    subject = resolveQName(this.prefixMapping, subject);
+    property = resolveQName(this.prefixMapping, property);
+    value = resolveQName(this.prefixMapping, value);
+    
+    var props_str = this.st[subject];
+    if(props_str) {//exist
+      var props = JSON.parse(props_str);
+      if(props[property]) {
+        props[property].push(value);
+      } else {
+        props[property] = new Array(value);
+      }
+      this.st.setItem(subject, JSON.stringify(props));
+    } else {//not exist
+      var props = {};
+      props[property] = new Array(value);
       this.st.setItem(subject, JSON.stringify(props)); 
     }
   };
@@ -290,6 +330,7 @@ var Triplestore = function() {
    * <a href="http://www.w3.org/TR/rdfa-api/#projections">
    * Projection</a> class.
    * @class Projection
+   * @private
    * @constructor
    */
   var Projection = function(prefixMapping, subject, props) {
@@ -330,22 +371,21 @@ var Triplestore = function() {
    *   projection.get("foaf:name");
    */
   Projection.prototype.get = function(property) {
-    property = resolveQName(this.prefixMapping, property);
-    return this.props[property];
+    var values = this.getAll(property);
+    return values ? values[0] : null;
   };
   /**
    * Retrieves the list of values for a property as an array
    * of language-native datatypes.
+   * @method getAll
    * @param property {String} The name of the property to retrieve
    * @return {Array} sequence&lt;String>
+   * @example
+   *   st.getAll("foaf:name");
    */
   Projection.prototype.getAll = function(property) {
     property = resolveQName(this.prefixMapping, property);
-    var res = [];
-    if(this.props[property]) {
-      res.push(this.props[property]);
-    }
-    return res;
+    return this.props[property] ?
+        this.props[property] : [];
   };
 })();
- 

@@ -8,9 +8,9 @@ TestCase('Test triplestore.js', {
   tearDown: function() {
     this.st.remove();
   },
-  'test save': function() {
+  'test set': function() {
     {
-      this.st.push("s1", "name", "Bob");
+      this.st.set("s1", "name", "Bob");
       
       //check
       var props = this.st.getProperties("s1");
@@ -20,7 +20,7 @@ TestCase('Test triplestore.js', {
       assertEquals("Bob", this.st.getValues("s1", "name")[0]);
     }
     {
-      this.st.push("s1", "address", "Cambridge");
+      this.st.set("s1", "address", "Cambridge");
       
       //check
       var props = this.st.getProperties("s1");
@@ -31,10 +31,10 @@ TestCase('Test triplestore.js', {
       assertEquals("Cambridge", this.st.getValues("s1", "address")[0]);
     }
     {
-      this.st.push("s2", "name", "John");
-      this.st.push("s2", "address", "Boston");
-      this.st.push("s2", "phone", "xxx");
-      this.st.push("s2", "phone", "617");
+      this.st.set("s2", "name", "John");
+      this.st.set("s2", "address", "Boston");
+      this.st.set("s2", "phone", "xxx");
+      this.st.set("s2", "phone", "617");
       
       //check
       var props = this.st.getProperties("s2");
@@ -47,26 +47,61 @@ TestCase('Test triplestore.js', {
       assertEquals("617", this.st.getValues("s2", "phone")[0]);
     }
   },
+  'test add': function() {
+    this.st.setMapping("a", "http://a.org/");
+    this.st.add("a:bob", "a:address", "Boston");
+    
+    {//check
+      var props = this.st.getProperties("a:bob");
+      assertEquals(1, props.length);
+      assertEquals("http://a.org/address", props[0]);
+      
+      assertEquals(1, this.st.getValues("a:bob", "a:address").length);
+      assertEquals("Boston", this.st.getValues("a:bob", "a:address")[0]);
+    }
+    
+    this.st.add("a:bob", "a:address", "Cambridge");
+    {//check
+      var props = this.st.getProperties("a:bob");
+      assertEquals(1, props.length);
+      assertEquals("http://a.org/address", props[0]);
+      
+      assertEquals(2, this.st.getValues("a:bob", "a:address").length);
+      assertEquals("Boston", this.st.getValues("a:bob", "a:address")[0]);
+      assertEquals("Cambridge", this.st.getValues("a:bob", "a:address")[1]);
+    }
+    
+    this.st.add("a:bob", "a:address", "Brookline");
+    {//check
+      var props = this.st.getProperties("a:bob");
+      assertEquals(1, props.length);
+      assertEquals("http://a.org/address", props[0]);
+      
+      assertEquals(3, this.st.getValues("a:bob", "a:address").length);
+      assertEquals("Boston", this.st.getValues("a:bob", "a:address")[0]);
+      assertEquals("Cambridge", this.st.getValues("a:bob", "a:address")[1]);
+      assertEquals("Brookline", this.st.getValues("a:bob", "a:address")[2]);
+    }
+  },
   'test edit': function() {
-    this.st.push("s1", "name", "Bob");
-    this.st.push("s1", "address", "Cambridge");
+    this.st.set("s1", "address", "Cambridge");
+    this.st.set("s1", "address", "Boston");
       
     {
-      this.st.push("s1", "name", "John");
-      this.st.push("s1", "address", "Boston");
+      this.st.set("s1", "address", "Brookline");
       
       //check
-      assertEquals("John", this.st.getValues("s1", "name"));
-      assertEquals("Boston", this.st.getValues("s1", "address"));
+      assertEquals(1, this.st.getValues("s1", "address").length);
+      assertEquals("Brookline", this.st.getValues("s1", "address")[0]);
     }
   },
   'test getProperties': function() {
     {
-      this.st.push("s1", "name", "Bob");
-      this.st.push("s1", "address", "Cambridge");
-      this.st.push("s2", "name", "John");
-      this.st.push("s2", "address", "Boston");
-      this.st.push("s2", "phone", "617");
+      this.st.set("s1", "name", "Bob");
+      this.st.set("s1", "address", "Cambridge");
+      this.st.set("s2", "name", "John");
+      this.st.set("s2", "address", "Boston");
+      this.st.set("s2", "phone", "617");
       
       {
         //check
@@ -97,9 +132,9 @@ TestCase('Test triplestore.js', {
     {
       this.st.setMapping("a", "http://a.org/");
       this.st.setMapping("b", "http://b.org/");
-      this.st.push("a:bob", "a:name", "a:Bob");
-      this.st.push("a:bob", "a:address", "Cambridge");
-      this.st.push("b:john", "b:site", "http://sns.org/john");
+      this.st.set("a:bob", "a:name", "a:Bob");
+      this.st.set("a:bob", "a:address", "Cambridge");
+      this.st.set("b:john", "b:site", "http://sns.org/john");
       
       //check
       {
@@ -142,9 +177,9 @@ TestCase('Test triplestore.js', {
   },
   'test setMapping with no mapping': function() {
     {
-      this.st.push("a:bob", "a:name", "a:Bob");
-      this.st.push("a:bob", "a:address", "Cambridge");
-      this.st.push("b:john", "b:site", "http://sns.org/john");
+      this.st.set("a:bob", "a:name", "a:Bob");
+      this.st.set("a:bob", "a:address", "Cambridge");
+      this.st.set("b:john", "b:site", "http://sns.org/john");
       
       //check
       {
@@ -161,12 +196,15 @@ TestCase('Test triplestore.js', {
   },
   'test getValues': function() {
     {
+      this.st.remove();
       this.st.setMapping("a", "http://a.org/");
       this.st.setMapping("b", "http://b.org/");
-      this.st.push("a:bob", "a:name", "Bob");
-      this.st.push("a:bob", "a:address", "Cambridge");
-      this.st.push("b:john", "a:name", "John");
-      this.st.push("b:john", "b:site", "http://sns.org/john");
+      this.st.set("a:bob", "a:name", "Bob");
+      this.st.add("a:bob", "a:address", "Cambridge");
+      this.st.add("a:bob", "a:address", "Boston");
+      this.st.add("a:bob", "a:address", "Brookline");
+      this.st.set("b:john", "a:name", "John");
+      this.st.set("b:john", "b:site", "http://sns.org/john");
       
       //check with subject + property
       {
@@ -187,19 +225,31 @@ TestCase('Test triplestore.js', {
       }
       {
         var values = this.st.getValues("a:bob", "a:address");
-        assertEquals("Cambridge", values);
+        assertEquals(3, values.length);
+        assertEquals("Cambridge", values[0]);
+        assertEquals("Boston", values[1]);
+        assertEquals("Brookline", values[2]);
       }
       {
         var values = this.st.getValues("http://a.org/bob", "a:address");
-        assertEquals("Cambridge", values);
+        assertEquals(3, values.length);
+        assertEquals("Cambridge", values[0]);
+        assertEquals("Boston", values[1]);
+        assertEquals("Brookline", values[2]);
       }
       {
         var values = this.st.getValues("a:bob", "http://a.org/address");
-        assertEquals("Cambridge", values);
+        assertEquals(3, values.length);
+        assertEquals("Cambridge", values[0]);
+        assertEquals("Boston", values[1]);
+        assertEquals("Brookline", values[2]);
       }
       {
         var values = this.st.getValues("http://a.org/bob", "http://a.org/address");
-        assertEquals("Cambridge", values);
+        assertEquals(3, values.length);
+        assertEquals("Cambridge", values[0]);
+        assertEquals("Boston", values[1]);
+        assertEquals("Brookline", values[2]);
       }
       {
         var values = this.st.getValues("a:bob", "xxx");
@@ -216,9 +266,11 @@ TestCase('Test triplestore.js', {
       //check with subject + no-property
       {
         var values = this.st.getValues("a:bob", null);
-        assertEquals(2, values.length);
+        assertEquals(4, values.length);
         assertEquals("Bob", values[0]);
         assertEquals("Cambridge", values[1]);
+        assertEquals("Boston", values[2]);
+        assertEquals("Brookline", values[3]);
       }
       {
         var values = this.st.getValues("b:john", null);
@@ -249,11 +301,13 @@ TestCase('Test triplestore.js', {
       //check with no-subject + no-property
       {
         var values = this.st.getValues(null, null);
-        assertEquals(4, values.length);
+        assertEquals(6, values.length);
         assertEquals("Bob", values[0]);
         assertEquals("Cambridge", values[1]);
-        assertEquals("John", values[2]);
-        assertEquals("http://sns.org/john", values[3]);
+        assertEquals("Boston", values[2]);
+        assertEquals("Brookline", values[3]);
+        assertEquals("John", values[4]);
+        assertEquals("http://sns.org/john", values[5]);
       }
     }
   },
@@ -261,10 +315,11 @@ TestCase('Test triplestore.js', {
     {
       this.st.setMapping("a", "http://a.org/");
       this.st.setMapping("b", "http://b.org/");
-      this.st.push("a:bob", "a:name", "a:Bob");
-      this.st.push("a:bob", "a:address", "Cambridge");
-      this.st.push("b:john", "a:name", "b:John");
-      this.st.push("b:john", "b:address", "Cambridge");
+      this.st.set("a:bob", "a:name", "a:Bob");
+      this.st.set("a:bob", "a:address", "Cambridge");
+      this.st.add("a:bob", "a:address", "Boston");
+      this.st.set("b:john", "a:name", "b:John");
+      this.st.set("b:john", "b:address", "Cambridge");
       
       //check with property + value
       {
@@ -278,11 +333,29 @@ TestCase('Test triplestore.js', {
         assertEquals("http://a.org/bob", subjects[0]);
       }
       {
+        var subjects = this.st.getSubjects("a:address", "Cambridge");
+        assertEquals(1, subjects.length);
+        assertEquals("http://a.org/bob", subjects[0]);
+      }
+      {
+        var subjects = this.st.getSubjects("a:address", "Boston");
+        assertEquals(1, subjects.length);
+        assertEquals("http://a.org/bob", subjects[0]);
+      }
+      {
         var subjects = this.st.getSubjects("a:name", "xxx");
         assertEquals(0, subjects.length);
       }
       {
+        var subjects = this.st.getSubjects("a:address", "xxx");
+        assertEquals(0, subjects.length);
+      }
+      {
         var subjects = this.st.getSubjects("xxx", "a:Bob");
+        assertEquals(0, subjects.length);
+      }
+      {
+        var subjects = this.st.getSubjects("xxx", "Boston");
         assertEquals(0, subjects.length);
       }
       {
@@ -305,6 +378,11 @@ TestCase('Test triplestore.js', {
         assertEquals(2, subjects.length);
         assertEquals("http://a.org/bob", subjects[0]);
         assertEquals("http://b.org/john", subjects[1]);
+      }
+      {
+        var subjects = this.st.getSubjects(null, "Boston");
+        assertEquals(1, subjects.length);
+        assertEquals("http://a.org/bob", subjects[0]);
       }
       {
         var subjects = this.st.getSubjects(null, "xxx");
@@ -341,11 +419,11 @@ TestCase('Test triplestore.js', {
       this.st.remove();
       this.st.setMapping("a", "http://a.org/");
       this.st.setMapping("b", "http://b.org/");
-      this.st.push("a:bob", "a:name", "a:Bob");
-      this.st.push("a:bob", "a:address", "Cambridge");
-      this.st.push("a:bob", "a:phone", "617");      
-      this.st.push("b:john", "a:name", "b:John");
-      this.st.push("b:john", "b:address", "Cambridge");
+      this.st.set("a:bob", "a:name", "a:Bob");
+      this.st.set("a:bob", "a:address", "Cambridge");
+      this.st.set("a:bob", "a:phone", "617");      
+      this.st.set("b:john", "a:name", "b:John");
+      this.st.set("b:john", "b:address", "Cambridge");
       
       //check
       {
@@ -391,11 +469,11 @@ TestCase('Test triplestore.js', {
     {
       this.st.setMapping("a", "http://a.org/");
       this.st.setMapping("b", "http://b.org/");
-      this.st.push("a:bob", "a:name", "a:Bob");
-      this.st.push("a:bob", "a:address", "Cambridge");
-      this.st.push("a:bob", "a:phone", "617");      
-      this.st.push("b:john", "a:name", "b:John");
-      this.st.push("b:john", "b:address", "Cambridge");
+      this.st.set("a:bob", "a:name", "a:Bob");
+      this.st.set("a:bob", "a:address", "Cambridge");
+      this.st.set("a:bob", "a:phone", "617");      
+      this.st.set("b:john", "a:name", "b:John");
+      this.st.set("b:john", "b:address", "Cambridge");
       
       //check
       {
@@ -482,27 +560,21 @@ TestCase('Test triplestore.js', {
       this.st.remove();
       this.st.setMapping("a", "http://a.org/");
       this.st.setMapping("b", "http://b.org/");
-      this.st.push("a:bob", "a:name", "a:Bob");
-      this.st.push("a:bob", "a:address", "Cambridge");
-      this.st.push("a:bob", "a:phone", "617");      
-      this.st.push("b:john", "a:name", "b:John");
-      this.st.push("b:john", "b:address", "Cambridge");
+      this.st.set("a:bob", "a:name", "a:Bob");
+      this.st.set("a:bob", "a:address", "Cambridge");
+      this.st.set("a:bob", "a:phone", "617");      
+      this.st.set("b:john", "a:name", "b:John");
+      this.st.set("b:john", "b:address", "Cambridge");
       
       //check
       {
         this.st.remove();
         
-        subjects = this.st.getSubjects();
-        assertEquals(0, subjects.length);
-        
-        properties = this.st.getProperties("a:bob");
-        assertEquals(0, properties.length);
-        
-        properties = this.st.getProperties("b:john");
-        assertEquals(0, properties.length);
-        
-        values = this.st.getValues("a:bob", "a:name");
-        assertEquals(0, values.length);
+        assertEquals(0, this.st.getSubjects().length);
+        assertEquals(0, this.st.getProperties("a:bob").length);
+        assertEquals(0, this.st.getProperties("b:john").length);
+        assertEquals(0, this.st.getValues("a:bob", "a:name").length);
+        assertEquals(0, this.st.getValues().length);
       }
     }
   }
