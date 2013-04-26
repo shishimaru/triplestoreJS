@@ -1,9 +1,13 @@
-<!-- $Id$ -->
 <html>
 <head>
 <title>Sample of save operation</title>
+<style type="text/css">
+.subject {color:red}
+.property {color:green}
+.value {color:blue}
+</style>
 <script type="text/javascript" src="../../src/triplestore.js"></script>
-<script type="text/javascript"><!--
+<script type="text/javascript">//<![CDATA[
 window.addEventListener("load", function() {
   var st = new Triplestore();
   st.remove();
@@ -23,6 +27,7 @@ window.addEventListener("load", function() {
   st.push(s2, "foaf:img", "/images/me.jpg");
   
   //show
+  var html = "";
   var subjects = st.getSubjects();
   for(var i = 0; i < subjects.length; i++) {
     var subject = subjects[i];
@@ -31,10 +36,15 @@ window.addEventListener("load", function() {
       var property = properties[j];
       var value = st.getValues(subject, property);
       console.log(subject, property, value);
+      html +=
+        "<span class='subject'>" + subject + "</span>," +
+        "<span class='property'>" + property + "</span>," +
+        "<span class='value'>" + value + "</span><br>";
     }
   }
+  document.getElementsByTagName("body")[0].innerHTML = html;
 });
---></script>
+//]]></script>
 </head>
 <body>
 </body>

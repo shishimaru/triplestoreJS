@@ -48,14 +48,9 @@ TestCase('Test triplestore.js', {
     }
   },
   'test edit': function() {
-    {
-      this.st.push("s1", "name", "Bob");
-      this.st.push("s1", "address", "Cambridge");
+    this.st.push("s1", "name", "Bob");
+    this.st.push("s1", "address", "Cambridge");
       
-      //check
-      assertEquals("Bob", this.st.getValues("s1", "name"));
-      assertEquals("Cambridge", this.st.getValues("s1", "address"));
-    }
     {
       this.st.push("s1", "name", "John");
       this.st.push("s1", "address", "Boston");
