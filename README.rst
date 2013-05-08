@@ -1,3 +1,6 @@
+.. image:: http://www.w3.org/Icons/w3c_home
+
+========================================
 Triplestore wrapper for HTML5 WebStorage
 ========================================
 This wrapper enables web applications to store triples ``subject-property-value`` into `WebStorage`_. The API looks like an extension of `W3C RDFa API`_.
@@ -11,7 +14,6 @@ Functionality
 Usage
 -----
 `library web site`_ describing how to use.
-
 
 Dependency
 ----------
@@ -34,7 +36,6 @@ License
 Author
 ------
 Hitoshi Uchida <uchida@w3.org>
-
 
 .. _`WebStorage`: http://www.w3.org/TR/webstorage/
 .. _`W3C RDFa API`: http://www.w3.org/TR/rdfa-api/
