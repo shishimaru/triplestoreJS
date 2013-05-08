@@ -5,9 +5,8 @@ This wrapper enables web applications to store triples ``subject-property-value`
 
 Functionality
 -------------
-
 * Save semantic data as triples into WebStorage
-* Get/Edit/Remove titples stored in WebStorage
+* Get/Edit/Remove triples stored in WebStorage
 
 Usage
 -----
@@ -19,13 +18,13 @@ This library depends on only HTML5 WebStorage API
 
 How to serialize API specification
 ----------------------------------
-1. Install ``yuidoc``
+#. Install ``yuidoc``
 
-2. Execute a script under $LIBRARY_ROOT::
+#. Execute a script under $LIBRARY_ROOT::
 
      $ ./yuidoc.sh
 
-3. API specification is serialized under ``$LIBRARY_ROOT/doc/html``
+#. API specification is serialized under ``$LIBRARY_ROOT/doc/html``
 
 License
 -------
