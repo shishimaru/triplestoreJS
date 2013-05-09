@@ -41,18 +41,6 @@ var Triplestore = function() {
     }
     return resolved;
   };
-  /**
-   * Parse a URI string into JSON object.
-   * @private
-   * @method parseURI
-   * @param uri_str {String} URL string
-   * @return {Object} URI object
-   */
-  parseURI = function(uri_str) {
-    var uri = document.createElement('a');
-    uri.href = uri_str;
-    return uri;
-  };
   isAbsoluteURI = function(url_str) {
     var index = url_str.indexOf("://");
     return index == -1 ? false : true;

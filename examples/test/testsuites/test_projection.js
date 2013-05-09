@@ -139,5 +139,5 @@ TestCase('Test Projectoin', {
         assertEquals("http://b.org/address", properties[1]);
       }
     }
-  },
+  }
 });
