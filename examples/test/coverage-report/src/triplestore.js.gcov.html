@@ -1,0 +1,464 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - jsTestDriver.conf-coverage.dat - src/triplestore.js</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">src</a> - triplestore.js<span style="font-size: 80%;"> (source / <a href="triplestore.js.func.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">jsTestDriver.conf-coverage.dat</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">158</td>
+            <td class="headerCovTableEntry">161</td>
+            <td class="headerCovTableEntryHi">98.1 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2013-05-09</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntryHi">-</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntryHi">-</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">           Branch data     Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>                :            : /*</a>
+<span class="lineNum">       2 </span>                :            :  * $Id$
+<span class="lineNum">       3 </span>                :            :  * This library enables web applications to easily store triples into Web Storage.
+<span class="lineNum">       4 </span>                :            :  * See Copyright for the status of this software.
+<span class="lineNum">       5 </span>                :            :  * uchida@w3.org
+<span class="lineNum">       6 </span>                :            :  */
+<span class="lineNum">       7 </span>                :            : 
+<span class="lineNum">       8 </span>                :            : /**
+<span class="lineNum">       9 </span>                :            :  * Triplestore wrapper for HTML5 WebStorage.
+<span class="lineNum">      10 </span>                :            :  * @main Triplestore
+<span class="lineNum">      11 </span>                :            :  * @class Triplestore
+<span class="lineNum">      12 </span>                :            :  * @constructor
+<span class="lineNum">      13 </span>                :            :  * @uses localStorage
+<span class="lineNum">      14 </span>                :            :  */
+<span class="lineNum">      15 </span>                :<span class="lineCov">          1 : var Triplestore = function() {</span>
+<span class="lineNum">      16 </span>                :<span class="lineCov">         15 :   this.st = localStorage;</span>
+<span class="lineNum">      17 </span>                :<span class="lineCov">         15 :   this.prefixMapping = {};</span>
+<span class="lineNum">      18 </span>                :            : };
+<span class="lineNum">      19 </span>                :            : 
+<span class="lineNum">      20 </span>                :<span class="lineCov">          1 : (function(){</span>
+<span class="lineNum">      21 </span>                :<span class="lineCov">          1 :   resolveQName = function(prefixMapping, qname) {</span>
+<span class="lineNum">      22 </span>                :<span class="lineCov">        473 :     if(!qname) {</span>
+<span class="lineNum">      23 </span>                :<span class="lineCov">         88 :       return null;</span>
+<span class="lineNum">      24 </span>                :            :     }
+<span class="lineNum">      25 </span>                :<span class="lineCov">        385 :     var resolved = null;</span>
+<span class="lineNum">      26 </span>                :<span class="lineCov">        385 :     if(isAbsoluteURI(qname)) {</span>
+<span class="lineNum">      27 </span>                :<span class="lineCov">         25 :       resolved = qname;</span>
+<span class="lineNum">      28 </span>                :            :     } else {
+<span class="lineNum">      29 </span>                :<span class="lineCov">        360 :       var index = qname.indexOf(&quot;:&quot;);</span>
+<span class="lineNum">      30 </span>                :<span class="lineCov">        360 :       if(index == -1) {</span>
+<span class="lineNum">      31 </span>                :<span class="lineCov">        133 :         resolved = qname;</span>
+<span class="lineNum">      32 </span>                :            :       } else {
+<span class="lineNum">      33 </span>                :<span class="lineCov">        227 :         var prefix = qname.substr(0, index);</span>
+<span class="lineNum">      34 </span>                :<span class="lineCov">        227 :         var iri = prefixMapping[prefix];</span>
+<span class="lineNum">      35 </span>                :<span class="lineCov">        227 :         if(iri) {</span>
+<span class="lineNum">      36 </span>                :<span class="lineCov">        219 :           resolved = iri + qname.substr(index + 1);</span>
+<span class="lineNum">      37 </span>                :            :         } else {
+<span class="lineNum">      38 </span>                :<span class="lineCov">          8 :           resolved = qname;</span>
+<span class="lineNum">      39 </span>                :            :         }
+<span class="lineNum">      40 </span>                :            :       }
+<span class="lineNum">      41 </span>                :            :     }
+<span class="lineNum">      42 </span>                :<span class="lineCov">        385 :     return resolved;</span>
+<span class="lineNum">      43 </span>                :            :   };
+<span class="lineNum">      44 </span>                :<span class="lineCov">          1 :   isAbsoluteURI = function(url_str) {</span>
+<span class="lineNum">      45 </span>                :<span class="lineCov">        385 :     var index = url_str.indexOf(&quot;://&quot;);</span>
+<span class="lineNum">      46 </span>                :<span class="lineCov">        385 :     return index == -1 ? false : true;</span>
+<span class="lineNum">      47 </span>                :            :   };
+<span class="lineNum">      48 </span>                :            :   /**
+<span class="lineNum">      49 </span>                :            :    * Sets a mapping given a mapping and a URI to map.
+<span class="lineNum">      50 </span>                :            :    * @method setMapping
+<span class="lineNum">      51 </span>                :            :    * @param mapping {String} mapping
+<span class="lineNum">      52 </span>                :            :    * @param iri {String} iri
+<span class="lineNum">      53 </span>                :            :    * @example
+<span class="lineNum">      54 </span>                :            :    *   st.setMapping(&quot;foaf&quot;, &quot;http://xmlns.com/foaf/0.1/&quot;);
+<span class="lineNum">      55 </span>                :            :    */
+<span class="lineNum">      56 </span>                :<span class="lineCov">          1 :   Triplestore.prototype.setMapping = function(mapping, iri) {</span>
+<span class="lineNum">      57 </span>                :<span class="lineCov">         21 :     this.prefixMapping[mapping] = iri;</span>
+<span class="lineNum">      58 </span>                :            :   };
+<span class="lineNum">      59 </span>                :            :   /**
+<span class="lineNum">      60 </span>                :            :    * Retrieves a list of DOMStrings which are IRI identifiers for
+<span class="lineNum">      61 </span>                :            :    * subjects given an optional property and value to match against.
+<span class="lineNum">      62 </span>                :            :    * @method getSubjects
+<span class="lineNum">      63 </span>                :            :    * @param [property] {String} property
+<span class="lineNum">      64 </span>                :            :    * @param [value] {String} value
+<span class="lineNum">      65 </span>                :            :    * @return {Array} Sequence&amp;lt;DOMString&gt;
+<span class="lineNum">      66 </span>                :            :    * @example
+<span class="lineNum">      67 </span>                :            :    *   st.getSubjects(&quot;foaf:name&quot;, &quot;Bob&quot;);
+<span class="lineNum">      68 </span>                :            :    */
+<span class="lineNum">      69 </span>                :<span class="lineCov">          1 :   Triplestore.prototype.getSubjects = function(property, value) {</span>
+<span class="lineNum">      70 </span>                :<span class="lineCov">         24 :     var hasValue = function(list, value) {</span>
+<span class="lineNum">      71 </span>                :<span class="lineCov">         36 :       for(var i = 0; list &amp;&amp; i &lt; list.length; i++) {</span>
+<span class="lineNum">      72 </span>                :<span class="lineCov">         31 :         if(list[i] == value) {</span>
+<span class="lineNum">      73 </span>                :<span class="lineCov">          9 :           return true;</span>
+<span class="lineNum">      74 </span>                :            :         }
+<span class="lineNum">      75 </span>                :            :       }
+<span class="lineNum">      76 </span>                :<span class="lineCov">         27 :       return false;</span>
+<span class="lineNum">      77 </span>                :            :     };
+<span class="lineNum">      78 </span>                :            :     
+<span class="lineNum">      79 </span>                :            :     //init
+<span class="lineNum">      80 </span>                :<span class="lineCov">         24 :     property = resolveQName(this.prefixMapping, property);</span>
+<span class="lineNum">      81 </span>                :<span class="lineCov">         24 :     value = resolveQName(this.prefixMapping, value);</span>
+<span class="lineNum">      82 </span>                :            :     
+<span class="lineNum">      83 </span>                :<span class="lineCov">         24 :     var res = [];</span>
+<span class="lineNum">      84 </span>                :<span class="lineCov">         24 :     for(var subject in this.st) {</span>
+<span class="lineNum">      85 </span>                :<span class="lineCov">         43 :       var props_str = this.st.getItem(subject);</span>
+<span class="lineNum">      86 </span>                :<span class="lineCov">         43 :       var props = JSON.parse(props_str);</span>
+<span class="lineNum">      87 </span>                :            :       
+<span class="lineNum">      88 </span>                :<span class="lineCov">         43 :       if(property) {</span>
+<span class="lineNum">      89 </span>                :<span class="lineCov">         24 :         if(value) {</span>
+<span class="lineNum">      90 </span>                :<span class="lineCov">         18 :           if(hasValue(props[property], value)) {</span>
+<span class="lineNum">      91 </span>                :<span class="lineCov">          4 :             res.push(subject);</span>
+<span class="lineNum">      92 </span>                :            :           }
+<span class="lineNum">      93 </span>                :            :         } else {
+<span class="lineNum">      94 </span>                :<span class="lineCov">          6 :           if(props[property]) {</span>
+<span class="lineNum">      95 </span>                :<span class="lineCov">          4 :             res.push(subject);</span>
+<span class="lineNum">      96 </span>                :            :           }
+<span class="lineNum">      97 </span>                :            :         }
+<span class="lineNum">      98 </span>                :            :       } else {
+<span class="lineNum">      99 </span>                :<span class="lineCov">         19 :         for(var prop in props) {</span>
+<span class="lineNum">     100 </span>                :<span class="lineCov">         27 :           if(!value || hasValue(props[prop], value)) {</span>
+<span class="lineNum">     101 </span>                :<span class="lineCov">         14 :             res.push(subject);</span>
+<span class="lineNum">     102 </span>                :<span class="lineCov">         14 :             break;</span>
+<span class="lineNum">     103 </span>                :            :           }
+<span class="lineNum">     104 </span>                :            :         }
+<span class="lineNum">     105 </span>                :            :       }
+<span class="lineNum">     106 </span>                :            :     }
+<span class="lineNum">     107 </span>                :<span class="lineCov">         24 :     return res;</span>
+<span class="lineNum">     108 </span>                :            :   };
+<span class="lineNum">     109 </span>                :            :   /**
+<span class="lineNum">     110 </span>                :            :    * Retrieves a list of DOMStrings which are IRI identifiers for
+<span class="lineNum">     111 </span>                :            :    * properties given an optional subject to match against.
+<span class="lineNum">     112 </span>                :            :    * @method getProperties
+<span class="lineNum">     113 </span>                :            :    * @param [subject] {String} subject
+<span class="lineNum">     114 </span>                :            :    * @return {Array} Sequence&amp;lt;DOMString&gt;
+<span class="lineNum">     115 </span>                :            :    * @example
+<span class="lineNum">     116 </span>                :            :    *   st.getProperties(&quot;http://sample.org/bob&quot;);
+<span class="lineNum">     117 </span>                :            :    */
+<span class="lineNum">     118 </span>                :<span class="lineCov">          1 :   Triplestore.prototype.getProperties = function(subject) {</span>
+<span class="lineNum">     119 </span>                :<span class="lineCov">         31 :     if(subject) {</span>
+<span class="lineNum">     120 </span>                :            :       //init
+<span class="lineNum">     121 </span>                :<span class="lineCov">         30 :       subject = resolveQName(this.prefixMapping, subject);</span>
+<span class="lineNum">     122 </span>                :            :       
+<span class="lineNum">     123 </span>                :<span class="lineCov">         30 :       var props_str = this.st.getItem(subject);</span>
+<span class="lineNum">     124 </span>                :<span class="lineCov">         30 :       var props = JSON.parse(props_str);</span>
+<span class="lineNum">     125 </span>                :<span class="lineCov">         30 :       var res = [];</span>
+<span class="lineNum">     126 </span>                :<span class="lineCov">         30 :       for(var prop in props) {</span>
+<span class="lineNum">     127 </span>                :<span class="lineCov">         42 :         res.push(prop);</span>
+<span class="lineNum">     128 </span>                :            :       }
+<span class="lineNum">     129 </span>                :<span class="lineCov">         30 :       return res; </span>
+<span class="lineNum">     130 </span>                :            :     } else {
+<span class="lineNum">     131 </span>                :<span class="lineCov">          1 :       var map = [];</span>
+<span class="lineNum">     132 </span>                :<span class="lineCov">          1 :       for(subject in this.st) {</span>
+<span class="lineNum">     133 </span>                :<span class="lineCov">          2 :         var props_str = this.st.getItem(subject);</span>
+<span class="lineNum">     134 </span>                :<span class="lineCov">          2 :         var props = JSON.parse(props_str);</span>
+<span class="lineNum">     135 </span>                :<span class="lineCov">          2 :         for(var prop in props) {</span>
+<span class="lineNum">     136 </span>                :<span class="lineCov">          5 :           map[prop] = null;</span>
+<span class="lineNum">     137 </span>                :            :         }
+<span class="lineNum">     138 </span>                :            :       }
+<span class="lineNum">     139 </span>                :<span class="lineCov">          1 :       var res = [];</span>
+<span class="lineNum">     140 </span>                :<span class="lineCov">          1 :       for(var key in map) {</span>
+<span class="lineNum">     141 </span>                :<span class="lineCov">          3 :         res.push(key);</span>
+<span class="lineNum">     142 </span>                :            :       }
+<span class="lineNum">     143 </span>                :<span class="lineCov">          1 :       return res;</span>
+<span class="lineNum">     144 </span>                :            :     }
+<span class="lineNum">     145 </span>                :            :   };
+<span class="lineNum">     146 </span>                :            :   /**
+<span class="lineNum">     147 </span>                :            :    * Retrieves a list of mixed types given an optional subject
+<span class="lineNum">     148 </span>                :            :    * and property to match against.
+<span class="lineNum">     149 </span>                :            :    * @method getValues
+<span class="lineNum">     150 </span>                :            :    * @param [subject] {String} subject
+<span class="lineNum">     151 </span>                :            :    * @param [property] {String} property
+<span class="lineNum">     152 </span>                :            :    * @return {Array} Sequence&amp;lt;any&gt;
+<span class="lineNum">     153 </span>                :            :    * @example
+<span class="lineNum">     154 </span>                :            :    *   st.getValues(&quot;http://sample.org/bob&quot;, &quot;foaf:name&quot;);
+<span class="lineNum">     155 </span>                :            :    */
+<span class="lineNum">     156 </span>                :<span class="lineCov">          1 :   Triplestore.prototype.getValues = function(subject, property) {</span>
+<span class="lineNum">     157 </span>                :            :     //init
+<span class="lineNum">     158 </span>                :<span class="lineCov">         43 :     subject = resolveQName(this.prefixMapping, subject);</span>
+<span class="lineNum">     159 </span>                :<span class="lineCov">         43 :     property = resolveQName(this.prefixMapping, property);</span>
+<span class="lineNum">     160 </span>                :            :     
+<span class="lineNum">     161 </span>                :<span class="lineCov">         43 :     var subjects = [];</span>
+<span class="lineNum">     162 </span>                :<span class="lineCov">         43 :     if(subject) {</span>
+<span class="lineNum">     163 </span>                :<span class="lineCov">         38 :       subjects.push(subject);</span>
+<span class="lineNum">     164 </span>                :            :     } else {
+<span class="lineNum">     165 </span>                :<span class="lineCov">          5 :       for(var subject in this.st) {</span>
+<span class="lineNum">     166 </span>                :<span class="lineCov">          8 :         subjects.push(subject);</span>
+<span class="lineNum">     167 </span>                :            :       }
+<span class="lineNum">     168 </span>                :            :     }
+<span class="lineNum">     169 </span>                :            :     
+<span class="lineNum">     170 </span>                :<span class="lineCov">         43 :     var res = [];</span>
+<span class="lineNum">     171 </span>                :<span class="lineCov">         43 :     for(var i = 0; i &lt; subjects.length; i++) {</span>
+<span class="lineNum">     172 </span>                :<span class="lineCov">         46 :       var subject = subjects[i];</span>
+<span class="lineNum">     173 </span>                :<span class="lineCov">         46 :       var props_str = this.st.getItem(subject);</span>
+<span class="lineNum">     174 </span>                :<span class="lineCov">         46 :       if(props_str) {</span>
+<span class="lineNum">     175 </span>                :<span class="lineCov">         42 :         var props = JSON.parse(props_str);</span>
+<span class="lineNum">     176 </span>                :            :       
+<span class="lineNum">     177 </span>                :<span class="lineCov">         42 :         if(property) {</span>
+<span class="lineNum">     178 </span>                :<span class="lineCov">         38 :           if(props[property]) {</span>
+<span class="lineNum">     179 </span>                :<span class="lineCov">         34 :             res = res.concat(props[property]);</span>
+<span class="lineNum">     180 </span>                :            :           }
+<span class="lineNum">     181 </span>                :            :         } else {
+<span class="lineNum">     182 </span>                :<span class="lineCov">          4 :           for(var prop in props) {</span>
+<span class="lineNum">     183 </span>                :<span class="lineCov">          8 :             res = res.concat(props[prop]);</span>
+<span class="lineNum">     184 </span>                :            :           }
+<span class="lineNum">     185 </span>                :            :         }
+<span class="lineNum">     186 </span>                :            :       }
+<span class="lineNum">     187 </span>                :            :     }
+<span class="lineNum">     188 </span>                :<span class="lineCov">         43 :     return res;</span>
+<span class="lineNum">     189 </span>                :            :   };
+<span class="lineNum">     190 </span>                :            :   /**
+<span class="lineNum">     191 </span>                :            :    * Set a triple to localStorage. The old value of the property is overwritten.
+<span class="lineNum">     192 </span>                :            :    * @method set
+<span class="lineNum">     193 </span>                :            :    * @param subject {String} subject
+<span class="lineNum">     194 </span>                :            :    * @param property {String} property
+<span class="lineNum">     195 </span>                :            :    * @param value {String} value
+<span class="lineNum">     196 </span>                :            :    * @example
+<span class="lineNum">     197 </span>                :            :    *   st.set(&quot;http://sample.org/bob&quot;, &quot;foaf:name&quot;, &quot;Bob&quot;);
+<span class="lineNum">     198 </span>                :            :    */
+<span class="lineNum">     199 </span>                :<span class="lineCov">          1 :   Triplestore.prototype.set = function(subject, property, value) {</span>
+<span class="lineNum">     200 </span>                :            :     //init
+<span class="lineNum">     201 </span>                :<span class="lineCov">         52 :     subject = resolveQName(this.prefixMapping, subject);</span>
+<span class="lineNum">     202 </span>                :<span class="lineCov">         52 :     property = resolveQName(this.prefixMapping, property);</span>
+<span class="lineNum">     203 </span>                :<span class="lineCov">         52 :     value = resolveQName(this.prefixMapping, value);</span>
+<span class="lineNum">     204 </span>                :            :     
+<span class="lineNum">     205 </span>                :<span class="lineCov">         52 :     var props_str = this.st[subject];</span>
+<span class="lineNum">     206 </span>                :<span class="lineCov">         52 :     if(props_str) {</span>
+<span class="lineNum">     207 </span>                :<span class="lineCov">         29 :       var props = JSON.parse(props_str);</span>
+<span class="lineNum">     208 </span>                :<span class="lineCov">         29 :       props[property] = new Array(value);</span>
+<span class="lineNum">     209 </span>                :<span class="lineCov">         29 :       this.st.setItem(subject, JSON.stringify(props));</span>
+<span class="lineNum">     210 </span>                :            :     } else {
+<span class="lineNum">     211 </span>                :<span class="lineCov">         23 :       var props = {};</span>
+<span class="lineNum">     212 </span>                :<span class="lineCov">         23 :       props[property] = new Array(value);</span>
+<span class="lineNum">     213 </span>                :<span class="lineCov">         23 :       this.st.setItem(subject, JSON.stringify(props)); </span>
+<span class="lineNum">     214 </span>                :            :     }
+<span class="lineNum">     215 </span>                :            :   };
+<span class="lineNum">     216 </span>                :            :   /**
+<span class="lineNum">     217 </span>                :            :    * Add a triple to localStorage. If the property has already values,
+<span class="lineNum">     218 </span>                :            :    * the new value is concatenated to them.
+<span class="lineNum">     219 </span>                :            :    * @method add
+<span class="lineNum">     220 </span>                :            :    * @param subject {String} subject
+<span class="lineNum">     221 </span>                :            :    * @param property {String} property
+<span class="lineNum">     222 </span>                :            :    * @param value {String} value
+<span class="lineNum">     223 </span>                :            :    * @example
+<span class="lineNum">     224 </span>                :            :    *   st.add(&quot;http://sample.org/bob&quot;, &quot;foaf:name&quot;, &quot;Bob&quot;);
+<span class="lineNum">     225 </span>                :            :    */
+<span class="lineNum">     226 </span>                :<span class="lineCov">          1 :   Triplestore.prototype.add = function(subject, property, value) {</span>
+<span class="lineNum">     227 </span>                :            :     //init
+<span class="lineNum">     228 </span>                :<span class="lineCov">         19 :     subject = resolveQName(this.prefixMapping, subject);</span>
+<span class="lineNum">     229 </span>                :<span class="lineCov">         19 :     property = resolveQName(this.prefixMapping, property);</span>
+<span class="lineNum">     230 </span>                :<span class="lineCov">         19 :     value = resolveQName(this.prefixMapping, value);</span>
+<span class="lineNum">     231 </span>                :            :     
+<span class="lineNum">     232 </span>                :<span class="lineCov">         19 :     var props_str = this.st[subject];</span>
+<span class="lineNum">     233 </span>                :<span class="lineCov">         19 :     if(props_str) {//exist</span>
+<span class="lineNum">     234 </span>                :<span class="lineCov">         14 :       var props = JSON.parse(props_str);</span>
+<span class="lineNum">     235 </span>                :<span class="lineCov">         14 :       if(props[property]) {</span>
+<span class="lineNum">     236 </span>                :<span class="lineCov">         13 :         props[property].push(value);</span>
+<span class="lineNum">     237 </span>                :            :       } else {
+<span class="lineNum">     238 </span>                :<span class="lineCov">          1 :         props[property] = new Array(value);</span>
+<span class="lineNum">     239 </span>                :            :       }
+<span class="lineNum">     240 </span>                :<span class="lineCov">         14 :       this.st.setItem(subject, JSON.stringify(props));</span>
+<span class="lineNum">     241 </span>                :            :     } else {//not exist
+<span class="lineNum">     242 </span>                :<span class="lineCov">          5 :       var props = {};</span>
+<span class="lineNum">     243 </span>                :<span class="lineCov">          5 :       props[property] = new Array(value);</span>
+<span class="lineNum">     244 </span>                :<span class="lineCov">          5 :       this.st.setItem(subject, JSON.stringify(props)); </span>
+<span class="lineNum">     245 </span>                :            :     }
+<span class="lineNum">     246 </span>                :            :   };
+<span class="lineNum">     247 </span>                :            :   /**
+<span class="lineNum">     248 </span>                :            :    * Remove an subject or a property from internal storage to match against.
+<span class="lineNum">     249 </span>                :            :    * @method remove
+<span class="lineNum">     250 </span>                :            :    * @param [subject] {String} subject
+<span class="lineNum">     251 </span>                :            :    * @param [property] {String} property
+<span class="lineNum">     252 </span>                :            :    * @example
+<span class="lineNum">     253 </span>                :            :    *   st.remove(&quot;http://sample.org/bob&quot;, &quot;foaf:name&quot;);
+<span class="lineNum">     254 </span>                :            :    */
+<span class="lineNum">     255 </span>                :<span class="lineCov">          1 :   Triplestore.prototype.remove = function(subject, property) {</span>
+<span class="lineNum">     256 </span>                :            :     //init
+<span class="lineNum">     257 </span>                :<span class="lineCov">         34 :     subject = resolveQName(this.prefixMapping, subject);</span>
+<span class="lineNum">     258 </span>                :<span class="lineCov">         34 :     property = resolveQName(this.prefixMapping, property);</span>
+<span class="lineNum">     259 </span>                :            :     
+<span class="lineNum">     260 </span>                :<span class="lineCov">         34 :     if(subject) {</span>
+<span class="lineNum">     261 </span>                :<span class="lineCov">          9 :       if(property) {/* remove the property */</span>
+<span class="lineNum">     262 </span>                :<span class="lineCov">          4 :         var props_str = this.st[subject];</span>
+<span class="lineNum">     263 </span>                :<span class="lineCov">          4 :         if(props_str) {</span>
+<span class="lineNum">     264 </span>                :<span class="lineCov">          3 :           var props = JSON.parse(props_str);</span>
+<span class="lineNum">     265 </span>                :<span class="lineCov">          3 :           delete props[property];</span>
+<span class="lineNum">     266 </span>                :<span class="lineCov">          3 :           this.st.setItem(subject, JSON.stringify(props));</span>
+<span class="lineNum">     267 </span>                :            :         } else {
+<span class="lineNum">     268 </span>                :<span class="lineCov">          1 :           throw Error(&quot;Not found &quot; + subject + &quot;:&quot; + property);</span>
+<span class="lineNum">     269 </span>                :            :         }
+<span class="lineNum">     270 </span>                :            :       } else {/* remove the subject */
+<span class="lineNum">     271 </span>                :<span class="lineCov">          5 :         this.st.removeItem(subject);</span>
+<span class="lineNum">     272 </span>                :            :       }
+<span class="lineNum">     273 </span>                :            :     } else {
+<span class="lineNum">     274 </span>                :<span class="lineCov">         25 :       if(property) {/* remove all matched properties */</span>
+<span class="lineNum">     275 </span>                :<span class="lineCov">          2 :         for(var subject in this.st) {</span>
+<span class="lineNum">     276 </span>                :<span class="lineCov">          4 :           var props_str = this.st[subject];</span>
+<span class="lineNum">     277 </span>                :<span class="lineCov">          4 :           var props = JSON.parse(props_str);</span>
+<span class="lineNum">     278 </span>                :<span class="lineCov">          4 :           if(props[property]) {</span>
+<span class="lineNum">     279 </span>                :<span class="lineCov">          2 :             delete props[property];</span>
+<span class="lineNum">     280 </span>                :<span class="lineCov">          2 :             this.st.setItem(subject, JSON.stringify(props));</span>
+<span class="lineNum">     281 </span>                :            :           }
+<span class="lineNum">     282 </span>                :            :         }
+<span class="lineNum">     283 </span>                :            :       } else {
+<span class="lineNum">     284 </span>                :<span class="lineCov">         23 :         this.st.clear();  </span>
+<span class="lineNum">     285 </span>                :            :       }
+<span class="lineNum">     286 </span>                :            :     }
+<span class="lineNum">     287 </span>                :            :   };
+<span class="lineNum">     288 </span>                :            :   /**
+<span class="lineNum">     289 </span>                :            :    * Retrieves a Projection given a subject
+<span class="lineNum">     290 </span>                :            :    * @method getProjection
+<span class="lineNum">     291 </span>                :            :    * @param subject {String} subject
+<span class="lineNum">     292 </span>                :            :    * @return {Projection} projection
+<span class="lineNum">     293 </span>                :            :    * @example
+<span class="lineNum">     294 </span>                :            :    *   st.getProjection(&quot;http://sample.org/bob&quot;);
+<span class="lineNum">     295 </span>                :            :    */
+<span class="lineNum">     296 </span>                :<span class="lineCov">          1 :   Triplestore.prototype.getProjection = function(subject) {</span>
+<span class="lineNum">     297 </span>                :<span class="lineCov">         14 :     subject = resolveQName(this.prefixMapping, subject);</span>
+<span class="lineNum">     298 </span>                :<span class="lineCov">         14 :     var props_str = this.st[subject];</span>
+<span class="lineNum">     299 </span>                :<span class="lineCov">         14 :     var res = null;</span>
+<span class="lineNum">     300 </span>                :<span class="lineCov">         14 :     if(props_str) {</span>
+<span class="lineNum">     301 </span>                :<span class="lineCov">         12 :       var props = JSON.parse(props_str);</span>
+<span class="lineNum">     302 </span>                :<span class="lineCov">         12 :       res = new Projection(this.prefixMapping, subject, props);</span>
+<span class="lineNum">     303 </span>                :            :     }
+<span class="lineNum">     304 </span>                :<span class="lineCov">         14 :     return res;</span>
+<span class="lineNum">     305 </span>                :            :   };
+<span class="lineNum">     306 </span>                :            :   /**
+<span class="lineNum">     307 </span>                :            :    * Print the content of the storage.
+<span class="lineNum">     308 </span>                :            :    * @method show
+<span class="lineNum">     309 </span>                :            :    */
+<span class="lineNum">     310 </span>                :<span class="lineCov">          1 :   Triplestore.prototype.show = function() {</span>
+<span class="lineNum">     311 </span>                :<span class="lineNoCov">          0 :     for(var i = 0; i &lt; this.st.length; i++) {</span>
+<span class="lineNum">     312 </span>                :<span class="lineNoCov">          0 :       var subject = this.st.key(i);</span>
+<span class="lineNum">     313 </span>                :<span class="lineNoCov">          0 :       console.log(subject + &quot;:&quot; + this.st.getItem(subject));</span>
+<span class="lineNum">     314 </span>                :            :     }
+<span class="lineNum">     315 </span>                :            :   };
+<span class="lineNum">     316 </span>                :            :   
+<span class="lineNum">     317 </span>                :            :   /**
+<span class="lineNum">     318 </span>                :            :    * &lt;a href=&quot;http://www.w3.org/TR/rdfa-api/#projections&quot;&gt;
+<span class="lineNum">     319 </span>                :            :    * Projection&lt;/a&gt; class.
+<span class="lineNum">     320 </span>                :            :    * @class Projection
+<span class="lineNum">     321 </span>                :            :    * @private
+<span class="lineNum">     322 </span>                :            :    * @constructor
+<span class="lineNum">     323 </span>                :            :    */
+<span class="lineNum">     324 </span>                :<span class="lineCov">          1 :   var Projection = function(prefixMapping, subject, props) {</span>
+<span class="lineNum">     325 </span>                :<span class="lineCov">         12 :     this.prefixMapping = prefixMapping;</span>
+<span class="lineNum">     326 </span>                :<span class="lineCov">         12 :     this.subject = subject;</span>
+<span class="lineNum">     327 </span>                :<span class="lineCov">         12 :     this.props = props;</span>
+<span class="lineNum">     328 </span>                :            :   };
+<span class="lineNum">     329 </span>                :            : 
+<span class="lineNum">     330 </span>                :            :   /**
+<span class="lineNum">     331 </span>                :            :    * Retrieves the list of properties that are available on
+<span class="lineNum">     332 </span>                :            :    * the Projection. Each property must be an absolute URI.
+<span class="lineNum">     333 </span>                :            :    * @method getProperties
+<span class="lineNum">     334 </span>                :            :    * @return {Array} sequence&amp;lt;String&gt;
+<span class="lineNum">     335 </span>                :            :    */
+<span class="lineNum">     336 </span>                :<span class="lineCov">          1 :   Projection.prototype.getProperties = function() {</span>
+<span class="lineNum">     337 </span>                :<span class="lineCov">          3 :     var res = [];</span>
+<span class="lineNum">     338 </span>                :<span class="lineCov">          3 :     for(var prop in this.props) {</span>
+<span class="lineNum">     339 </span>                :<span class="lineCov">          8 :       res.push(prop);</span>
+<span class="lineNum">     340 </span>                :            :     }
+<span class="lineNum">     341 </span>                :<span class="lineCov">          3 :     return res;</span>
+<span class="lineNum">     342 </span>                :            :   };
+<span class="lineNum">     343 </span>                :            :   /**
+<span class="lineNum">     344 </span>                :            :    * Retrieves the subject URI of this Projection as a string,
+<span class="lineNum">     345 </span>                :            :    * the value must be an absolute URI.
+<span class="lineNum">     346 </span>                :            :    * @method getSubject
+<span class="lineNum">     347 </span>                :            :    * @return {String}
+<span class="lineNum">     348 </span>                :            :    */
+<span class="lineNum">     349 </span>                :<span class="lineCov">          1 :   Projection.prototype.getSubject = function() {</span>
+<span class="lineNum">     350 </span>                :<span class="lineCov">          4 :     return this.subject;</span>
+<span class="lineNum">     351 </span>                :            :   };
+<span class="lineNum">     352 </span>                :            :   /**
+<span class="lineNum">     353 </span>                :            :    * Retrieves the first property with the given name as a
+<span class="lineNum">     354 </span>                :            :    * language-native datatype.
+<span class="lineNum">     355 </span>                :            :    * @method get
+<span class="lineNum">     356 </span>                :            :    * @param property {String} property
+<span class="lineNum">     357 </span>                :            :    * @return {String}
+<span class="lineNum">     358 </span>                :            :    * @example
+<span class="lineNum">     359 </span>                :            :    *   projection.get(&quot;foaf:name&quot;);
+<span class="lineNum">     360 </span>                :            :    */
+<span class="lineNum">     361 </span>                :<span class="lineCov">          1 :   Projection.prototype.get = function(property) {</span>
+<span class="lineNum">     362 </span>                :<span class="lineCov">          4 :     var values = this.getAll(property);</span>
+<span class="lineNum">     363 </span>                :<span class="lineCov">          4 :     return values ? values[0] : null;</span>
+<span class="lineNum">     364 </span>                :            :   };
+<span class="lineNum">     365 </span>                :            :   /**
+<span class="lineNum">     366 </span>                :            :    * Retrieves the list of values for a property as an array
+<span class="lineNum">     367 </span>                :            :    * of language-native datatypes.
+<span class="lineNum">     368 </span>                :            :    * @method getAll
+<span class="lineNum">     369 </span>                :            :    * @param property {String} The name of the property to retrieve
+<span class="lineNum">     370 </span>                :            :    * @return {Array} sequence&amp;lt;String&gt;
+<span class="lineNum">     371 </span>                :            :    * @example
+<span class="lineNum">     372 </span>                :            :    *   st.getAll(&quot;foaf:name&quot;);
+<span class="lineNum">     373 </span>                :            :    */
+<span class="lineNum">     374 </span>                :<span class="lineCov">          1 :   Projection.prototype.getAll = function(property) {</span>
+<span class="lineNum">     375 </span>                :<span class="lineCov">         14 :     property = resolveQName(this.prefixMapping, property);</span>
+<span class="lineNum">     376 </span>                :<span class="lineCov">         14 :     return this.props[property] ?</span>
+<span class="lineNum">     377 </span>                :            :         this.props[property] : [];
+<span class="lineNum">     378 </span>                :            :   };
+<span class="lineNum">     379 </span>                :            : })();
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.9</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>
