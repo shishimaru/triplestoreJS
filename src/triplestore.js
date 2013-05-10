@@ -294,7 +294,9 @@ var Triplestore = function() {
    *   st.getProjection("http://sample.org/bob");
    */
   Triplestore.prototype.getProjection = function(subject) {
+    //init
     subject = resolveQName(this.prefixMapping, subject);
+    
     var props_str = this.st[subject];
     var res = null;
     if(props_str) {
@@ -372,7 +374,9 @@ var Triplestore = function() {
    *   st.getAll("foaf:name");
    */
   Projection.prototype.getAll = function(property) {
+    //init
     property = resolveQName(this.prefixMapping, property);
+    
     return this.props[property] ?
         this.props[property] : [];
   };

@@ -9,37 +9,40 @@
 <script type="text/javascript" src="../../src/triplestore.js"></script>
 <script type="text/javascript">//<![CDATA[
 window.addEventListener("load", function() {
+  //init
   var st = new Triplestore();
   st.remove();
   st.setMapping("foaf", "http://xmlns.com/foaf/0.1/");
   
   //save subject1
   var s1 = "http://sample.org/people/#danbri";
-  st.set(s1, "foaf:name", "Dan Brickley");
-  st.set(s1, "foaf:homepage", "http://danbri.org/");
-  st.set(s1, "foaf:openid", "http://danbri.org/");
-  st.set(s1, "foaf:img", "/images/me.jpg");
+  st.add(s1, "foaf:name", "Dan Brickley");
+  st.add(s1, "foaf:homepage", "http://danbri.org/");
+  st.add(s1, "foaf:openid", "http://danbri.org/");
+  st.add(s1, "foaf:img", "http://danbri.org/me.png");
+  st.add(s1, "foaf:img", "http://sample.org/people/images/danbri.jpg");
   
   //save subject2
   var s2 = "http://swordfish.rdfweb.org/people/libby/rdfweb/webwho.xrdf#me";
-  st.set(s2, "foaf:name", "Libby Miller");
-  st.set(s2, "foaf:homepage", "http://nicecupoftea.org");
-  st.set(s2, "foaf:img", "/images/me.jpg");
+  st.add(s2, "foaf:name", "Libby Miller");
+  st.add(s2, "foaf:homepage", "http://nicecupoftea.org");
+  st.add(s2, "foaf:img", "http://swordfish.rdfweb.org/people/libby/rdfweb/images/me.jpg");
   
   //show
   var html = "";
   var subjects = st.getSubjects();
   for(var i = 0; i < subjects.length; i++) {
     var subject = subjects[i];
-    var properties = st.getProperties(subject);
+    var proj = st.getProjection(subject);
+    var properties = proj.getProperties(); 
     for(var j = 0; j < properties.length; j++) {
       var property = properties[j];
-      var value = st.getValues(subject, property);
+      var value = proj.getAll(property);
       console.log(subject, property, value);
       html +=
         "<span class='subject'>" + subject + "</span>," +
         "<span class='property'>" + property + "</span>," +
-        "<span class='value'>" + value + "</span><br>";
+        "<span class='value'>[" + value + "]</span><br>";
     }
   }
   document.getElementsByTagName("body")[0].innerHTML = html;

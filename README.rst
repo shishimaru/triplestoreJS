@@ -1,8 +1,20 @@
 ==============================================
 |W3C| Triplestore wrapper for HTML5 WebStorage
 ==============================================
-This wrapper enables web applications to store triples ``subject-property-value`` into `WebStorage`_. The API looks like an extension of `W3C RDFa API`_.
+triplestoreJS enables web applications to store triples ``subject-property-value``
+into web browsers via `WebStorage`_.
+This library API looks like an extension of `W3C RDFa API`_.
 
+Benefit
+-------
+triplestoreJS reduces development cost of web applications
+which store triples ``subject-property-value`` into WebStorage.
+  
+* WebStorage API doesn't fit to store triples well because handing triples
+  requires applications to manage two keys of subject and property for
+  the corresponding value though WebStorage API supports only one key.
+* triplestoreJS conceals the routine work to resolve CURIE syntax.
+  
 Functionality
 -------------
 * Save semantic data as triples into WebStorage
@@ -14,7 +26,7 @@ Usage
 
 Dependency
 ----------
-This library depends on only HTML5 WebStorage API
+triplestoreJS depends on only HTML5 WebStorage API
 
 How to serialize API specification
 ----------------------------------

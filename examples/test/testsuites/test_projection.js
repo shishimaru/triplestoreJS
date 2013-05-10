@@ -6,7 +6,7 @@ TestCase('Test Projectoin', {
   tearDown: function() {
     this.st.remove();
   },
-  'test getProjection': function() {
+  'test set/getProjection': function() {
     {
       this.st.remove();
       this.st.setMapping("a", "http://a.org/");
@@ -44,7 +44,7 @@ TestCase('Test Projectoin', {
       }
     }
   },
-  'test get': function() {
+  'test add/get': function() {
     {
       this.st.remove();
       this.st.setMapping("a", "http://a.org/");
