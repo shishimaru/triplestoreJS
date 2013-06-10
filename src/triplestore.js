@@ -15,6 +15,8 @@
 var Triplestore = function() {
   this.st = localStorage;
   this.prefixMapping = {};
+  this.appPrefix = "<W3C>";
+  this.appPrefixLen = this.appPrefix.length;
 };
 
 (function(){
@@ -88,17 +90,17 @@ var Triplestore = function() {
       if(property) {
         if(value) {
           if(hasValue(props[property], value)) {
-            res.push(subject);
+            res.push(subject.substr(this.appPrefixLen));
           }
         } else {
           if(props[property]) {
-            res.push(subject);
+            res.push(subject.substr(this.appPrefixLen));
           }
         }
       } else {
         for(var prop in props) {
           if(!value || hasValue(props[prop], value)) {
-            res.push(subject);
+            res.push(subject.substr(this.appPrefixLen));
             break;
           }
         }
@@ -119,6 +121,7 @@ var Triplestore = function() {
     if(subject) {
       //init
       subject = resolveQName(this.prefixMapping, subject);
+      subject = subject ? this.appPrefix + subject: null;
       
       var props_str = this.st.getItem(subject);
       var props = JSON.parse(props_str);
@@ -157,6 +160,7 @@ var Triplestore = function() {
     //init
     subject = resolveQName(this.prefixMapping, subject);
     property = resolveQName(this.prefixMapping, property);
+    subject = subject ? this.appPrefix + subject: null;
     
     var subjects = [];
     if(subject) {
@@ -201,6 +205,7 @@ var Triplestore = function() {
     subject = resolveQName(this.prefixMapping, subject);
     property = resolveQName(this.prefixMapping, property);
     value = resolveQName(this.prefixMapping, value);
+    subject = subject ? this.appPrefix + subject: null;
     
     var props_str = this.st[subject];
     if(props_str) {
@@ -228,6 +233,7 @@ var Triplestore = function() {
     subject = resolveQName(this.prefixMapping, subject);
     property = resolveQName(this.prefixMapping, property);
     value = resolveQName(this.prefixMapping, value);
+    subject = subject ? this.appPrefix + subject: null;
     
     var props_str = this.st[subject];
     if(props_str) {//exist
@@ -256,6 +262,7 @@ var Triplestore = function() {
     //init
     subject = resolveQName(this.prefixMapping, subject);
     property = resolveQName(this.prefixMapping, property);
+    subject = subject ? this.appPrefix + subject: null;
     
     if(subject) {
       if(property) {/* remove the property */
@@ -296,8 +303,9 @@ var Triplestore = function() {
   Triplestore.prototype.getProjection = function(subject) {
     //init
     subject = resolveQName(this.prefixMapping, subject);
+    var tmpSubject = subject ? this.appPrefix + subject: null;
     
-    var props_str = this.st[subject];
+    var props_str = this.st[tmpSubject];
     var res = null;
     if(props_str) {
       var props = JSON.parse(props_str);
