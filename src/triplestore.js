@@ -133,10 +133,12 @@ var Triplestore = function() {
     } else {
       var map = [];
       for(subject in this.st) {
-        var props_str = this.st.getItem(subject);
-        var props = JSON.parse(props_str);
-        for(var prop in props) {
-          map[prop] = null;
+        if(subject.substr(0, this.appPrefixLen) == this.appPrefix) {
+          var props_str = this.st.getItem(subject);
+          var props = JSON.parse(props_str);
+          for(var prop in props) {
+            map[prop] = null;
+          }
         }
       }
       var res = [];
