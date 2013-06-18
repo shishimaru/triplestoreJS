@@ -305,13 +305,13 @@ var Triplestore = function() {
   Triplestore.prototype.getProjection = function(subject) {
     //init
     subject = resolveQName(this.prefixMapping, subject);
-    var tmpSubject = subject ? this.appPrefix + subject: null;
+    subject = subject ? this.appPrefix + subject: null;
     
-    var props_str = this.st[tmpSubject];
+    var props_str = this.st[subject];
     var res = null;
     if(props_str) {
       var props = JSON.parse(props_str);
-      res = new Projection(this.prefixMapping, subject, props);
+      res = new Projection(this, subject, props);
     }
     return res;
   };
@@ -333,8 +333,10 @@ var Triplestore = function() {
    * @private
    * @constructor
    */
-  var Projection = function(prefixMapping, subject, props) {
-    this.prefixMapping = prefixMapping;
+  var Projection = function(store, subject, props) {
+    this.store = store;
+    this.st = store.st;
+    this.prefixMapping = store.prefixMapping;
     this.subject = subject;
     this.props = props;
   };
@@ -345,10 +347,19 @@ var Triplestore = function() {
    * @method getProperties
    * @return {Array} sequence&lt;String>
    */
-  Projection.prototype.getProperties = function() {
+  Projection.prototype.getProperties = function(value) {
+    //init
+    value = resolveQName(this.prefixMapping, value);
+    
     var res = [];
     for(var prop in this.props) {
-      res.push(prop);
+      if(value) {
+        if(this.props[prop] == value) {
+          res.push(prop);
+        }
+      } else {
+        res.push(prop);
+      }
     }
     return res;
   };
@@ -359,7 +370,7 @@ var Triplestore = function() {
    * @return {String}
    */
   Projection.prototype.getSubject = function() {
-    return this.subject;
+    return this.subject.substr(this.store.appPrefixLen);
   };
   /**
    * Retrieves the first property with the given name as a
@@ -387,7 +398,17 @@ var Triplestore = function() {
     //init
     property = resolveQName(this.prefixMapping, property);
     
-    return this.props[property] ?
-        this.props[property] : [];
+    if(property) {
+      return this.props[property] ? this.props[property] : [];
+    } else {
+      var res = [];
+      for(var prop in this.props) {
+        res = res.concat(this.props[prop]);
+      }
+      return res;
+    }
+  };
+  Projection.prototype.remove = function() {
+    this.st.removeItem(this.subject);
   };
 })();

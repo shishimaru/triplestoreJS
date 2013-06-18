@@ -62,7 +62,7 @@ TestCase('Test Projectoin', {
         assertEquals("A", projection.get("a:address"));
         assertEquals("A", projection.get("http://a.org/address"));
         assertEquals(null, projection.get("xxx"));
-        assertEquals(null, projection.get(null));
+        assertEquals("A", projection.get(null));
       }
     }
   },
@@ -99,7 +99,7 @@ TestCase('Test Projectoin', {
       }
       {
         var projection = this.st.getProjection("a:bob");
-        assertEquals(0, projection.getAll(null).length);
+        assertEquals(3, projection.getAll(null).length);
       }
     }
   },
@@ -137,6 +137,47 @@ TestCase('Test Projectoin', {
         assertEquals(2, properties.length);
         assertEquals("http://a.org/name", properties[0]);
         assertEquals("http://b.org/address", properties[1]);
+      }
+      {
+        var projection = this.st.getProjection("a:bob");
+        var properties = projection.getProperties("a:Bob");
+        assertEquals(1, properties.length);
+        assertEquals("http://a.org/name", properties[0]);
+      }
+      {
+        var projection = this.st.getProjection("a:bob");
+        var properties = projection.getProperties("Cambridge");
+        assertEquals(1, properties.length);
+        assertEquals("http://a.org/address", properties[0]);
+      }
+      {
+        var projection = this.st.getProjection("a:bob");
+        var properties = projection.getProperties("xxx");
+        assertEquals(0, properties.length);
+      }
+    }
+  },
+  'test remove': function() {
+    {
+      this.st.remove();
+      this.st.setMapping("a", "http://a.org/");
+      this.st.setMapping("b", "http://b.org/");
+      this.st.set("a:bob", "a:name", "a:Bob");
+      this.st.set("a:bob", "a:address", "Cambridge");
+      this.st.set("a:bob", "a:phone", "617");      
+      this.st.set("b:john", "a:name", "b:John");
+      this.st.set("b:john", "b:address", "Cambridge");
+      
+      //check
+      {
+        var projection = this.st.getProjection("a:bob");
+        projection.remove();
+        assertEquals(null, this.st.getProjection("a:bob"));
+      }
+      {
+        var projection = this.st.getProjection("b:john");
+        projection.remove();
+        assertEquals(null, this.st.getProjection("b:john"));
       }
     }
   }
