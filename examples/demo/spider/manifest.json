@@ -1,0 +1,31 @@
+{
+    "name": "Semantic Spider",
+    "version": "0.1",
+    "manifest_version": 2,
+    "description": "This extension enables to bookmark web contents annotated with W3C Semantic Web",
+    "icons": {"128": "images/spider.png"},
+    "permissions": ["tabs"],
+        "content_scripts": [
+        {
+            "matches": ["http://*/*", "https://*/*"],
+            "js": [
+                   "jquery-1.9.1.min.js",
+                   "green-turtle/RDFa.0.21.0.js",
+                   "green-turtle/RDFaProcessor.0.21.0.js",
+                   "microdataJS/jquery.microdata.js",
+                   "microdataJS/jquery.microdata.json.js",
+                   "content.js"
+                   ],
+            "run_at": "document_end"
+        }
+    ],
+    "background": {
+        "scripts": ["background.js"]
+    },
+    
+    "browser_action": {
+    	"default_icon": "images/spider.png",
+    	"default_popup": "popup.html",
+    	"default_title": "Semantic Spider"
+    }
+}
