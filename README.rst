@@ -38,6 +38,11 @@ How to serialize API specification
 
 #. API specification is serialized under ``$LIBRARY_ROOT/doc/html``
 
+Sample Application
+------------------
+
+* Chrome Extension `Semantic Spider`_
+
 License
 -------
 `W3C Software Notice and License`_
@@ -51,3 +56,4 @@ Hitoshi Uchida <uchida@w3.org>
 .. _`W3C RDFa API`: http://www.w3.org/TR/rdfa-api/
 .. _`library web site`: http://www.w3.org/2013/04/semweb-html5/triplestoreJS/index.html
 .. _`W3C Software Notice and License`: http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
+.. _`Semantic Spider`: https://chrome.google.com/webstore/detail/semantic-spider/ckdnmkbanbampnifpddcfdphonmfibkb
