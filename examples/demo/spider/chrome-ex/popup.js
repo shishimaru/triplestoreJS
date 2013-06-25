@@ -433,9 +433,6 @@ Manager.prototype.init =function(viewer, tab) {
   this.tst = new Triplestore();
   this.lst = localStorage;
   
-  //console.log(this.rdfa);
-  //console.log(this.micro);
-  
   if((this.rdfa && hasKey(this.rdfa)) ||
       (this.micro && this.micro.items.length)) {
     //this.viewer.enableButton(v.bt_save);

@@ -4,7 +4,7 @@
     "manifest_version": 2,
     "description": "This extension enables to bookmark web contents annotated with W3C Semantic Web",
     "icons": {"128": "images/spider-128.png"},
-    "permissions": ["tabs"],
+    "permissions": ["tabs", "http://*/*", "https://*/*"],
     "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
     "content_scripts": [
         {

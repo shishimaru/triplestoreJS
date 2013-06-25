@@ -10,10 +10,22 @@ chrome.runtime.onMessage.addListener(
       }
       if(request.micro) {
         console.log("bg received microdata");
-        //console.log(request.micro);
         //sendResponse({farewell: "goodbye: " + res});
         results.micro = request.micro;
       }
       bg_res[request.url] = results;
     }
 );
+function onSelectionChanged(tabId) {
+  chrome.tabs.executeScript(tabId, {
+    file: "content.js"
+  });
+}
+
+chrome.tabs.onActivated.addListener(function(activeInfo) {
+  onSelectionChanged(activeInfo.tabId);
+});
+
+chrome.tabs.onUpdated.addListener(function(id, changeInfo, tab) {
+  onSelectionChanged(id);
+});
