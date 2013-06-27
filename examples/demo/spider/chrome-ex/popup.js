@@ -149,8 +149,22 @@ Viewer.prototype.showTypes = function(types) {
 };
 Viewer.getTypeImg = function(type) {
   var res = null;
+  var tail = type.substr(type.lastIndexOf("/") + 1);
+  
   if(type) {
-    if(type.search(/account$/i) != -1) {
+    //major web service icon
+    if(type.search(/twitter/i) != -1) {
+      res = "images/twitter.png";
+    } else if(type.search(/facebook/i) != -1) {
+      res = "images/facebook.png";
+    } else if(type.search(/google/i) != -1) {
+      res = "images/google.png";
+    } else if(type.search(/yahoo/i) != -1) {
+      res = "images/yahoo.png";
+    }
+    //general icon
+    else if(type.search(/account$/i) != -1
+        || tail == "id") {
       res = "images/account.png";
     } else if(type.search(/airport$/i) != -1) {
       res = "images/airport.png";
@@ -160,13 +174,19 @@ Viewer.getTypeImg = function(type) {
         || type.search(/recipe$/i) != -1
         || type.search(/page$/i) != -1) {
       res = "images/news.png";
+    } else if(type.search(/address$/i) != -1) {
+      res = "images/map-marker.png";
     } else if(type.search(/book$/i) != -1) {
       res = "images/book.png";
     } else if(type.search(/building$/i) != -1
         || type.search(/buildings$/i) != -1
         || type.search(/structure$/i) != -1) {
       res = "images/building.png";
-    } else if(type.search(/document$/i) != -1) {
+    } else if(type.search(/copyright$/i) != -1
+        || type.search(/license$/i) != -1) {
+      res = "images/copyright.png";
+    } else if(type.search(/document$/i) != -1
+        || type.search(/text$/i) != -1) {
       res = "images/document.png";
     } else if(type.search(/endorsement$/i) != -1) {
       res = "images/endorsement.png";
@@ -178,27 +198,40 @@ Viewer.getTypeImg = function(type) {
         || type.search(/team$/i) != -1
         || type.search(/business$/i) != -1) {
       res = "images/group.png";
+    } else if(type.search(/language$/i) != -1) {
+      res = "images/language.png";
     } else if(type.search(/movie$/i) != -1
-        || type.search(/video$/i) != -1) {
+        || type.search(/video$/i) != -1
+        || type.search(/movingimage$/i) != -1) {
       res = "images/movie.png";
     } else if(type.search(/person$/i) != -1
-        || type.search(/user$/i) != -1) {
+        || type.search(/user$/i) != -1
+        || type.search(/agent$/i) != -1
+        || type.search(/contributor$/i) != -1
+        || type.search(/creator$/i) != -1
+        || type.search(/publisher$/i) != -1
+        || type.search(/rightsholder$/i) != -1) {
       res = "images/person.png";
-    } else if(type.search(/photo$/i) != -1
+    } else if(type.search(/image$/i) != -1
+        || type.search(/photo$/i) != -1
         || type.search(/photograph$/i) != -1) {
       res = "images/picture.png";
     } else if(type.search(/map$/i) != -1
-        || type.search(/place$/i) != -1) {
+        || type.search(/place$/i) != -1
+        || type.search(/location$/i) != -1) {
       res = "images/map-marker.png";
+    } else if(type.search(/phone$/i) != -1) {
+      res = "images/phone.png";
     } else if(type.search(/product$/i) != -1) {
       res = "images/shopping.png";
     } else if(type.search(/project$/i) != -1) {
       res = "images/timeline.png";
-    } else if(type.search(/train/i) != -1
-        || type.search(/subway/i) != -1) {
+    } else if(type.search(/train$/i) != -1
+        || type.search(/subway$/i) != -1) {
       res = "images/train.png";
+    } else if(type.search(/worst/i) != -1) {
+      res = "images/skull.png";
     }
-    
   }
   return res;
 };
@@ -211,11 +244,12 @@ Viewer.prototype.getSummaryHTML = function(subject) {
   var url = null;
   var img = null, color = null;
   var description = null;
-  var address = null;
+  var address = null, phone = null;
   var rating = NaN;
   var elseHTML = "";
   for(var i = 0; i < props.length; i++) {
     var v = m.projections[subject].get(props[i]);
+    console.log(props[i] + " : " + v);
     if(props[i].search(/^__.*__$/) != -1) {//skip application original property
       continue;
     }
@@ -246,21 +280,28 @@ Viewer.prototype.getSummaryHTML = function(subject) {
     } else if(isNaN(rating) && prop.search(/ratingvalue$/i) != -1) {
       rating = m.ave(v, 1);
     } else {
-      var tail = props[i].substr(props[i].lastIndexOf("/") + 1);
-      tail = m.toHumanReadable(tail);
+      var tmpTail = props[i].substr(props[i].lastIndexOf("/") + 1);
+      tail = m.toHumanReadable(tmpTail);
+      var propImg = Viewer.getTypeImg(props[i]);
       if(m.isSiteURL(v)) {
         if(v.search(/\.jpg$/i) != -1
             || v.search(/\.gif$/i) != -1
             || v.search(/\.png$/i) != -1) {
           elseHTML += "<li>" + tail + "<br><img src='" + v + "' title='" + v + "' class='item_img'></img></li>";
         } else {
-          elseHTML += "<li><img src='images/link.png' class='related_icon'><a href='" + v + "' title='" + v + "'>" + tail + "</a></li>";
+          propImg = propImg ? propImg : "images/link.png";
+          elseHTML += "<li><img src='" + propImg + "' class='related_icon'><a href='" + v + "' title='" + v + "'>" + tail + "</a></li>";
         }
       } else if(v.length < 30) {
-        if(Datatype.isPrice(v)) {//price
-          v = "<span class='money'>" + v + "</span>"; 
+        if(propImg) {
+          elseHTML += "<li><img src='" + propImg + "' class='related_icon'>" + tail + " : " + v + "</li>";
+        } else if(Datatype.isPrice(v)) {//price
+          elseHTML += "<li><img src='images/price.png' class='related_icon'>" + tail + " : " + v + "</li>";
         } else if(Datatype.isDate(v)) {//date
-          v = "<span class='date'>" + v + "</span>"; 
+          elseHTML += "<li><img src='images/calendar.png' class='related_icon'>" + tail + " : " + v + "</li>";
+        } else if(Datatype.isPhone(v)) {//phone
+          elseHTML += "<li><img src='images/phone.png' class='related_icon'>" + tail + " : "
+          + "<a href='" + v + "'>" + v + "</a></li>"; 
         } else {
           elseHTML += "<li>" + tail + " : " + v + "</li>";
         }
@@ -743,5 +784,8 @@ Datatype.isDate = function(s) {
   return s.search(/^\d*[\-\/]\d*([\-\/]\d*)?((\T\s)\d*:\d*)?/) != -1;
 };
 Datatype.isPrice = function(s) {
-  return s.search(/^\$[0-9]*(.)[0-9]*$/) != -1;
+  return s.search(/^\$[0-9,]*(.)[0-9]*$/) != -1;
 };
+Datatype.isPhone = function(s) {
+  return s.search(/^tel:\+\d+/) != -1;
+}

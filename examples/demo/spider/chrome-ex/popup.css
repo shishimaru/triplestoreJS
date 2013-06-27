@@ -125,7 +125,7 @@ input#search{
     position: relative;
     top: 3px;  
 }
-.money, .date {
+.bold {
     font-weight: bold;
 }
 .related_name {
