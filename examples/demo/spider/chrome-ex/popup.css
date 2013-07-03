@@ -128,6 +128,10 @@ input#search{
 .bold {
     font-weight: bold;
 }
+.property_img{
+    width: 70px;
+    text-align: center;
+}
 .related_name {
     vertical-align: top;    
 }

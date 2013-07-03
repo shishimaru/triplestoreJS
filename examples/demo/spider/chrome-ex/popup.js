@@ -20,21 +20,16 @@ var Viewer = function(tab){
   this.container = document.getElementById("container");
   this.bt_save = document.getElementById("bt_save");
   this.bt_clear = document.getElementById("bt_clear");
-  //this.bt_inspect = document.getElementById("bt_inspect");
   this.selected_type = null; 
 
   //event listener
   this.bt_save.addEventListener('click', function() { m.save(); });
   this.bt_clear.addEventListener('click', function() { m.clear(); v.reset(); });
-  //this.bt_inspect.addEventListener('click', function() { v.show(); });
-  //window.addEventListener("beforeunload" , function() { m.freeTriples(); });
   
   this.focusSearchBox();
   $('#search').bind('focus', this.search);
-
   $('#search').bind('input', this.search);
-  
-  $(".search_box > .delete_input").click(function(event){
+  $('.search_box > .delete_input').click(function(event){
     v.focusSearchBox();
     v.reset();
   });
@@ -149,98 +144,103 @@ Viewer.prototype.showTypes = function(types) {
 };
 Viewer.getTypeImg = function(type) {
   var res = null;
-  var tail = type.substr(type.lastIndexOf("/") + 1);
+  tail = type.substr(type.lastIndexOf("/") + 1);
   
-  if(type) {
+  if(tail) {
     //major web service icon
-    if(type.search(/twitter/i) != -1) {
+    if(tail.search(/twitter/i) != -1) {
       res = "images/twitter.png";
-    } else if(type.search(/facebook/i) != -1) {
+    } else if(tail.search(/facebook/i) != -1) {
       res = "images/facebook.png";
-    } else if(type.search(/google/i) != -1) {
+    } else if(tail.search(/google/i) != -1) {
       res = "images/google.png";
-    } else if(type.search(/yahoo/i) != -1) {
+    } else if(tail.search(/yahoo/i) != -1) {
       res = "images/yahoo.png";
     }
     //general icon
-    else if(type.search(/account$/i) != -1
+    else if(tail.search(/account$/i) != -1
         || tail == "id") {
       res = "images/account.png";
-    } else if(type.search(/airport$/i) != -1) {
+    } else if(tail.search(/^airport$/i) != -1) {
       res = "images/airport.png";
-    } else if(type.search(/article$/i) != -1
-        || type.search(/blog$/i) != -1
-        || type.search(/catalog$/i) != -1
-        || type.search(/recipe$/i) != -1
-        || type.search(/page$/i) != -1) {
+    } else if(tail.search(/^article$/i) != -1
+        || tail.search(/^blog$/i) != -1
+        || tail.search(/^catalog$/i) != -1
+        || tail.search(/^recipe$/i) != -1
+        || tail.search(/^page$/i) != -1) {
       res = "images/news.png";
-    } else if(type.search(/address$/i) != -1) {
+    } else if(tail.search(/^address$/i) != -1) {
       res = "images/map-marker.png";
-    } else if(type.search(/book$/i) != -1) {
+    } else if(tail.search(/^book$/i) != -1) {
       res = "images/book.png";
-    } else if(type.search(/building$/i) != -1
-        || type.search(/buildings$/i) != -1
-        || type.search(/structure$/i) != -1) {
+    } else if(tail.search(/^building$/i) != -1
+        || tail.search(/^buildings$/i) != -1
+        || tail.search(/^structure$/i) != -1) {
       res = "images/building.png";
-    } else if(type.search(/copyright$/i) != -1
-        || type.search(/license$/i) != -1) {
+    } else if(tail.search(/^copyright$/i) != -1
+        || tail.search(/license$/i) != -1) {
       res = "images/copyright.png";
-    } else if(type.search(/document$/i) != -1
-        || type.search(/text$/i) != -1) {
+    } else if(tail.search(/^document$/i) != -1
+        || tail.search(/text$/i) != -1) {
       res = "images/document.png";
-    } else if(type.search(/endorsement$/i) != -1) {
+    } else if(tail.search(/^endorsement$/i) != -1) {
       res = "images/endorsement.png";
-    } else if(type.search(/event$/i) != -1) {
+    } else if(tail.search(/^event$/i) != -1) {
       res = "images/calendar.png";
-    } else if(type.search(/group$/i) != -1
-        || type.search(/organization$/i) != -1
-        || type.search(/corporation$/i) != -1
-        || type.search(/team$/i) != -1
-        || type.search(/business$/i) != -1) {
+    } else if(tail.search(/^group$/i) != -1
+        || tail.search(/^organization$/i) != -1
+        || tail.search(/^corporation$/i) != -1
+        || tail.search(/^team$/i) != -1
+        || tail.search(/^business$/i) != -1) {
       res = "images/group.png";
-    } else if(type.search(/language$/i) != -1) {
+    } else if(tail.search(/^language$/i) != -1) {
       res = "images/language.png";
-    } else if(type.search(/movie$/i) != -1
-        || type.search(/video$/i) != -1
-        || type.search(/movingimage$/i) != -1) {
+    } else if(tail.search(/^movie$/i) != -1
+        || tail.search(/^video$/i) != -1
+        || tail.search(/^movingimage$/i) != -1) {
       res = "images/movie.png";
-    } else if(type.search(/person$/i) != -1
-        || type.search(/user$/i) != -1
-        || type.search(/agent$/i) != -1
-        || type.search(/contributor$/i) != -1
-        || type.search(/creator$/i) != -1
-        || type.search(/publisher$/i) != -1
-        || type.search(/rightsholder$/i) != -1) {
+    } else if(tail.search(/^person$/i) != -1
+        || tail.search(/^user$/i) != -1
+        || tail.search(/^agent$/i) != -1
+        || tail.search(/^contributor$/i) != -1
+        || tail.search(/^author$/i) != -1
+        || tail.search(/^creator$/i) != -1
+        || tail.search(/^publisher$/i) != -1
+        || tail.search(/^rightsholder$/i) != -1) {
       res = "images/person.png";
-    } else if(type.search(/image$/i) != -1
-        || type.search(/photo$/i) != -1
-        || type.search(/photograph$/i) != -1) {
+    } else if(tail.search(/^image$/i) != -1
+        || tail.search(/^photo$/i) != -1
+        || tail.search(/^photograph$/i) != -1) {
       res = "images/picture.png";
-    } else if(type.search(/map$/i) != -1
-        || type.search(/place$/i) != -1
-        || type.search(/location$/i) != -1) {
+    } else if(tail.search(/^map$/i) != -1
+        || tail.search(/^place$/i) != -1
+        || tail.search(/^location$/i) != -1) {
       res = "images/map-marker.png";
-    } else if(type.search(/phone$/i) != -1) {
+    } else if(tail.search(/^phone$/i) != -1) {
       res = "images/phone.png";
-    } else if(type.search(/product$/i) != -1) {
+    } else if(tail.search(/^product$/i) != -1) {
       res = "images/shopping.png";
-    } else if(type.search(/project$/i) != -1) {
+    } else if(tail.search(/^project$/i) != -1) {
       res = "images/timeline.png";
-    } else if(type.search(/train$/i) != -1
-        || type.search(/subway$/i) != -1) {
+    } else if(tail.search(/^train$/i) != -1
+        || tail.search(/subway$/i) != -1) {
       res = "images/train.png";
-    } else if(type.search(/worst/i) != -1) {
+    } else if(tail.search(/worst/i) != -1) {
       res = "images/skull.png";
     }
   }
   return res;
 };
 Viewer.prototype.getSummaryHTML = function(subject) {
+  function getWhitespace(s) {
+    return s.replace(/./g,"&nbsp;");
+  }
+  
   var res = "";
   var props = m.projections[subject].getProperties().sort();
   //find image data
   var name = null, title = null;
-  var type = null;
+  var type = [];
   var url = null;
   var img = null, color = null;
   var description = null;
@@ -248,64 +248,69 @@ Viewer.prototype.getSummaryHTML = function(subject) {
   var rating = NaN;
   var elseHTML = "";
   for(var i = 0; i < props.length; i++) {
-    var v = m.projections[subject].get(props[i]);
-    console.log(props[i] + " : " + v);
-    if(props[i].search(/^__.*__$/) != -1) {//skip application original property
-      continue;
-    }
-    if(!v || v.search(/^_:/) != -1) {
-      continue;
-    }
-    var prop = props[i].toLowerCase();
-    if(!type && prop.search(/type$/i) != -1) {
-      type = v;
-    } else if(!name && prop.search(/name$/i) != -1
-        //|| prop.search(/creator$/i) != -1
-        //|| prop.search(/publisher$/i) != -1
-        //|| prop.search(/author$/i) != -1
-    ) {
-      name = v;
-    } else if(!title && prop.search(/title$/i) != -1) {
-      title = v;
-    } else if(!description && prop.search(/description$/i) != -1) {
-      description = v;
-    } else if(prop.search(/image$/i) != -1 || prop.search(/img$/i) != -1) {
-      img = v;
-    } else if(!color && prop.search(/color$/i) != -1) {
-      color = v;
-    } else if(prop.search(/url$/i) != -1) {
-      url = !url ? v : url;
-    } else if(!address && prop.search(/address$/i) != -1) {
-      address = v;
-    } else if(isNaN(rating) && prop.search(/ratingvalue$/i) != -1) {
-      rating = m.ave(v, 1);
-    } else {
-      var tmpTail = props[i].substr(props[i].lastIndexOf("/") + 1);
-      tail = m.toHumanReadable(tmpTail);
-      var propImg = Viewer.getTypeImg(props[i]);
-      if(m.isSiteURL(v)) {
-        if(v.search(/\.jpg$/i) != -1
-            || v.search(/\.gif$/i) != -1
-            || v.search(/\.png$/i) != -1) {
-          elseHTML += "<li>" + tail + "<br><img src='" + v + "' title='" + v + "' class='item_img'></img></li>";
-        } else {
-          propImg = propImg ? propImg : "images/link.png";
-          elseHTML += "<li><img src='" + propImg + "' class='related_icon'><a href='" + v + "' title='" + v + "'>" + tail + "</a></li>";
+    var values = m.projections[subject].getAll(props[i]);
+    for(var j = 0; j < values.length; j++) {
+      var v = values[j];
+      console.log(props[i] + " : " + v);
+      if(props[i].search(/^__.+__/) != -1) {//skip application original property
+        continue;
+      }
+      if(!v || v.search(/^_:/) != -1) {
+        continue;
+      }
+      //var prop = props[i].toLowerCase();
+      var prop = props[i].substr(props[i].lastIndexOf("/") + 1);
+      
+      if(prop.search(/type$/i) != -1) {
+        type.push(v);
+      } else if(!name && prop.search(/#?name$/i) != -1
+          //|| prop.search(/creator$/i) != -1
+          //|| prop.search(/publisher$/i) != -1
+          //|| prop.search(/author$/i) != -1
+      ) {
+        name = v;
+      } else if(prop.search(/#?title$/i) != -1) {
+        title = !title ? v : title;
+      } else if(!description && prop.search(/#?description$/i) != -1) {
+        description = v;
+      } else if(prop.search(/#?image$/i) != -1 || prop.search(/^img$/i) != -1) {
+        img = v;
+      } else if(!color && prop.search(/color$/i) != -1) {
+        color = v;
+      } else if(prop.search(/#?url$/i) != -1) {
+        url = !url ? v : url;
+      } else if(!address && prop.search(/^address$/i) != -1) {
+        address = v;
+      } else if(isNaN(rating) && prop.search(/ratingvalue$/i) != -1) {
+        rating = m.ave(v, 1);
+      } else {
+        var tmpTail = props[i].substr(props[i].lastIndexOf("/") + 1);
+        tail = m.toHumanReadable(tmpTail);
+        var propImg = Viewer.getTypeImg(props[i]);
+        if(m.isSiteURL(v)) {
+          if(v.search(/\.jpg$/i) != -1
+              || v.search(/\.gif$/i) != -1
+              || v.search(/\.png$/i) != -1) {
+            elseHTML += "<li>" + tail + "<br><img src='" + v + "' title='" + v + "' class='property_img'></img></li>";
+          } else {
+            propImg = propImg ? propImg : "images/link.png";
+            elseHTML += "<li><img src='" + propImg + "' class='related_icon'><a href='" + v + "' title='" + v + "'>" + tail + "</a></li>";
+          }
+        } else if(v.length < 30) {
+          if(propImg) {
+            elseHTML += "<li><img src='" + propImg + "' class='related_icon'>" + tail + " : " + v + "</li>";
+          } else if(Datatype.isPrice(v)) {//price
+            elseHTML += "<li><img src='images/price.png' class='related_icon'>" + tail + " : " + v + "</li>";
+          } else if(Datatype.isDate(v)) {//date
+            elseHTML += "<li><img src='images/calendar.png' class='related_icon'>" + tail + " : " + v + "</li>";
+          } else if(Datatype.isPhone(v)) {//phone
+            elseHTML += "<li><img src='images/phone.png' class='related_icon'>" + tail + " : "
+            + "<a href='" + v + "'>" + v + "</a></li>"; 
+          } else {
+            elseHTML += "<li>" + tail + " : " + v + "</li>";
+          }
         }
-      } else if(v.length < 30) {
-        if(propImg) {
-          elseHTML += "<li><img src='" + propImg + "' class='related_icon'>" + tail + " : " + v + "</li>";
-        } else if(Datatype.isPrice(v)) {//price
-          elseHTML += "<li><img src='images/price.png' class='related_icon'>" + tail + " : " + v + "</li>";
-        } else if(Datatype.isDate(v)) {//date
-          elseHTML += "<li><img src='images/calendar.png' class='related_icon'>" + tail + " : " + v + "</li>";
-        } else if(Datatype.isPhone(v)) {//phone
-          elseHTML += "<li><img src='images/phone.png' class='related_icon'>" + tail + " : "
-          + "<a href='" + v + "'>" + v + "</a></li>"; 
-        } else {
-          elseHTML += "<li>" + tail + " : " + v + "</li>";
-        }
-      } 
+      }
     }
   }
   res += "<div>";
@@ -317,8 +322,8 @@ Viewer.prototype.getSummaryHTML = function(subject) {
     res += "<div class='shorten title'>"; {
       if(favicon) {
         res += "<img src='" + favicon + "' class='favicon'/>";
-      } else {
-        var imgFile = Viewer.getTypeImg(type);
+      } else if(type.length){
+        var imgFile = Viewer.getTypeImg(type[0]);
         res += imgFile ? "<img src='" + imgFile + "' class='favicon'/>" : "";
       }
       if(hasSiteURL) {res += "<a class='title' href='" + href + "' title='" + href + "'>";}
@@ -724,7 +729,7 @@ Manager.prototype.save = function() {
         for(var j = 0; j < values.length; j++) {
           var value = values[j];
           console.log(subject, prop, value);
-          if(typeof(value) != "string") {
+          if(typeof(value) == "object") {
             value = JSON.stringify(value);
           }
           _save(subject, prop, value);
@@ -781,11 +786,11 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 var Datatype = function() {};
 Datatype.isDate = function(s) {
-  return s.search(/^\d*[\-\/]\d*([\-\/]\d*)?((\T\s)\d*:\d*)?/) != -1;
+  return s.trim().search(/\d+[\-\/]\d+([\-\/]\d+)?((\T\s)\d+:\d+)?/) != -1;
 };
 Datatype.isPrice = function(s) {
-  return s.search(/^\$[0-9,]*(.)[0-9]*$/) != -1;
+  return s.trim().search(/^\$[0-9,]*.?[0-9]*$/) != -1;
 };
 Datatype.isPhone = function(s) {
-  return s.search(/^tel:\+\d+/) != -1;
+  return s.trim().search(/^tel:\+\d+/) != -1;
 }
