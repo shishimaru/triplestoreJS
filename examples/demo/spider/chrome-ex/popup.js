@@ -97,12 +97,12 @@ Viewer.prototype.showTypes = function(types) {
       "<sapn class='count'>" + 2 + "</span></a>");//*/
   //init
   this.types.innerHTML = null;
-  types = m.trimDuplicate(types).sort();
+  types = types.sort();
 
   //reset button
   $('#types').append($("<div class='grey' id='all_type'>" +
   		"<span>all</span>" +
-  		"<span class='count'>" + m.types.length + "</span></div>"));
+  		"<span class='count'>" + m.getSubjects().length + "</span></div>"));
 
   for(var i = 0; i < types.length; i++) {
     var count = m.getSubjects(null, types[i]).length;
@@ -251,7 +251,7 @@ Viewer.prototype.getSummaryHTML = function(subject) {
     var values = m.projections[subject].getAll(props[i]);
     for(var j = 0; j < values.length; j++) {
       var v = values[j];
-      console.log(props[i] + " : " + v);
+      //console.log(props[i] + " : " + v);
       if(props[i].search(/^__.+__/) != -1) {//skip application original property
         continue;
       }
@@ -371,13 +371,13 @@ Viewer.prototype.getSummaryHTML = function(subject) {
   return res;
 };
 Viewer.prototype.getGraphHTML = function(subject) {
-  var res = "";
-  var values = m.projections[subject].getAll();
-  values = m.trimDuplicate(values).sort();
-  for(var i = 0; i < values.length; i++) {
-    if(values[i] != subject) {//escape self reference
-      var targetSub = values[i];
-      if(targetSub.search(/^_:/) == -1) {
+  function _getGraphHTML(values) {
+    var res = "";
+    
+    var cells = [];
+    for(var i = 0; values && i < values.length; i++) {
+      if(values[i] != subject) {//escape self reference
+        var targetSub = values[i];
         var projection = m.projections[targetSub];
         
         if(projection) {
@@ -387,28 +387,61 @@ Viewer.prototype.getGraphHTML = function(subject) {
           var url = m.getValues(targetSub, ["url"]);
           var type = m.getValues(targetSub, ["type"]);
           
-          res += "<a href='" + targetSub + "' title='" + targetSub + "'>";
-          if(img[0]) {
-            res += "<img src='" + img[0] + "' class='related_img'>";
-          }
+          var frag = "";
+          //frag += "<a href='" + targetSub + "' title='" + targetSub + "'>";
           if(type[0]) {
             var imgFile = Viewer.getTypeImg(type[0]);
-            res += imgFile ? "<img src='" +  imgFile + "' class='related_type'>" : "";
+            frag += imgFile ? "<img src='" +  imgFile + "' class='related_type'>" : "";
           }
-          res += "<span class='related_name'>" + (title.length?title[0]:(name[0]?name[0]:targetSub)) + "</span></a><br>";
+          frag += "<span class='related_name'>" + (title.length?title[0]:(name[0]?name[0]:targetSub)) + "</span><br>";
+          if(img[0]) {
+            frag += "<img src='" + img[0] + "' class='related_img'>";
+          }
+          //frag += "</a>";
+          frag = "<td  class='related_cell' href='" + targetSub
+          + "' title='" + targetSub + "'>" + frag + "</td>";
+          cells.push(frag);
         }
       }
     }
+    if(cells.length) {
+      for(var i = 0; i < cells.length; i++) {
+        if(!(i % 3)) {
+          res += "<tr>" + cells[i];
+        } else if(i % 3 == 2) {
+          res += cells[i] + "</tr>";
+        } else {
+          res += cells[i];
+        }
+      }
+      if(cells.length % 3 != 2) {
+        res += "</tr>";
+      }
+    }
+    return res;
   }
-  if(res.length) {
-    res = "<h4><img src='images/treediagram.png' class='related_icon'>Related Items:</h4>" + res;
+  
+  var res = "";
+  //items this subject refers
+  var values = m.projections[subject].getAll();
+  values = m.trimDuplicate(values).sort();
+  var referringHTML = _getGraphHTML(values);
+  if(referringHTML.length) {
+    res += "<h4><img src='images/referring.png' class='related_icon'>Referring to:</h4>"
+      + "<table class='related_table'>" + referringHTML + "</table>";
+  }
+  
+  //items which refer to this subject
+  var referredHTML = _getGraphHTML(m.referred[subject]);
+  if(referredHTML.length) {
+    res += "<h4><img src='images/referred.png' class='related_icon'>Referred by:</h4>"
+      + "<table class='related_table'>" + referredHTML + "</table>";
   }
   return res;
 };
 Viewer.prototype.showItems = function(subjects) {
   //init
   this.items.innerHTML = null;
-  subjects = m.trimDuplicate(subjects).sort();
 
   for(var i = 0; i < subjects.length; i++) {
     var item_html = "<div class='frame'>";
@@ -439,6 +472,17 @@ Viewer.prototype.showItems = function(subjects) {
       });
     }
   });
+  $(".related_cell").click(function(event){//click related items
+    var url = $($(this)).attr("href");
+    if(m.projections[url]) {
+      v.showItems([url]);
+    } else {
+      chrome.tabs.create({
+        "url": url,
+        "index": v.tab.index + 1
+      });
+    }
+  });
   $(".trash").click(function(event){//click trash
     var subject = $($(this)).attr("subject");
     m.remove(subject);
@@ -456,8 +500,7 @@ Viewer.prototype.resetTypes = function() {
   this.selected_type = null;
 };
 Viewer.prototype.resetItems = function() {
-  //this.showItems(m.getSubjects());
-  this.showItems(m.subjects);
+  this.showItems(m.getSubjects());
   this.items_title.innerText = "Items";
 };
 Viewer.prototype.reset = function() {
@@ -540,20 +583,86 @@ Manager.prototype.getValues = function(subject, propKeywords) {
   return res;
 };
 Manager.prototype.renew = function() {
-  this.subjects = [];
+  //this.subjects = [];
   this.projections = {};
   this.types = [];
+  this.referred = {};
   
   var subs = this.tst.getSubjects();
   for(var i = 0; i < subs.length; i++) {
     var subject = subs[i];
     if(subject.search(/^_:/) == -1) {
-      this.subjects.push(subject);
-      var projection = this.tst.getProjection(subject);
-      this.projections[subject] = projection;
+      //this.subjects.push(subject);
+      this.projections[subject] = this.tst.getProjection(subject);
       this.types = this.types.concat(this.getValues(subject, ["type"]));
     }
   }
+  this.types = this.trimDuplicate(this.types);
+  /*this.types.sort(function(a,b) {
+    var codeA = a[a.lastIndexOf("/") + 1].toLowerCase().charCodeAt(0);
+    var codeB = b[b.lastIndexOf("/") + 1].toLowerCase().charCodeAt(0);
+    return codeB - codeA;
+  });*/
+  
+  //init referred map
+  this.referred = this.getReferredMap(this.projections);
+  console.log(this.referred);
+  
+  //calculate rating for each item
+  var rating = this.calcRating(this.projections, this.referred);
+  console.log(rating);
+  
+  //sort with reference count
+  this.projections = this.sortProjections(this.projections, rating);
+};
+Manager.prototype.getReferredMap = function(projections) {
+  var referred = {}
+  for(var subject in projections) {
+    var props = projections[subject].getProperties();
+    for(var i = 0; i < props.length; i++) {
+      if(props[i].search(/^__/) == -1) {
+        var values = projections[subject].getAll(props[i]);
+        for(var j = 0; j < values.length; j++) {
+          if(projections[values[j]] && values[j] != subject) {
+            if(!referred[values[j]]) {
+              referred[values[j]] = [];
+            }
+            referred[values[j]].push(subject);
+          }
+        }
+      }
+    }
+  }
+  return referred;
+}
+Manager.prototype.calcRating = function(projections, referredMap) {
+  var rating = {};
+  for(var subject in referredMap) {
+    rating[subject] = referredMap[subject].length;
+  }
+  return rating;
+};
+Manager.prototype.sortProjections = function(projections, rating) {
+  var tmpProjections = [];
+  for(var subject in projections) {
+    var obj = {"subject"    : subject, 
+               "projection" : projections[subject],
+               "count"      : !rating[subject] ? 0 : rating[subject]};
+    tmpProjections.push(obj);
+  }
+  
+  //sort with the rating
+  tmpProjections.sort(function(a,b){
+    return b.count - a.count;
+  });
+  //console.log(tmpProjections);
+  
+  var res = {};
+  for(var i = 0; i < tmpProjections.length; i++) {
+    res[tmpProjections[i].subject] = tmpProjections[i].projection; 
+  }
+
+  return res;
 };
 Manager.prototype.filter = function(keywords, list, onlyTail) {
   var res = [];
