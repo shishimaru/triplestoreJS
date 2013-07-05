@@ -606,11 +606,9 @@ Manager.prototype.renew = function() {
   
   //init referred map
   this.referred = this.getReferredMap(this.projections);
-  console.log(this.referred);
   
   //calculate rating for each item
   var rating = this.calcRating(this.projections, this.referred);
-  console.log(rating);
   
   //sort with reference count
   this.projections = this.sortProjections(this.projections, rating);
@@ -655,13 +653,11 @@ Manager.prototype.sortProjections = function(projections, rating) {
   tmpProjections.sort(function(a,b){
     return b.count - a.count;
   });
-  //console.log(tmpProjections);
   
   var res = {};
   for(var i = 0; i < tmpProjections.length; i++) {
     res[tmpProjections[i].subject] = tmpProjections[i].projection; 
   }
-
   return res;
 };
 Manager.prototype.filter = function(keywords, list, onlyTail) {
