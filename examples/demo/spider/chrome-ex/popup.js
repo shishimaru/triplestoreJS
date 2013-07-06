@@ -93,10 +93,9 @@ Viewer.prototype.getRatingHTML = function(rating) {
   return "<img src='" + url + "'>";
 };
 Viewer.prototype.showTypes = function(types) {
-  /*$('#types').append("<li><a href='#'>" + "http://person" +
-      "<sapn class='count'>" + 2 + "</span></a>");//*/
   //init
   this.types.innerHTML = null;
+  $('#types').scrollTop(0);
   types = types.sort();
 
   //reset button
@@ -388,7 +387,6 @@ Viewer.prototype.getGraphHTML = function(subject) {
           var type = m.getValues(targetSub, ["type"]);
           
           var frag = "";
-          //frag += "<a href='" + targetSub + "' title='" + targetSub + "'>";
           if(type[0]) {
             var imgFile = Viewer.getTypeImg(type[0]);
             frag += imgFile ? "<img src='" +  imgFile + "' class='related_type'>" : "";
@@ -397,7 +395,6 @@ Viewer.prototype.getGraphHTML = function(subject) {
           if(img[0]) {
             frag += "<img src='" + img[0] + "' class='related_img'>";
           }
-          //frag += "</a>";
           frag = "<td  class='related_cell' href='" + targetSub
           + "' title='" + targetSub + "'>" + frag + "</td>";
           cells.push(frag);
@@ -442,6 +439,7 @@ Viewer.prototype.getGraphHTML = function(subject) {
 Viewer.prototype.showItems = function(subjects) {
   //init
   this.items.innerHTML = null;
+  $('#items').scrollTop(0);
 
   for(var i = 0; i < subjects.length; i++) {
     var item_html = "<div class='frame'>";
@@ -530,8 +528,6 @@ Manager.prototype.init =function(viewer, tab) {
   
   if((this.rdfa && hasKey(this.rdfa)) ||
       (this.micro && this.micro.items.length)) {
-    //this.viewer.enableButton(v.bt_save);
-    //this.viewer.enableButton(v.bt_inspect);
     this.viewer.visibleInspect();
   }
 };
@@ -786,7 +782,6 @@ function hasKey(o) {
   return false;
 }
 Manager.prototype.save = function() {
-
   //save triple only which doesn't have same value  
   function _save(subject, property, value) {
     var values = m.tst.getValues(subject, property);
