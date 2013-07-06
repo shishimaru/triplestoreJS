@@ -370,13 +370,12 @@ Viewer.prototype.getSummaryHTML = function(subject) {
   return res;
 };
 Viewer.prototype.getGraphHTML = function(subject) {
-  function _getGraphHTML(values) {
+  function getSubjectsHTML(subjects, columNumber, className) {
     var res = "";
-    
     var cells = [];
-    for(var i = 0; values && i < values.length; i++) {
-      if(values[i] != subject) {//escape self reference
-        var targetSub = values[i];
+    for(var i = 0; subjects && i < subjects.length; i++) {
+      if(subjects[i] != subject) {//escape self reference
+        var targetSub = subjects[i];
         var projection = m.projections[targetSub];
         
         if(projection) {
@@ -395,23 +394,30 @@ Viewer.prototype.getGraphHTML = function(subject) {
           if(img[0]) {
             frag += "<img src='" + img[0] + "' class='related_img'>";
           }
-          frag = "<td  class='related_cell' href='" + targetSub
+          frag = "<td  class='" + className + "' href='" + targetSub
           + "' title='" + targetSub + "'>" + frag + "</td>";
           cells.push(frag);
         }
       }
     }
+    //add empty cell
+    if(cells.length % columNumber) {
+      var subjectLen = cells.length;
+      for(var i = 0; i < (columNumber - subjectLen % columNumber); i++) {
+        cells.push("<td></td>");
+      }
+    }
     if(cells.length) {
       for(var i = 0; i < cells.length; i++) {
-        if(!(i % 3)) {
+        if(!(i % columNumber)) {
           res += "<tr>" + cells[i];
-        } else if(i % 3 == 2) {
+        } else if(i % 3 == columNumber - 1) {
           res += cells[i] + "</tr>";
         } else {
           res += cells[i];
         }
       }
-      if(cells.length % 3 != 2) {
+      if(cells.length % columNumber != columNumber - 1) {
         res += "</tr>";
       }
     }
@@ -422,14 +428,14 @@ Viewer.prototype.getGraphHTML = function(subject) {
   //items this subject refers
   var values = m.projections[subject].getAll();
   values = m.trimDuplicate(values).sort();
-  var referringHTML = _getGraphHTML(values);
+  var referringHTML = getSubjectsHTML(values, 3, "refer_cell");
   if(referringHTML.length) {
-    res += "<h4><img src='images/referring.png' class='related_icon'>Referring to:</h4>"
+    res += "<h4><img src='images/referring.png' class='related_icon'>Refer to:</h4>"
       + "<table class='related_table'>" + referringHTML + "</table>";
   }
   
   //items which refer to this subject
-  var referredHTML = _getGraphHTML(m.referred[subject]);
+  var referredHTML = getSubjectsHTML(m.referred[subject], 5, "referred_cell");
   if(referredHTML.length) {
     res += "<h4><img src='images/referred.png' class='related_icon'>Referred by:</h4>"
       + "<table class='related_table'>" + referredHTML + "</table>";

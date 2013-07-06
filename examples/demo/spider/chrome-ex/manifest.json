@@ -1,6 +1,6 @@
 {
     "name": "Semantic Spider",
-    "version": "0.5",
+    "version": "0.6",
     "manifest_version": 2,
     "description": "This extension enables to bookmark web contents annotated with W3C Semantic Web",
     "icons": {"128": "images/spider-128.png"},
