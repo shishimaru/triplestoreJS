@@ -463,22 +463,11 @@ Viewer.prototype.showItems = function(subjects) {
   $("#items > div").mouseout(function(event){
     $(this).toggleClass("selected_item");
   });
-  $("#items a").click(function(event){//click link
+  $("#items a, .refer_cell, .referred_cell").click(function(event){//click link
     var url = $($(this)).attr("href");
     var clazz = $($(this)).attr("class");
     if("title" != clazz //escape self reference
         && m.projections[url]) {
-      v.showItems([url]);
-    } else {
-      chrome.tabs.create({
-        "url": url,
-        "index": v.tab.index + 1
-      });
-    }
-  });
-  $(".related_cell").click(function(event){//click related items
-    var url = $($(this)).attr("href");
-    if(m.projections[url]) {
       v.showItems([url]);
     } else {
       chrome.tabs.create({
