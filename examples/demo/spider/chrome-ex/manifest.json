@@ -1,8 +1,8 @@
 {
     "name": "Semantic Spider",
-    "version": "0.6",
+    "version": "0.7",
     "manifest_version": 2,
-    "description": "This extension enables to bookmark web contents annotated with W3C Semantic Web",
+    "description": "Bookmarks web contents annotated with W3C Semantic Web and builds a personal contents graph in your Chrome",
     "icons": {"128": "images/spider-128.png"},
     "permissions": ["tabs", "http://*/*", "https://*/*"],
     "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
