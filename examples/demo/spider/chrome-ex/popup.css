@@ -25,7 +25,6 @@ body{
     left: 226px;
     width: 15px;
     height: 15px;
-    
 }
 input#search{
     font-size: 14px;
@@ -86,7 +85,6 @@ input#search{
 }
 .title {
     font-weight: bold;
-
 }
 
 #types_title,
@@ -131,60 +129,4 @@ input#search{
 .property_img{
     width: 70px;
     text-align: center;
-}
-.related_table {
-    width: 100%;
-    table-layout: fixed;
-}
-.refer_cell {
-    height: 80px;
-    font-size: 12px;
-    cursor: pointer;
-    vertical-align: top;
-    text-align: center;
-    word-wrap: break-word;
-    
-    margin: 2px 0 5px 0;
-    padding: 5px 5px 3px 3px;
-    background: -webkit-gradient(linear, left top, left bottom,
-                               color-stop(0.0, #ffffff),
-                               color-stop(1.0, #ffffff));
-    border: 1px solid #ccc;
-    -webkit-border-radius: 4px;
-    text-shadow: 0px 1px 0px rgb(255, 255, 255);
-    position: relative;
-}
-.referred_cell {
-    height: 60px;
-    font-size: 10px;
-    cursor: pointer;
-    vertical-align: top;
-    text-align: center;
-    word-wrap: break-word;
-    
-    margin: 2px 0 5px 0;
-    padding: 5px 5px 3px 3px;
-    background: -webkit-gradient(linear, left top, left bottom,
-                               color-stop(0.0, #ffffff),
-                               color-stop(1.0, #ffffff));
-    border: 1px solid #ccc;
-    -webkit-border-radius: 4px;
-    text-shadow: 0px 1px 0px rgb(255, 255, 255);
-    position: relative;
-}
-.related_name {
-    vertical-align: top;    
-}
-.related_type {
-    height: 1em;
-    margin: 0px 4px 0px 4px;
-}
-.related_img {
-   height: 80%;
-   text-align:center;
-}
-.related_icon {
-    height: 1em;
-    margin: 0px 4px 0px 0px;
-    vertical-align: middle
 }

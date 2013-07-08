@@ -17,11 +17,19 @@
                    "microdataJS/jquery.microdata.json.js",
                    "content.js"
                    ],
+            "css": ["content.css", "suggest.css"],
             "run_at": "document_end"
         }
     ],
+    "web_accessible_resources": [
+        "/images/*"
+    ],
     "background": {
-        "scripts": ["background.js"]
+        "scripts": ["jquery-1.9.1.min.js",
+                    "background.js",
+                    "triplestore.js",
+                    "manager.js",
+                    "viewer.js"]
     },
     
     "browser_action": {

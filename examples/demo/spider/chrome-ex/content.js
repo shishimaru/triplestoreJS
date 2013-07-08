@@ -24,15 +24,34 @@ function extract() {
     var json_str = $.microdata.json($target);
     micro = JSON.parse(json_str);
   }
-  
   chrome.runtime.sendMessage(
       {
         url: document.URL,
         rdfa: rdfa,
         micro: micro
       },
-      function(response) {
-        //console.log(response.farewell);
+      function(res) {
+        this.flag = !this.flag ? false : this.flag;
+        if(!this.flag) {
+          var html = res.html;
+          if(html && html.length) {
+            var $wrapper = jQuery(html);
+            $wrapper.css({'opacity' : 0.2 });
+            jQuery("body").append($wrapper);
+            
+            $wrapper.mouseover(function(e){
+              $wrapper.css({'opacity' : 1.0 });
+            });
+            $wrapper.mouseout(function(e){
+              $wrapper.css({'opacity' : 0.2 });
+            });
+            
+            $("#spider-wrapper").click(function(e) {
+              $("#spider-wrapper table").fadeToggle("slow");
+            });
+          }
+        }
+        this.flag = true;
       }
   );
 }
