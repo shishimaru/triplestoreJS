@@ -3,7 +3,7 @@ var bg_res = {};
 function getRelatedSubjects(m, rdfa, micro) {
   var res = [];
   
-  //find in RDFa
+  //refer : find in RDFa
   if(rdfa) {
     for(var subject in rdfa) {
       var props = rdfa[subject];
@@ -16,11 +16,11 @@ function getRelatedSubjects(m, rdfa, micro) {
       }
     }
   }
-  //find in microdata
+  //refer : find in microdata
   if(micro && micro.items) {
     for(var i = 0; i < micro.items.length; i++) {
       var item = micro.items[i];
-      var subject = item.id ? item.id : this.tab.url;
+      var subject = item.id ? item.id : (item.properties["url"] ? item.properties["url"] : null);
       var type = item.type;
       var props = item.properties;
       
@@ -36,6 +36,11 @@ function getRelatedSubjects(m, rdfa, micro) {
       }
     }
   }
+  //TODO : referred : find in triplestore
+  /*for(var subject in m.projections) {
+    
+  }*/
+  
   return res;
 }
 function generateInsertedHTML(m, subjects) {
@@ -52,8 +57,11 @@ function generateInsertedHTML(m, subjects) {
   }
   return html;
 }
+
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
+      //reset icon
+      Viewer.changeIcon(sender.tab.id, false);
       //init
       var results = {};
       if(request.rdfa) {
@@ -66,13 +74,21 @@ chrome.runtime.onMessage.addListener(
         //sendResponse({farewell: "goodbye: " + res});
         results.micro = request.micro;
       }
+      if(request.rdfa || request.micro) {
+        //notify the site has annotation
+        Viewer.changeIcon(sender.tab.id, true);
+      }
+      results.onSelectionChanged = onSelectionChanged;
       bg_res[request.url] = results;
       
       //feedback related items to content script
       var m = new Manager(sender.tab);
       m.renew();
       var subjects = getRelatedSubjects(m, request.rdfa, request.micro);
+      console.log(subjects);      
+      subjects = m.trimDuplicate(subjects);
       var html = generateInsertedHTML(m, subjects);
+
       sendResponse({html: html});
     }
 );

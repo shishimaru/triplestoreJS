@@ -403,6 +403,7 @@ Viewer.getSubjectsHTML = function(m, ex_subject, subjects, columNumber, classNam
           }
         }
         item.append($("<span/>", {"class": "related_name"}).html("" + (title.length?title[0]:(name[0]?name[0]:targetSub))));
+        item.append($("<br/>"));
         if(img[0]) {
           item.append($("<img/>", {"src" : img[0], "class" : "related_img"}));
         }
@@ -516,3 +517,13 @@ Viewer.prototype.show = function() {
   this.debug.innerHTML = "<div style='color:red'>RDFa<br><pre>" + JSON.stringify(this.m.rdfa, null, 2) + "</pre></div>";
   this.debug.innerHTML += "<div style='color:blue'>microdata<br><pre>" + JSON.stringify(this.m.micro, null, 2) + "</pre></div>"; 
 };
+Viewer.changeIcon = function(tabId, color) {
+  var icon_normal = "images/spider.png";
+  var icon_mark = "images/spider-blue.png";
+
+  if(color) {
+    chrome.pageAction.setIcon({tabId: tabId, path: icon_mark});
+  } else {
+    chrome.pageAction.setIcon({tabId: tabId, path: icon_normal});
+  }
+}

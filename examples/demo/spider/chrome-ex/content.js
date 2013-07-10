@@ -35,19 +35,20 @@ function extract() {
         if(!this.flag) {
           var html = res.html;
           if(html && html.length) {
-            var $wrapper = jQuery(html);
-            $wrapper.css({'opacity' : 0.2 });
+            //resolve duplicated container
+            jQuery("#spider-wrapper").remove();
+            
+            var $wrapper = jQuery(html).css({'opacity' : 0.1});
             jQuery("body").append($wrapper);
             
             $wrapper.mouseover(function(e){
               $wrapper.css({'opacity' : 1.0 });
             });
             $wrapper.mouseout(function(e){
-              $wrapper.css({'opacity' : 0.2 });
+              $wrapper.css({'opacity' : 0.1});
             });
-            
             $("#spider-wrapper").click(function(e) {
-              $("#spider-wrapper table").fadeToggle("slow");
+              $("#spider-wrapper table").fadeToggle("fast");
             });
           }
         }

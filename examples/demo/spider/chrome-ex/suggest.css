@@ -46,7 +46,8 @@
     margin: 0px 4px 0px 4px;
 }
 .related_img {
-   height: 80%;
+   max-height: 80%;
+   max-width: 100%;
    text-align:center;
 }
 .related_icon {

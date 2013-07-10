@@ -3,7 +3,11 @@
     "version": "0.7",
     "manifest_version": 2,
     "description": "Bookmarks web contents annotated with W3C Semantic Web and builds a personal contents graph in your Chrome",
-    "icons": {"128": "images/spider-128.png"},
+    "icons": {
+        "128": "images/spider-128.png",
+        "16": "images/spider.png"},
+    //"omnibox": {"keyword" : "hoge"},
+    "offline_enabled": true,
     "permissions": ["tabs", "http://*/*", "https://*/*"],
     "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
     "content_scripts": [

@@ -18,6 +18,7 @@ Manager.prototype.init =function(tab) {
     this.bg_res = bg.bg_res;
     this.rdfa = this.bg_res[tab.url] ? this.bg_res[tab.url].rdfa : null;
     this.micro = this.bg_res[tab.url] ? this.bg_res[tab.url].micro : null;
+    this.onSelectionChanged = this.bg_res[tab.url] ? this.bg_res[tab.url].onSelectionChanged : null;
   }
 
   this.tst = new Triplestore();
@@ -312,9 +313,9 @@ Manager.prototype.save = function() {
     console.log("start save microdata");
     for(var i = 0; i < this.micro.items.length; i++) {
       var item = this.micro.items[i];
-      var subject = item.id ? item.id : this.tab.url;
-      var type = item.type;
+      var subject = item.id ? item.id : (item.properties["url"] ? item.properties["url"] : this.tab.url);
       var props = item.properties;
+      var type = item.type;
       props['__type'] = type;
       
       for(var prop in props) {
@@ -349,6 +350,8 @@ Manager.prototype.save = function() {
   
   //update views
   this.renew();
+  //TODO : feedback to content script
+  //this.onSelectionChanged(m.tab.id);
 };
 Manager.prototype.remove = function(subject) {
   if(this.projections[subject]) {
