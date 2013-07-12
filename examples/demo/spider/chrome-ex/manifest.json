@@ -1,8 +1,9 @@
 {
     "name": "Semantic Spider",
-    "version": "0.7",
+    "version": "0.8",
     "manifest_version": 2,
-    "description": "Bookmarks web contents annotated with W3C Semantic Web and builds a personal contents graph in your Chrome",
+    "description": "Chrome becomes more intelligent with W3C Semantic Web
+                    and you could find out knowledge you didn't realize so far",
     "icons": {
         "128": "images/spider-128.png",
         "16": "images/spider.png"},

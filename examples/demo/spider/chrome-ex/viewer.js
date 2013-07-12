@@ -19,7 +19,8 @@ var Viewer = function(m, tab){
   this.selected_type = null; 
 
   //event listener
-  this.bt_save.addEventListener('click', function() {
+  if(this.bt_save) {
+    this.bt_save.addEventListener('click', function() {
     this.m.save();
     v.showTypes(this.m.types);
     v.showItems(this.m.getSubjects());
@@ -27,7 +28,10 @@ var Viewer = function(m, tab){
     //disable save button
     v.disableButton(v.bt_save);
   }.bind(this));
-  this.bt_clear.addEventListener('click', function() { this.m.clear(); v.reset(); }.bind(this));
+  }
+  if(this.bt_clear) {
+    this.bt_clear.addEventListener('click', function() { this.m.clear(); v.reset(); }.bind(this));
+  }
   
   this.focusSearchBox();
   $('#search').bind('focus', this.search.bind(this));
@@ -37,7 +41,7 @@ var Viewer = function(m, tab){
     v.reset();
   });
   
-  if((this.m.rdfa && hasKey(this.m.rdfa)) ||
+  if((this.m.rdfa && Manager.hasKey(this.m.rdfa)) ||
       (this.m.micro && this.m.micro.items.length)) {
       this.visibleInspect();
   }
@@ -50,7 +54,7 @@ Viewer.prototype.search = function() {
   var keyword = $('#search').val();
   {//filter types
     var types = this.m.types;
-    types = this.m.filter(keyword.trim().split(" "), types);
+    types = Manager.filter(keyword.trim().split(" "), types);
     v.showTypes(types);
   }
   {//filter items
@@ -84,7 +88,7 @@ Viewer.prototype.disableButton = function(buttonElement) {
 };
 Viewer.prototype.getHightlightURL = function(url_str) {
   var res = url_str;
-  if(this.m.isAbsoluteURI(url_str)) {
+  if(Manager.isAbsoluteURI(url_str)) {
     var head = url_str.substr(0, url_str.lastIndexOf("/") + 1);
     var tail = url_str.substr(url_str.lastIndexOf("/") + 1);
     res = "<span class='grey'>" + head + "</span>";
@@ -289,29 +293,29 @@ Viewer.prototype.getSummaryHTML = function(subject) {
       } else if(!address && prop.search(/^address$/i) != -1) {
         address = v;
       } else if(isNaN(rating) && prop.search(/ratingvalue$/i) != -1) {
-        rating = this.m.ave(v, 1);
+        rating = Manager.ave(v, 1);
       } else {
         var tmpTail = props[i].substr(props[i].lastIndexOf("/") + 1);
-        tail = this.m.toHumanReadable(tmpTail);
+        tail = Manager.toHumanReadable(tmpTail);
         var propImg = Viewer.getTypeImg(this.m, props[i]);
-        if(this.m.isSiteURL(v)) {
+        if(Manager.isSiteURL(v)) {
           if(v.search(/\.jpg$/i) != -1
               || v.search(/\.gif$/i) != -1
               || v.search(/\.png$/i) != -1) {
             elseHTML += "<li>" + tail + "<br><img src='" + v + "' title='" + v + "' class='property_img'></img></li>";
           } else {
-            propImg = propImg ? propImg : "images/link.png";
+            propImg = propImg ? propImg : this.m.app_url + "images/link.png";
             elseHTML += "<li><img src='" + propImg + "' class='related_icon'><a href='" + v + "' title='" + v + "'>" + tail + "</a></li>";
           }
         } else if(v.length < 30) {
           if(propImg) {
             elseHTML += "<li><img src='" + propImg + "' class='related_icon'>" + tail + " : " + v + "</li>";
           } else if(Datatype.isPrice(v)) {//price
-            elseHTML += "<li><img src='images/price.png' class='related_icon'>" + tail + " : " + v + "</li>";
+            elseHTML += "<li><img src='" + this.m.app_url + "images/price.png' class='related_icon'>" + tail + " : " + v + "</li>";
           } else if(Datatype.isDate(v)) {//date
-            elseHTML += "<li><img src='images/calendar.png' class='related_icon'>" + tail + " : " + v + "</li>";
+            elseHTML += "<li><img src='" + this.m.app_url + "images/calendar.png' class='related_icon'>" + tail + " : " + v + "</li>";
           } else if(Datatype.isPhone(v)) {//phone
-            elseHTML += "<li><img src='images/phone.png' class='related_icon'>" + tail + " : "
+            elseHTML += "<li><img src='" + this.m.app_url + "images/phone.png' class='related_icon'>" + tail + " : "
             + "<a href='" + v + "'>" + v + "</a></li>"; 
           } else {
             elseHTML += "<li>" + tail + " : " + v + "</li>";
@@ -323,7 +327,7 @@ Viewer.prototype.getSummaryHTML = function(subject) {
   res += "<div>";
   {//title and anchor to the site
     var href = url ? url : subject;
-    var hasSiteURL = this.m.isSiteURL(href);
+    var hasSiteURL = Manager.isSiteURL(href);
     var favicon = this.m.tst.getValues(subject, Manager.PROP_FAVICON)[0];
     
     res += "<div class='shorten title'>"; {
@@ -343,7 +347,7 @@ Viewer.prototype.getSummaryHTML = function(subject) {
     }
     
     {//trash button
-      res += "<img src='images/trash.png' title='remove'" +
+      res += "<img src='" + this.m.app_url + "images/trash.png' title='remove'" +
       "class='trash' subject='" + subject + "'/>";
     }
     res += "</div>";
@@ -365,7 +369,7 @@ Viewer.prototype.getSummaryHTML = function(subject) {
       res += "</td><td><ul>";
       res += address ? "<li>Address: " +
         "<a href='https://www.google.com/maps?q=" + address +"'>" +
-        		"<img src='images/map-marker.png' class='related_type'></a> "+address+"</li>": "";
+        		"<img src='" + this.m.app_url + "images/map-marker.png' class='related_type'></a> "+address+"</li>": "";
       res += !isNaN(rating) ? "<li>Rate: " + rating + this.getRatingHTML(rating) + "</li>" : "";
       res += color ? "<li>Color: <span style='background-color:"+ color + 
                      "'>&nbsp;&nbsp;</span> "+color+"</li>": "";
@@ -377,6 +381,31 @@ Viewer.prototype.getSummaryHTML = function(subject) {
   res += "</div>";
   return res;
 };
+Viewer.getSubjectHTML = function(m, projection, className, useAnchor) {
+  var subject = projection.getSubject();
+  var title = m.getValues(subject, ["title"]);
+  var name = m.getValues(subject, ["name"]);
+  var img = m.getValues(subject, ["image"]);
+  var url = m.getValues(subject, ["url"]);
+  var type = m.getValues(subject, ["type"]);
+  
+  var $td = $("<td/>", {"class" : className, "href" : subject, "title" : subject});
+  var $item = $("<" + (useAnchor? "a" : "span") + "/>", {"href" : subject});
+  $td.append($item);
+  
+  if(type[0]) {
+    var imgFile = Viewer.getTypeImg(m, type[0]);
+    if(imgFile) {
+      $item.append($("<img/>", {"src" : imgFile, "class" : "related_type"}));
+    }
+  }
+  $item.append($("<span/>", {"class": "related_name"}).html("" + (title.length?title[0]:(name[0]?name[0]:subject))));
+  $item.append($("<br/>"));
+  if(img[0]) {
+    $item.append($("<img/>", {"src" : img[0], "class" : "related_img"}));
+  }
+  return $td;
+}
 Viewer.getSubjectsHTML = function(m, ex_subject, subjects, columNumber, className, useAnchor) {
   var table = null;
   var cells = [];
@@ -386,28 +415,8 @@ Viewer.getSubjectsHTML = function(m, ex_subject, subjects, columNumber, classNam
       var projection = m.projections[targetSub];
       
       if(projection) {
-        var title = m.getValues(targetSub, ["title"]);
-        var name = m.getValues(targetSub, ["name"]);
-        var img = m.getValues(targetSub, ["image"]);
-        var url = m.getValues(targetSub, ["url"]);
-        var type = m.getValues(targetSub, ["type"]);
-        
-        var td = $("<td/>", {"class" : className, "href" : targetSub, "title" : targetSub});
-        var item = $("<" + (useAnchor? "a" : "span") + "/>", {"href" : targetSub});
-        td.append(item);
-        
-        if(type[0]) {
-          var imgFile = Viewer.getTypeImg(m, type[0]);
-          if(imgFile) {
-            item.append($("<img/>", {"src" : imgFile, "class" : "related_type"}));
-          }
-        }
-        item.append($("<span/>", {"class": "related_name"}).html("" + (title.length?title[0]:(name[0]?name[0]:targetSub))));
-        item.append($("<br/>"));
-        if(img[0]) {
-          item.append($("<img/>", {"src" : img[0], "class" : "related_img"}));
-        }
-        cells.push(td);
+        var $td = Viewer.getSubjectHTML(m, projection, className, useAnchor);
+        cells.push($td);
       }
     }
   }
@@ -435,7 +444,7 @@ Viewer.getGraphHTML = function(m, subject) {
   var div = $("<div/>");
   //items this subject refers
   var values = m.projections[subject].getAll();
-  values = m.trimDuplicate(values).sort();
+  values = Manager.trimDuplicate(values).sort();
   
   var referringTable = Viewer.getSubjectsHTML(m, subject, values, 3, "refer_cell", false);
   if(referringTable) {

@@ -54,7 +54,7 @@ Manager.prototype.getSubjects = function(property, value) {
 Manager.prototype.getFilteredValues = function(subject, propKeywords) {
   var res = [];
   var props = this.projections[subject].getProperties();
-  var type_props = this.filter(propKeywords, props, true);
+  var type_props = Manager.filter(propKeywords, props, true);
   for(var i = 0; i < type_props.length; i++) {
     res = res.concat(this.projections[subject].getAll(type_props[i]));
   }
@@ -86,7 +86,7 @@ Manager.prototype.renew = function() {
       this.types = this.types.concat(this.getValues(subject, ["type"]));
     }
   }
-  this.types = this.trimDuplicate(this.types);
+  this.types = Manager.trimDuplicate(this.types);
   /*this.types.sort(function(a,b) {
     var codeA = a[a.lastIndexOf("/") + 1].toLowerCase().charCodeAt(0);
     var codeB = b[b.lastIndexOf("/") + 1].toLowerCase().charCodeAt(0);
@@ -97,10 +97,10 @@ Manager.prototype.renew = function() {
   this.referred = this.getReferredMap(this.projections);
   
   //calculate rating for each item
-  var rating = this.calcRating(this.projections, this.referred);
+  var rating = Manager.calcRating(this.projections, this.referred);
   
   //sort with reference count
-  this.projections = this.sortProjections(this.projections, rating);
+  this.projections = Manager.sortProjections(this.projections, rating);
 };
 Manager.prototype.getReferredMap = function(projections) {
   var referred = {}
@@ -122,14 +122,14 @@ Manager.prototype.getReferredMap = function(projections) {
   }
   return referred;
 }
-Manager.prototype.calcRating = function(projections, referredMap) {
+Manager.calcRating = function(projections, referredMap) {
   var rating = {};
   for(var subject in referredMap) {
     rating[subject] = referredMap[subject].length;
   }
   return rating;
 };
-Manager.prototype.sortProjections = function(projections, rating) {
+Manager.sortProjections = function(projections, rating) {
   var tmpProjections = [];
   for(var subject in projections) {
     var obj = {"subject"    : subject, 
@@ -149,7 +149,7 @@ Manager.prototype.sortProjections = function(projections, rating) {
   }
   return res;
 };
-Manager.prototype.filter = function(keywords, list, onlyTail) {
+Manager.filter = function(keywords, list, onlyTail) {
   var res = [];
   for(var i = 0; i < list.length; i++) {
     if(list[i]) {
@@ -198,7 +198,7 @@ Manager.prototype.filterSubjects = function (keywords) {
   }
   return subjects;
 };
-Manager.prototype.trimDuplicate = function(list) {
+Manager.trimDuplicate = function(list) {
   var map = {};
   for(var i = 0; i < list.length; i++) {
     map[list[i]] = null;
@@ -209,14 +209,14 @@ Manager.prototype.trimDuplicate = function(list) {
   }
   return res;
 };
-Manager.prototype.isAbsoluteURI = function(url_str) {
+Manager.isAbsoluteURI = function(url_str) {
   return (url_str && (url_str.indexOf("://") != -1)) ? true : false;
 };
-Manager.prototype.isSiteURL = function(url_str) {
+Manager.isSiteURL = function(url_str) {
   return (url_str && (url_str.search(/^http:\/\//i) != -1 ||
       url_str.search(/^https:\/\//i) != -1)) ? true : false;
 };
-Manager.prototype.ave = function(values, floatDigit) {
+Manager.ave = function(values, floatDigit) {
   var d = floatDigit ? 10*floatDigit: 1;
   if(typeof(values) == "string") {
     return parseFloat(values, 10);
@@ -238,7 +238,7 @@ Manager.prototype.ave = function(values, floatDigit) {
   }
   return count ? Math.round(sum/count*d)/d: 0; 
 };
-Manager.prototype.toHumanReadable = function(str) {
+Manager.toHumanReadable = function(str) {
   function isLowerCase(c) {
     return (c >= 97 && c <= 122) ? true : false;
   }
@@ -270,7 +270,7 @@ function has(values, value) {
   }
   return false;
 }
-function hasKey(o) {
+Manager.hasKey = function(o) {
   for(var k in o) { return true; }
   return false;
 }
@@ -337,7 +337,7 @@ Manager.prototype.save = function() {
   }
   
   //save this site
-  if(this.isSiteURL(this.tab.url)) {
+  if(Manager.isSiteURL(this.tab.url)) {
     var subject = this.tab.url;
     _save(this, subject, Manager.PROP_TITLE, this.tab.title);
     if(!this.tst.getValues(subject, "title").length) {

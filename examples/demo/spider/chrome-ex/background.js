@@ -1,22 +1,27 @@
+/* $Id$ */
 var bg_res = {};
 
 function getRelatedSubjects(m, rdfa, micro) {
   var res = [];
   
-  //refer : find in RDFa
+  //private items RDFa refers to
   if(rdfa) {
     for(var subject in rdfa) {
       var props = rdfa[subject];
       for(var prop in props) {
         var value = props[prop];
         console.log(subject, prop, value);
-        if(m.projections[value]) {
+        if(m.projections[value]) {//search with subject
           res.push(value);
-        } 
+        } else if(prop.search(/name$/) != -1
+            ||prop.search(/title$/) != -1) {
+          var subjects = m.getSubjects(null, value);
+          res = res.concat(subjects);
+        }
       }
     }
   }
-  //refer : find in microdata
+  //private items microdata refers to
   if(micro && micro.items) {
     for(var i = 0; i < micro.items.length; i++) {
       var item = micro.items[i];
@@ -29,9 +34,14 @@ function getRelatedSubjects(m, rdfa, micro) {
         for(var j = 0; j < values.length; j++) {
           var value = values[j];
           console.log(subject, prop, value);
-          if(m.projections[value]) {
+          if(m.projections[value]) {//search with subject
             res.push(value);
           }
+        }
+        if(prop.search(/name$/) != -1
+            ||prop.search(/title$/) != -1) {
+          var subjects = m.getSubjects(null, value);
+          res = res.concat(subjects);
         }
       }
     }
@@ -43,21 +53,33 @@ function getRelatedSubjects(m, rdfa, micro) {
   
   return res;
 }
-function generateInsertedHTML(m, subjects) {
-  var table = Viewer.getSubjectsHTML(m, null, subjects, 1, "referred_cell", true);
-  if(table) {
-    table.addClass("related_table");
+function generateInsertedHTML(m, v, subjects) {
+  if(!subjects.length) {
+    return null;
   }
-  var html = null;
-  if(table) {
-    html = "<div id='spider-wrapper'>" +
-    "<div class='spider-container'>" +
-    "<img class='related_type' src='" + m.app_url + "images/spider.png'>" +
-    $("<div/>").append(table).html() + "</div></div>";
+  $wrapper = $("<div>", {"id" : "spider-wrapper"});
+  var $container = $("<div>", {"id" : "spider-container"}).appendTo($wrapper); {
+    var $img = $("<img>", {"class" : "related_type", "src" : m.app_url + "images/spider.png"});
+    $container.append(
+        $("<div>", {"id" : "spider-visible", "style" : "text-align:center;"}).append($img)
+    );
   }
-  return html;
+  var $items = $("<div id='spider-items'>").appendTo($container);
+  var $summaries = $("<table>", {"id" : "spider-summaries"}).appendTo($items);
+  for(var i = 0; i < subjects.length; i++) {
+    var $summary = Viewer.getSubjectHTML(m, m.projections[subjects[i]], "referred_cell", true);
+    var detail = v.getSummaryHTML(subjects[i]);
+    var $detail = null;
+    if(detail) {
+      $detail = $($(detail).find("table td")[1]);
+    }
+    
+    $summaries.append($("<tr class='spider-summary'>").append($summary));
+    $items.append(
+        $("<div>", {"class" : "spider-detail", "id" : $summary.attr("href")}).append($detail));
+  }
+  return $("<div>").append($wrapper).html();
 }
-
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
       //reset icon
@@ -74,7 +96,8 @@ chrome.runtime.onMessage.addListener(
         //sendResponse({farewell: "goodbye: " + res});
         results.micro = request.micro;
       }
-      if(request.rdfa || request.micro) {
+      if((request.rdfa && Manager.hasKey(request.rdfa)) ||
+          (request.micro && request.micro.items.length)) {
         //notify the site has annotation
         Viewer.changeIcon(sender.tab.id, true);
       }
@@ -85,9 +108,11 @@ chrome.runtime.onMessage.addListener(
       var m = new Manager(sender.tab);
       m.renew();
       var subjects = getRelatedSubjects(m, request.rdfa, request.micro);
-      console.log(subjects);      
-      subjects = m.trimDuplicate(subjects);
-      var html = generateInsertedHTML(m, subjects);
+      //console.log(subjects);      
+      subjects = Manager.trimDuplicate(subjects);
+      
+      var v = new Viewer(m, sender.tab);
+      var html = generateInsertedHTML(m, v, subjects);
 
       sendResponse({html: html});
     }
