@@ -10,12 +10,12 @@ function getRelatedSubjects(m, rdfa, micro) {
       var props = rdfa[subject];
       for(var prop in props) {
         var value = props[prop];
-        console.log(subject, prop, value);
+        
         if(m.projections[value]) {//search with subject
           res.push(value);
-        } else if(prop.search(/name$/) != -1
-            ||prop.search(/title$/) != -1) {
-          var subjects = m.getSubjects(null, value);
+        } else if(prop.search(/#?name$/) != -1
+            ||prop.search(/#?title$/) != -1) {
+          var subjects = m.getSubjects(null, value, true);
           res = res.concat(subjects);
         }
       }
@@ -33,15 +33,15 @@ function getRelatedSubjects(m, rdfa, micro) {
         var values = props[prop];
         for(var j = 0; j < values.length; j++) {
           var value = values[j];
-          console.log(subject, prop, value);
+          
           if(m.projections[value]) {//search with subject
             res.push(value);
           }
-        }
-        if(prop.search(/name$/) != -1
-            ||prop.search(/title$/) != -1) {
-          var subjects = m.getSubjects(null, value);
-          res = res.concat(subjects);
+          if(prop.search(/#?name$/) != -1
+              || prop.search(/#?title$/) != -1) {
+            var subjects = m.getSubjects(null, value, true);
+            res = res.concat(subjects);
+          }
         }
       }
     }
@@ -50,7 +50,6 @@ function getRelatedSubjects(m, rdfa, micro) {
   /*for(var subject in m.projections) {
     
   }*/
-  
   return res;
 }
 function generateInsertedHTML(m, v, subjects) {
@@ -58,25 +57,25 @@ function generateInsertedHTML(m, v, subjects) {
     return null;
   }
   $wrapper = $("<div>", {"id" : "spider-wrapper"});
-  var $container = $("<div>", {"id" : "spider-container"}).appendTo($wrapper); {
-    var $img = $("<img>", {"class" : "related_type", "src" : m.app_url + "images/spider.png"});
-    $container.append(
-        $("<div>", {"id" : "spider-visible", "style" : "text-align:center;"}).append($img)
-    );
-  }
+  var $img = $("<img>", {"class" : "related_type", "src" : m.app_url + "images/spider.png"});
+  $wrapper.append($("<div>", {"id" : "spider-visible"}).append($img));
+  var $container = $("<div>", {"id" : "spider-container"}).appendTo($wrapper);
+  
   var $items = $("<div id='spider-items'>").appendTo($container);
   var $summaries = $("<table>", {"id" : "spider-summaries"}).appendTo($items);
   for(var i = 0; i < subjects.length; i++) {
     var $summary = Viewer.getSubjectHTML(m, m.projections[subjects[i]], "referred_cell", true);
+    $summaries.append($("<tr class='spider-summary'>").append($summary));
+    
     var detail = v.getSummaryHTML(subjects[i]);
     var $detail = null;
     if(detail) {
-      $detail = $($(detail).find("table td")[1]);
+      $detail = $($(detail).find(".item-detail")[0]);
+      $detail.find("ul").attr("style", "text-align:left;");//change the style of <ul>
+
+      $items.append(
+          $("<div>", {"class" : "spider-detail", "id" : $summary.attr("href")}).append($detail));
     }
-    
-    $summaries.append($("<tr class='spider-summary'>").append($summary));
-    $items.append(
-        $("<div>", {"class" : "spider-detail", "id" : $summary.attr("href")}).append($detail));
   }
   return $("<div>").append($wrapper).html();
 }
@@ -108,8 +107,9 @@ chrome.runtime.onMessage.addListener(
       var m = new Manager(sender.tab);
       m.renew();
       var subjects = getRelatedSubjects(m, request.rdfa, request.micro);
-      //console.log(subjects);      
+      
       subjects = Manager.trimDuplicate(subjects);
+      console.log(subjects);     
       
       var v = new Viewer(m, sender.tab);
       var html = generateInsertedHTML(m, v, subjects);

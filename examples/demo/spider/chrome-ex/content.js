@@ -18,7 +18,6 @@ function extract() {
       rdfa[subject] = prop_value;
     }
   }
-  
   var micro = null;
   {
     var $target = $("*");
@@ -39,23 +38,25 @@ function extract() {
             //resolve duplicated container
             jQuery("#spider-wrapper").remove();
             
-            var $wrapper = jQuery(html).css({'opacity' : 0.1});
+            /*var $wrapper = jQuery(html).css({'opacity' : 0.1});*/
+            var $wrapper = jQuery(html);
             jQuery("body").append($wrapper);
             
+            var $container = $wrapper.find("#spider-container").css({'opacity' : 0.1});
             //hide the detail of each item
             $("#spider-wrapper .spider-detail").hide();
             
-            $wrapper.mouseover(function(e){
-              $wrapper.css({'opacity' : 1.0 });
+            $container.mouseover(function(e){
+              $container.css({'opacity' : 1.0 });
             });
-            $wrapper.mouseout(function(e){
-              $wrapper.css({'opacity' : 0.1});
+            $container.mouseout(function(e){
+              $container.css({'opacity' : 0.1 });
             });
             $("#spider-wrapper #spider-visible").click(function(e) {
-              $("#spider-wrapper #spider-items").fadeToggle("fast");
+              $container.fadeToggle("fast");
             });
             $(window).bind("scroll", function() {
-              $("#spider-wrapper .spider-detail").hide();
+              $container.hide();
             });
             $("#spider-wrapper .spider-summary").mouseover(function(e) {
               $("#spider-wrapper .spider-detail").hide();
@@ -63,7 +64,7 @@ function extract() {
               //show the detail of matched item
               var subject = $(this).children("td").attr("href");
               $detail = $("#spider-wrapper .spider-detail[id='" + subject + "']");
-              $detail.attr("style", "position:fixed;top:" + e.clientY +"px;left:92px");
+              $detail.attr("style", "position:fixed;top:" + (e.clientY - 15) +"px;left:80px");
             });
           }
         }

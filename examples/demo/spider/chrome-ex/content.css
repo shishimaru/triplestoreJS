@@ -5,24 +5,34 @@
     left: 0px;
     font-family: Arial;
     font-size: 12px;
-    z-index: 9999999;
+    width: 80px;
+    z-index: 9999999; 
 }
 #spider-container {
     display: inline-block;
     vertical-align: middle;
-    padding: 10px 5px 10px 5px;
+    padding: 5px 5px 5px 5px;
     border: 1px solid rgb(160, 160, 160);
     background: no-repeat rgb(245, 245, 245);
     box-shadow: rgb(128, 128, 128) 0px 0px 10px;
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-    width: 80px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+    
     position: relative;
     overflow-x: hidden;
     overflow-y: hidden;
     /*text-align: center;*/
 }
+#spider-visible {
+	text-align: center;	
+	border: 1px solid rgb(160, 160, 160);
+	background: no-repeat rgb(245, 245, 245);
+	box-shadow: rgb(128, 128, 128) 0px 0px 10px;
+	border-top-left-radius: 7px;
+	border-top-right-radius: 7px;	
+}
 .spider-detail {
+    max-width: 300px;
     /*padding: 10px 5px 10px 5px;*/
     border: 1px solid rgb(160, 160, 160);
     background: no-repeat rgb(245, 245, 245);

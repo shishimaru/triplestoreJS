@@ -24,27 +24,43 @@ Manager.prototype.init =function(tab) {
   this.tst = new Triplestore();
   this.lst = localStorage;
 };
-Manager.prototype.getSubjects = function(property, value) {
+Manager.prototype.getSubjects = function(property, value, isLax) {
   var res = [];
   for(var subject in this.projections) {
     var projection = this.projections[subject];
     
-    if(!property && !value) {
+    if(property == null && value == null) {
       res.push(subject);
-    } else if(property && !value){
+    } else if(property && value == null){
       if(projection.getAll(property).length) {
         res.push(subject);
       }
-    } else if(!property && value){
-      if(projection.getProperties(value).length) {
-        res.push(subject);
+    } else if(property == null && value){
+      if(isLax) {
+        var values = projection.getAll(property);
+        var matchedValues = Manager.filter(value.split(" "), values, false);
+        if(matchedValues.length) {
+          res.push(subject);
+        }
+      } else {
+        if(projection.getProperties(value).length) {
+          res.push(subject);
+        }
       }
     } else if(property && value){
       var values = projection.getAll(property);
-      for(var i = 0; i < values.length; i++) {
-        if(values[i] == value) {
+      
+      if(isLax) {
+        var matchedValues = Manager.filter(value.split(" "), values, false);
+        if(matchedValues.length) {
           res.push(subject);
-          break;
+        }
+      } else {
+        for(var i = 0; i < values.length; i++) {
+          if(values[i] == value) {
+            res.push(subject);
+            break;
+          }
         }
       }
     }

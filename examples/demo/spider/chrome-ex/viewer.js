@@ -354,9 +354,9 @@ Viewer.prototype.getSummaryHTML = function(subject) {
   }
   
   {//img and description
-    res += "<div>";
+    res += "<div class='item-detail'>";
     res += description ? "<p>" + this.shortenString(description, 300) + "</p>": "";
-    res += "<table><tr><td class='item_img'>";
+    res += "<table><tr><td style='vertical-align:middle; text-align:center'>";
     if(img) {
       if(img.search(/^\/\//) != -1) {
         img = "https:" + img;
@@ -389,8 +389,13 @@ Viewer.getSubjectHTML = function(m, projection, className, useAnchor) {
   var url = m.getValues(subject, ["url"]);
   var type = m.getValues(subject, ["type"]);
   
-  var $td = $("<td/>", {"class" : className, "href" : subject, "title" : subject});
-  var $item = $("<" + (useAnchor? "a" : "span") + "/>", {"href" : subject});
+  /*var $td = $("<td/>", {"class" : className, "href" : subject, "title" : subject});
+  var $item = $("<" + (useAnchor? "a" : "span") + "/>", {"href" : subject});*/
+  
+  var $td = $("<td/>", {"class" : className, "href" : subject});
+  var $item = $("<" + (useAnchor? "a" : "span") + "/>", {"href" : subject, "title" : subject});
+  
+  
   $td.append($item);
   
   if(type[0]) {
