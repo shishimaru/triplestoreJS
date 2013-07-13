@@ -38,13 +38,14 @@ function extract() {
             //resolve duplicated container
             jQuery("#spider-wrapper").remove();
             
-            /*var $wrapper = jQuery(html).css({'opacity' : 0.1});*/
+            //init
             var $wrapper = jQuery(html);
             jQuery("body").append($wrapper);
-            
             var $container = $wrapper.find("#spider-container").css({'opacity' : 0.1});
-            //hide the detail of each item
-            $("#spider-wrapper .spider-detail").hide();
+            var $details = $wrapper.find(".spider-detail");
+            
+            //hide details
+            $details.hide();
             
             $container.mouseover(function(e){
               $container.css({'opacity' : 1.0 });
@@ -56,7 +57,7 @@ function extract() {
               $container.fadeToggle("fast");
             });
             $(window).bind("scroll", function() {
-              $container.hide();
+              $details.hide();
             });
             $("#spider-wrapper .spider-summary").mouseover(function(e) {
               $("#spider-wrapper .spider-detail").hide();
