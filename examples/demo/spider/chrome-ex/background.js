@@ -79,6 +79,15 @@ function generateInsertedHTML(m, v, subjects) {
   }
   return $("<div>").append($wrapper).html();
 }
+function getVisitNumber(url) {
+  return localStorage[url] ? parseInt(localStorage[url]) : 0;
+}
+function countVisitNumber(url) {
+  var num = localStorage[url] ? parseInt(localStorage[url]) : 0;
+  if(num < 99) {
+    localStorage[url] = num + 1;
+  }
+}
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
       if(request.action == "extracted") {
@@ -103,10 +112,16 @@ chrome.runtime.onMessage.addListener(
         }
         results.onSelectionChanged = onSelectionChanged;
         bg_res[request.url] = results;
+        countVisitNumber(request.url);
         
-        //feedback related items to content script
+        //auto save the items based on visit number
         var m = new Manager(sender.tab);
         m.renew();
+        if(getVisitNumber(request.url) >= 4 * 3) {
+          m.save();
+        }
+        
+        //feedback related items to content script
         var subjects = getRelatedSubjects(m, request.rdfa, request.micro);
         
         subjects = Manager.trimDuplicate(subjects);
@@ -116,6 +131,7 @@ chrome.runtime.onMessage.addListener(
         var html = generateInsertedHTML(m, v, subjects);
         sendResponse({html: html});
       }
+      //auto save for long stay at same site
       else if(request.action == "long-stay") {
         var m = new Manager(sender.tab);
         m.renew();
@@ -129,10 +145,10 @@ function onSelectionChanged(tabId) {
   });
 }
 
-chrome.tabs.onActivated.addListener(function(activeInfo) {
+/*chrome.tabs.onActivated.addListener(function(activeInfo) {
   onSelectionChanged(activeInfo.tabId);
-});
+});*/
 
 chrome.tabs.onUpdated.addListener(function(id, changeInfo, tab) {
-  onSelectionChanged(id);
+  onSelectionChanged(id);  
 });

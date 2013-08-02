@@ -74,6 +74,8 @@ function extract() {
       }
   );   
   //auto save items if users stay at sites for long time
+  //the period is decided based on Weibull distribution
+  //http://dl.acm.org/citation.cfm?doid=1835449.1835513
   var time = 30 * 1000;
   setTimeout(function(){
     chrome.runtime.sendMessage(
