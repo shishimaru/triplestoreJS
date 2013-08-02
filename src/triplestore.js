@@ -290,7 +290,11 @@ var Triplestore = function() {
           }
         }
       } else {
-        this.st.clear();  
+        for(var key in this.st) {
+          if(key.substr(0, this.appPrefixLen) == this.appPrefix) {
+            this.st.removeItem(key);
+          }
+        }
       }
     }
   };
