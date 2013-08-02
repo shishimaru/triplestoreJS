@@ -26,6 +26,7 @@ function extract() {
   }
   chrome.runtime.sendMessage(
       {
+        action : "extracted",
         url: document.URL,
         rdfa: rdfa,
         micro: micro
@@ -71,7 +72,18 @@ function extract() {
         }
         this.flag = true;
       }
-  );
+  );   
+  //auto save items if users stay at sites for long time
+  var time = 30 * 1000;
+  setTimeout(function(){
+    chrome.runtime.sendMessage(
+        {
+          action : "long-stay",
+          url: document.URL
+        },
+        function(res) {
+          
+        });
+  }, time);
 }
-
 extract();

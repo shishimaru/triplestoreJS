@@ -81,40 +81,46 @@ function generateInsertedHTML(m, v, subjects) {
 }
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
-      //reset icon
-      Viewer.changeIcon(sender.tab.id, false);
-      //init
-      var results = {};
-      if(request.rdfa) {
-        console.log("bg received RDFa");
-        //sendResponse({farewell: "goodbye: " + res});
-        results.rdfa = request.rdfa;
+      if(request.action == "extracted") {
+        //reset icon
+        Viewer.changeIcon(sender.tab.id, false);
+        //init
+        var results = {};
+        if(request.rdfa) {
+          console.log("bg received RDFa");
+          //sendResponse({farewell: "goodbye: " + res});
+          results.rdfa = request.rdfa;
+        }
+        if(request.micro) {
+          console.log("bg received microdata");
+          //sendResponse({farewell: "goodbye: " + res});
+          results.micro = request.micro;
+        }
+        if((request.rdfa && Manager.hasKey(request.rdfa)) ||
+            (request.micro && request.micro.items.length)) {
+          //notify the site has annotation
+          Viewer.changeIcon(sender.tab.id, true);
+        }
+        results.onSelectionChanged = onSelectionChanged;
+        bg_res[request.url] = results;
+        
+        //feedback related items to content script
+        var m = new Manager(sender.tab);
+        m.renew();
+        var subjects = getRelatedSubjects(m, request.rdfa, request.micro);
+        
+        subjects = Manager.trimDuplicate(subjects);
+        console.log(subjects);     
+        
+        var v = new Viewer(m, sender.tab);
+        var html = generateInsertedHTML(m, v, subjects);
+        sendResponse({html: html});
       }
-      if(request.micro) {
-        console.log("bg received microdata");
-        //sendResponse({farewell: "goodbye: " + res});
-        results.micro = request.micro;
+      else if(request.action == "long-stay") {
+        var m = new Manager(sender.tab);
+        m.renew();
+        m.save();
       }
-      if((request.rdfa && Manager.hasKey(request.rdfa)) ||
-          (request.micro && request.micro.items.length)) {
-        //notify the site has annotation
-        Viewer.changeIcon(sender.tab.id, true);
-      }
-      results.onSelectionChanged = onSelectionChanged;
-      bg_res[request.url] = results;
-      
-      //feedback related items to content script
-      var m = new Manager(sender.tab);
-      m.renew();
-      var subjects = getRelatedSubjects(m, request.rdfa, request.micro);
-      
-      subjects = Manager.trimDuplicate(subjects);
-      console.log(subjects);     
-      
-      var v = new Viewer(m, sender.tab);
-      var html = generateInsertedHTML(m, v, subjects);
-
-      sendResponse({html: html});
     }
 );
 function onSelectionChanged(tabId) {

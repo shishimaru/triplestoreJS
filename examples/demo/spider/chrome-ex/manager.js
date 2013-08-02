@@ -364,7 +364,7 @@ Manager.prototype.save = function() {
     }
   }
   
-  //update views
+  //renew internal status
   this.renew();
   //TODO : feedback to content script
   //this.onSelectionChanged(m.tab.id);
