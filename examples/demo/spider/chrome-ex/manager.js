@@ -8,16 +8,18 @@ var Manager = function(tab){
 Manager.PROP_FOUNDAt = "__FOUND_At__";
 Manager.PROP_FAVICON = "__FAVICON__";
 Manager.PROP_TITLE = "__TITLE__";
+Manager.PROP_EXPIRES = "__EXPIRES__";
 Manager.prototype.init =function(tab) {
   this.app_id = chrome.i18n.getMessage("@@extension_id");
   this.app_url = "chrome-extension://" + this.app_id + "/";
   
   this.tab = tab;
   var bg = chrome.extension.getBackgroundPage();
-  if(bg) {
+  if(bg && tab) {
     this.bg_res = bg.bg_res;
     this.rdfa = this.bg_res[tab.url] ? this.bg_res[tab.url].rdfa : null;
     this.micro = this.bg_res[tab.url] ? this.bg_res[tab.url].micro : null;
+    this.expires = this.bg_res[tab.url] ? this.bg_res[tab.url].expires : null;
     this.onSelectionChanged = this.bg_res[tab.url] ? this.bg_res[tab.url].onSelectionChanged : null;
   }
 
@@ -320,6 +322,10 @@ Manager.prototype.save = function() {
       }
       //store site url
       _save(this, subject, Manager.PROP_FOUNDAt, this.tab.url);
+      //store expires
+      if(this.expires) {
+        _save(this, subject, Manager.PROP_EXPIRES, this.expires.toUTCString());
+      }
     }
     console.log("end save RDFa");
   }
@@ -347,7 +353,10 @@ Manager.prototype.save = function() {
       }
       //store site url
       _save(this, subject, Manager.PROP_FOUNDAt, this.tab.url);
-      
+      //store expires
+      if(this.expires) {
+        _save(this, subject, Manager.PROP_EXPIRES, this.expires.toUTCString());
+      }
     }
     console.log("end save microdata");
   }

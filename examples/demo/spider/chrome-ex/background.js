@@ -1,5 +1,6 @@
 /* $Id$ */
 var bg_res = {};
+var expires = {};
 
 function getRelatedSubjects(m, rdfa, micro) {
   var res = [];
@@ -91,6 +92,9 @@ function countVisitNumber(url) {
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
       if(request.action == "extracted") {
+        if(!sender.tab || !sender.tab.id) {
+          return;
+        }
         //reset icon
         Viewer.changeIcon(sender.tab.id, false);
         //init
@@ -110,6 +114,7 @@ chrome.runtime.onMessage.addListener(
           //notify the site has annotation
           Viewer.changeIcon(sender.tab.id, true);
         }
+        results.expires = expires[request.url];
         results.onSelectionChanged = onSelectionChanged;
         bg_res[request.url] = results;
         countVisitNumber(request.url);
@@ -144,11 +149,47 @@ function onSelectionChanged(tabId) {
     file: "content.js"
   });
 }
-
 /*chrome.tabs.onActivated.addListener(function(activeInfo) {
   onSelectionChanged(activeInfo.tabId);
 });*/
-
 chrome.tabs.onUpdated.addListener(function(id, changeInfo, tab) {
   onSelectionChanged(id);  
+});
+
+//get Expires header
+chrome.webRequest.onResponseStarted.addListener(
+    function(details) {
+      var headers = details.responseHeaders;
+      var ex = null;
+      for(var i = 0; i < headers.length; i++) {
+        if(headers[i].name.toLowerCase() == "expires") {
+          ex = new Date(headers[i].value);
+          break;
+        }
+      }
+      expires[details.url] = ex;
+    },
+    { urls: ["<all_urls>"], types: ["main_frame"] },
+    ["responseHeaders"]
+);
+
+//clean expired items only once
+function cleanOldItems() {
+  var m = new Manager(null);
+  m.renew();
+ 
+  var now = new Date();
+  for(var subject in m.projections) {
+    var projection = m.projections[subject];
+    var expires_str = projection.get(Manager.PROP_EXPIRES);
+    if(expires_str) {
+      var expires = new Date(expires_str);
+      if(expires < now) {
+        projection.remove();
+      }
+    }
+  }
+}
+document.addEventListener('DOMContentLoaded', function () {
+  //cleanOldItems(); //TODO: postponed
 });

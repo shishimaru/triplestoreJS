@@ -1,6 +1,6 @@
 {
     "name": "Semantic Spider",
-    "version": "0.9",
+    "version": "0.10",
     "manifest_version": 2,
     "description": "Chrome becomes more intelligent with W3C Semantic Web
                     and you could find out knowledge you didn't realize so far",
@@ -9,7 +9,8 @@
         "16": "images/spider.png"},
     //"omnibox": {"keyword" : "hoge"},
     "offline_enabled": true,
-    "permissions": ["tabs", "http://*/*", "https://*/*"],
+    "permissions": ["tabs", "webRequest", "unlimitedStorage",
+                    "http://*/*", "https://*/*"],
     "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
     "content_scripts": [
         {
@@ -36,7 +37,6 @@
                     "manager.js",
                     "viewer.js"]
     },
-    
     "browser_action": {
     	"default_icon": "images/spider.png",
     	"default_popup": "popup.html",
