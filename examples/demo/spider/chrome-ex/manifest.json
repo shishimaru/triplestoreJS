@@ -7,7 +7,6 @@
     "icons": {
         "128": "images/spider-128.png",
         "16": "images/spider.png"},
-    //"omnibox": {"keyword" : "hoge"},
     "offline_enabled": true,
     "permissions": ["tabs", "webRequest", "unlimitedStorage",
                     "http://*/*", "https://*/*"],
