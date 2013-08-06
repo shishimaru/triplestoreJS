@@ -11,6 +11,7 @@ TestCase('Test triplestore.js', {
   'test set': function() {
     {
       this.st.set("s1", "name", "Bob");
+      localStorage["dummy"] = "XXXX";
       
       //check
       var props = this.st.getProperties("s1");
@@ -50,6 +51,7 @@ TestCase('Test triplestore.js', {
   'test add': function() {
     this.st.setMapping("a", "http://a.org/");
     this.st.add("a:bob", "a:address", "Boston");
+    localStorage["dummy"] = "XXXX";
     
     {//check
       var props = this.st.getProperties("a:bob");
@@ -86,6 +88,7 @@ TestCase('Test triplestore.js', {
   'test edit': function() {
     this.st.set("s1", "address", "Cambridge");
     this.st.set("s1", "address", "Boston");
+    localStorage["dummy"] = "XXXX";
       
     {
       this.st.set("s1", "address", "Brookline");
@@ -102,6 +105,7 @@ TestCase('Test triplestore.js', {
       this.st.set("s2", "name", "John");
       this.st.set("s2", "address", "Boston");
       this.st.set("s2", "phone", "617");
+      localStorage["dummy"] = "XXXX";
       
       {
         //check
@@ -135,6 +139,7 @@ TestCase('Test triplestore.js', {
       this.st.set("a:bob", "a:name", "a:Bob");
       this.st.set("a:bob", "a:address", "Cambridge");
       this.st.set("b:john", "b:site", "http://sns.org/john");
+      localStorage["dummy"] = "XXXX";
       
       //check
       {
@@ -180,6 +185,7 @@ TestCase('Test triplestore.js', {
       this.st.set("a:bob", "a:name", "a:Bob");
       this.st.set("a:bob", "a:address", "Cambridge");
       this.st.set("b:john", "b:site", "http://sns.org/john");
+      localStorage["dummy"] = "XXXX";
       
       //check
       {
@@ -205,6 +211,7 @@ TestCase('Test triplestore.js', {
       this.st.add("a:bob", "a:address", "Brookline");
       this.st.set("b:john", "a:name", "John");
       this.st.set("b:john", "b:site", "http://sns.org/john");
+      localStorage["dummy"] = "XXXX";
       
       //check with subject + property
       {
@@ -320,6 +327,7 @@ TestCase('Test triplestore.js', {
       this.st.add("a:bob", "a:address", "Boston");
       this.st.set("b:john", "a:name", "b:John");
       this.st.set("b:john", "b:address", "Cambridge");
+      localStorage["dummy"] = "XXXX";
       
       //check with property + value
       {
@@ -424,6 +432,7 @@ TestCase('Test triplestore.js', {
       this.st.set("a:bob", "a:phone", "617");      
       this.st.set("b:john", "a:name", "b:John");
       this.st.set("b:john", "b:address", "Cambridge");
+      localStorage["dummy"] = "XXXX";
       
       //check
       {
@@ -474,6 +483,7 @@ TestCase('Test triplestore.js', {
       this.st.set("a:bob", "a:phone", "617");      
       this.st.set("b:john", "a:name", "b:John");
       this.st.set("b:john", "b:address", "Cambridge");
+      localStorage["dummy"] = "XXXX";
       
       //check
       {
@@ -565,6 +575,7 @@ TestCase('Test triplestore.js', {
       this.st.set("a:bob", "a:phone", "617");      
       this.st.set("b:john", "a:name", "b:John");
       this.st.set("b:john", "b:address", "Cambridge");
+      localStorage["dummy"] = "XXXX";
       
       //check
       {

@@ -16,6 +16,7 @@ TestCase('Test Projectoin', {
       this.st.set("a:bob", "a:phone", "617");      
       this.st.set("b:john", "a:name", "b:John");
       this.st.set("b:john", "b:address", "Cambridge");
+      localStorage["dummy"] = "XXXX";
       
       //check
       {
@@ -55,6 +56,7 @@ TestCase('Test Projectoin', {
       this.st.add("b:john", "b:address", "1");
       this.st.add("b:john", "b:address", "2");
       this.st.add("b:john", "b:address", "3");
+      localStorage["dummy"] = "XXXX";
       
       //check
       {
@@ -77,6 +79,7 @@ TestCase('Test Projectoin', {
       this.st.add("b:john", "b:address", "1");
       this.st.add("b:john", "b:address", "2");
       this.st.add("b:john", "b:address", "3");
+      localStorage["dummy"] = "XXXX";
       
       //check
       {
@@ -113,6 +116,7 @@ TestCase('Test Projectoin', {
       this.st.set("a:bob", "a:phone", "617");      
       this.st.set("b:john", "a:name", "b:John");
       this.st.set("b:john", "b:address", "Cambridge");
+      localStorage["dummy"] = "XXXX";
       
       //check
       {
@@ -167,6 +171,7 @@ TestCase('Test Projectoin', {
       this.st.set("a:bob", "a:phone", "617");      
       this.st.set("b:john", "a:name", "b:John");
       this.st.set("b:john", "b:address", "Cambridge");
+      localStorage["dummy"] = "XXXX";
       
       //check
       {

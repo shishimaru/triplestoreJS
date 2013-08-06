@@ -84,6 +84,9 @@ var Triplestore = function() {
     
     var res = [];
     for(var subject in this.st) {
+      if(subject.substr(0, this.appPrefixLen) != this.appPrefix) {
+        continue;
+      }
       var props_str = this.st.getItem(subject);
       var props = JSON.parse(props_str);
       
@@ -169,7 +172,9 @@ var Triplestore = function() {
       subjects.push(subject);
     } else {
       for(var subject in this.st) {
-        subjects.push(subject);
+        if(subject.substr(0, this.appPrefixLen) == this.appPrefix) {
+          subjects.push(subject);
+        }
       }
     }
     
@@ -282,6 +287,9 @@ var Triplestore = function() {
     } else {
       if(property) {/* remove all matched properties */
         for(var subject in this.st) {
+          if(subject.substr(0, this.appPrefixLen) != this.appPrefix) {
+            continue;
+          }
           var props_str = this.st[subject];
           var props = JSON.parse(props_str);
           if(props[property]) {
