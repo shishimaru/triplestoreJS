@@ -11,6 +11,7 @@
     "permissions": ["tabs", "webRequest", "unlimitedStorage",
                     "http://*/*", "https://*/*"],
     "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
+    "options_page": "options.html",
     "content_scripts": [
         {
             "matches": ["http://*/*", "https://*/*"],
@@ -31,6 +32,7 @@
     ],
     "background": {
         "scripts": ["jquery-1.9.1.min.js",
+                    "options.js",
                     "background.js",
                     "triplestore.js",
                     "manager.js",

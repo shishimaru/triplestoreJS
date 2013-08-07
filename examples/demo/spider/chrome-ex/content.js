@@ -69,23 +69,22 @@ function extract() {
               $detail.attr("style", "position:fixed;top:" + (e.clientY - 15) +"px;left:80px");
             });
           }
+          if(res.time) {//set timer for autosave
+            var time = res.time * 60 * 1000;
+            setTimeout(function(){
+              chrome.runtime.sendMessage(
+                  {
+                    action : "long-stay",
+                    url: document.URL
+                  },
+                  function(res) {
+                    
+                  });
+            }, time);
+          }
         }
         this.flag = true;
       }
-  );   
-  //auto save items if users stay at sites for long time
-  //the time is decided based on Weibull distribution
-  //http://dl.acm.org/citation.cfm?doid=1835449.1835513
-  var time = 30 * 1000;
-  setTimeout(function(){
-    chrome.runtime.sendMessage(
-        {
-          action : "long-stay",
-          url: document.URL
-        },
-        function(res) {
-          
-        });
-  }, time);
+  );
 }
 extract();

@@ -120,21 +120,21 @@ chrome.runtime.onMessage.addListener(
         countVisitNumber(request.url);
         
         //auto save the items based on visit number
+        var visit = get_visit();
         var m = new Manager(sender.tab);
         m.renew();
-        if(getVisitNumber(request.url) >= 4 * 3) {
+        if(visit && getVisitNumber(request.url) >= visit * 3) {
           m.save();
         }
         
         //feedback related items to content script
         var subjects = getRelatedSubjects(m, request.rdfa, request.micro);
-        
         subjects = Manager.trimDuplicate(subjects);
-        console.log(subjects);     
         
         var v = new Viewer(m, sender.tab);
         var html = generateInsertedHTML(m, v, subjects);
-        sendResponse({html: html});
+        var time = get_time();
+        sendResponse({html: html, time: time});
       }
       //auto save for long stay at same site
       else if(request.action == "long-stay") {
