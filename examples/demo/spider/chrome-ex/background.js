@@ -120,10 +120,11 @@ chrome.runtime.onMessage.addListener(
         countVisitNumber(request.url);
         
         //auto save the items based on visit number
-        var visit = get_visit();
+        var visit = Options.get_visit();
         var m = new Manager(sender.tab);
         m.renew();
         if(visit && getVisitNumber(request.url) >= visit * 3) {
+          console.log("save by frequent visit");
           m.save();
         }
         
@@ -133,11 +134,12 @@ chrome.runtime.onMessage.addListener(
         
         var v = new Viewer(m, sender.tab);
         var html = generateInsertedHTML(m, v, subjects);
-        var time = get_time();
+        var time = Options.get_time();
         sendResponse({html: html, time: time});
       }
       //auto save for long stay at same site
       else if(request.action == "long-stay") {
+        console.log("save by long stay");
         var m = new Manager(sender.tab);
         m.renew();
         m.save();
@@ -172,7 +174,6 @@ chrome.webRequest.onResponseStarted.addListener(
     { urls: ["<all_urls>"], types: ["main_frame"] },
     ["responseHeaders"]
 );
-
 //clean expired items only once
 function cleanOldItems() {
   var m = new Manager(null);
@@ -191,5 +192,7 @@ function cleanOldItems() {
   }
 }
 document.addEventListener('DOMContentLoaded', function () {
-  //cleanOldItems(); //TODO: postponed
+  if(Options.is_remove()) {
+    cleanOldItems();
+  }
 });

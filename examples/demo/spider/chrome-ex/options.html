@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<!-- $Id$ -->
+<html>
+<head>
+<meta charset="utf-8">
+<script type="text/javascript" src="options.js"></script>
+<title>Setting</title>
+<style>
+body {
+	overflow-x: hidden;
+}
+
+h2 {
+	margin: 12px 0 6px 0;
+	padding: 3px;
+	border-top: 1px solid #cccccc;
+	background-color: #cccccc;
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0.0, #f0f0f0),
+		color-stop(1.0, #ffffff) );
+	font-weight: bold;
+}
+
+h3 {
+	color: blue;
+	text-align: center;
+}
+
+.fieldset {
+	width: 250px;
+	height: 320px;
+	margin: 0 10px 10px 0;
+	float: left;
+	border: 1px solid #cccccc;
+	border-radius: 10px;
+	padding: 10px;
+	margin: 0 10px 10px 0;
+}
+
+.disabled {
+	opacity: 0.1;
+}
+</style>
+</head>
+<body>
+    <a href="http://www.w3.org/2013/04/semweb-html5/"><img src="images/spider.png"></a>
+	<h2>Options</h2>
+	<div>
+		<div id="autostore" class="fieldset">
+			<h3 style="text-align: center;">Auto storing items</h3>
+			<h4>
+				<input type="radio" name="enable_autostore" id="autostore_on"
+					checked="checked">
+				<label for="autostore_on">enable</label>
+			</h4>
+			<div id="autostore_setting">
+				<table>
+					<tr>
+						<td>If stay a site longer than</td>
+						<td><input type="text" required size="2" id="autostore_time"
+							value="1"> minutes</td>
+					</tr>
+					<tr>
+						<td>If visit a site more than</td>
+						<td><input type="text" size="2" id="autostore_visit"
+							value="5"> times</td>
+					</tr>
+				</table>
+			</div>
+			<h4>
+				<input type="radio" name="enable_autostore" id="autostore_off">
+				<label for="autostore_off">disable</label>
+			</h4>
+			<h4>
+				<input type="checkbox" id="autostore_remove">
+				<label>Remove expired items</label>
+			</h4>
+			<button id="autostore_reset">Reset</button>
+			<button id="autostore_save">Save</button>
+			<span id="autostore_status"></span>
+		</div>
+		<div id="storage" class="fieldset">
+			<h3>Storage</h3>
+			<h4>Clear stored items</h4>
+			<button id="storage_clear">Clear</button>
+			<span id="storage_status"></span>
+		</div>
+	</div>
+	<footer>
+		<hr width="100%">
+		<address>Hitoshi Uchida &lt;uchida@w3.org&gt;</address>
+	</footer>
+</body>
+</html>
