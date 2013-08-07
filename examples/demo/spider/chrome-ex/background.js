@@ -91,6 +91,9 @@ function countVisitNumber(url) {
 }
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
+      var m = new Manager(sender.tab);
+      m.renew();
+      
       if(request.action == "extracted") {
         if(!sender.tab || !sender.tab.id) {
           return;
@@ -121,29 +124,24 @@ chrome.runtime.onMessage.addListener(
         
         //auto save the items based on visit number
         var visit = Options.get_visit();
-        var m = new Manager(sender.tab);
-        m.renew();
         if(visit && getVisitNumber(request.url) >= visit * 3) {
-          console.log("save by frequent visit");
+          //alert("save by visit");
           m.save();
         }
-        
-        //feedback related items to content script
-        var subjects = getRelatedSubjects(m, request.rdfa, request.micro);
-        subjects = Manager.trimDuplicate(subjects);
-        
-        var v = new Viewer(m, sender.tab);
-        var html = generateInsertedHTML(m, v, subjects);
-        var time = Options.get_time();
-        sendResponse({html: html, time: time});
       }
       //auto save for long stay at same site
       else if(request.action == "long-stay") {
-        console.log("save by long stay");
-        var m = new Manager(sender.tab);
-        m.renew();
+        //alert("save by time");
         m.save();
       }
+      //feedback related items to content script
+      var subjects = getRelatedSubjects(m, bg_res[request.url].rdfa, bg_res[request.url].micro);
+      subjects = Manager.trimDuplicate(subjects);
+      
+      var v = new Viewer(m, sender.tab);
+      var html = generateInsertedHTML(m, v, subjects);
+      var time = Options.get_time();
+      sendResponse({html: html, time: time});
     }
 );
 function onSelectionChanged(tabId) {

@@ -1,4 +1,38 @@
 /* $Id$ */
+function showHTML(html) {
+  //resolve duplicated container
+  jQuery("#spider-wrapper").remove();
+  
+  //init
+  var $wrapper = jQuery(html);
+  jQuery("body").append($wrapper);
+  var $container = $wrapper.find("#spider-container").css({'opacity' : 0.1});
+  var $details = $wrapper.find(".spider-detail");
+  
+  //hide details
+  $details.hide();
+  
+  $container.mouseover(function(e){
+    $container.css({'opacity' : 1.0 });
+  });
+  $container.mouseout(function(e){
+    $container.css({'opacity' : 0.1 });
+  });
+  $("#spider-wrapper #spider-visible").click(function(e) {
+    $container.fadeToggle("fast");
+  });
+  $(window).bind("scroll", function() {
+    $details.hide();
+  });
+  $("#spider-wrapper .spider-summary").mouseover(function(e) {
+    $("#spider-wrapper .spider-detail").hide();
+    
+    //show the detail of matched item
+    var subject = $(this).children("td").attr("href");
+    $detail = $("#spider-wrapper .spider-detail[id='" + subject + "']");
+    $detail.attr("style", "position:fixed;top:" + (e.clientY - 15) +"px;left:80px");
+  });
+}
 function extract() {
   var rdfa = {};
   {
@@ -32,58 +66,29 @@ function extract() {
         micro: micro
       },
       function(res) {
-        this.flag = !this.flag ? false : this.flag;
-        if(!this.flag) {
-          var html = res.html;
-          if(html && html.length) {
-            //resolve duplicated container
-            jQuery("#spider-wrapper").remove();
-            
-            //init
-            var $wrapper = jQuery(html);
-            jQuery("body").append($wrapper);
-            var $container = $wrapper.find("#spider-container").css({'opacity' : 0.1});
-            var $details = $wrapper.find(".spider-detail");
-            
-            //hide details
-            $details.hide();
-            
-            $container.mouseover(function(e){
-              $container.css({'opacity' : 1.0 });
-            });
-            $container.mouseout(function(e){
-              $container.css({'opacity' : 0.1 });
-            });
-            $("#spider-wrapper #spider-visible").click(function(e) {
-              $container.fadeToggle("fast");
-            });
-            $(window).bind("scroll", function() {
-              $details.hide();
-            });
-            $("#spider-wrapper .spider-summary").mouseover(function(e) {
-              $("#spider-wrapper .spider-detail").hide();
-              
-              //show the detail of matched item
-              var subject = $(this).children("td").attr("href");
-              $detail = $("#spider-wrapper .spider-detail[id='" + subject + "']");
-              $detail.attr("style", "position:fixed;top:" + (e.clientY - 15) +"px;left:80px");
-            });
-          }
-          if(res.time) {//set timer for autosave
-            var time = res.time * 60 * 1000;
-            setTimeout(function(){
-              chrome.runtime.sendMessage(
-                  {
-                    action : "long-stay",
-                    url: document.URL
-                  },
-                  function(res) {
-                    
-                  });
-            }, time);
-          }
+        var html = res.html;
+        if(html && html.length) {
+          //alert("@render html");
+          showHTML(html);
         }
-        this.flag = true;
+        //set timer for autosave
+        if(res.time) {
+          var time = res.time * 60 * 1000;
+          setTimeout(function(){
+            chrome.runtime.sendMessage(
+                {
+                  action : "long-stay",
+                  url: document.URL
+                },
+                function(res) {
+                  var html = res.html;
+                  if(html && html.length) {
+                    //alert("@render html by time");
+                    showHTML(html);
+                  }
+                });
+          }, time);
+        }
       }
   );
 }
