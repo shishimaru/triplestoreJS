@@ -388,6 +388,53 @@ Manager.prototype.clear = function() {
   this.tst.remove();
   this.renew();
 };
+Manager.removeStopWord = function(words) {
+  var i = 0;
+  while(i < words.length) {
+    if(words[i].length < 4){
+      words.splice(i,1);
+    } else {
+      //words[i] = words[i].toLowerCase();
+      i++;
+    }
+  }
+}
+Manager.prototype.getSimilarItems = function(targetValues, similarityThreshold) {
+  var SEP = /[\s\d\t\n,\.\/!\?"#$%&'"\(\):;\[\]\^]+/;
+  var w1 = targetValues.join(" ").split(SEP);//sanitize
+  Manager.removeStopWord(w1);//sanitize
+  
+  var res = [];
+  for(var subject in this.projections) {
+    var projection = this.projections[subject];
+    var values = [];//values to be compared with target
+    
+    var props = projection.getProperties();
+    for(var i = 0; i < props.length; i++) {
+      if(props[i].match(/name$/) ||
+          props[i].match(/title$/) ||
+          props[i].match(/discription$/)){
+        values = values.concat(projection.getAll(props[i]));
+      }
+    }
+    
+    var w2 = values.join(" ").split(SEP);//sanitize
+    Manager.removeStopWord(w2);//sanitize
+    
+    //detect similarity and register to res
+    if(w1.length && w2.length) {
+      var similarity = MC.jaccord(w1, w2);
+
+      if(similarity > similarityThreshold) {
+        res.push(subject);
+        //console.log("@similarity : " + similarity + " : " + subject);
+        //console.log("@s1: " + w1);
+        //console.log("@s2: " + w2);
+      }
+    }
+  }
+  return res;
+};
 
 var Datatype = function() {};
 Datatype.isDate = function(s) {
@@ -398,4 +445,28 @@ Datatype.isPrice = function(s) {
 };
 Datatype.isPhone = function(s) {
   return s.trim().search(/^tel:\+\d+/) != -1;
+}
+
+var MC = function() {};
+MC.jaccord = function(w1,w2) {
+  var total_size = w1.length + w2.length;
+  
+  var sameNum = 0;
+  var matchedId = {};
+  for(var i = 0; i < w1.length; i++) {
+    var find = false;
+    for(var j = 0; j < w2.length; j++) {
+      if(w1[i] == w2[j]) {
+        matchedId[j] = null;
+        find = true;
+      }
+    }
+    if(find) {
+      sameNum++;
+    }
+  }
+  for(var id in matchedId) {
+    sameNum++;
+  }
+  return sameNum / total_size;
 }

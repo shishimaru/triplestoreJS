@@ -2,7 +2,7 @@
 var bg_res = {};
 var expires = {};
 
-function getRelatedSubjects(m, rdfa, micro) {
+function getRelatedSubjects_old(m, rdfa, micro) {
   var res = [];
   
   //private items RDFa refers to
@@ -14,8 +14,9 @@ function getRelatedSubjects(m, rdfa, micro) {
         
         if(m.projections[value]) {//search with subject
           res.push(value);
-        } else if(prop.search(/#?name$/) != -1
-            ||prop.search(/#?title$/) != -1) {
+        } else if(
+            prop.search(/name$/) != -1
+            ||prop.search(/title$/) != -1) {
           var subjects = m.getSubjects(null, value, true);
           res = res.concat(subjects);
         }
@@ -48,9 +49,59 @@ function getRelatedSubjects(m, rdfa, micro) {
     }
   }
   //TODO : referred : find in triplestore
-  /*for(var subject in m.projections) {
-    
-  }*/
+  //for(var subject in m.projections) {
+  //}
+  return res;
+}
+function getRelatedSubjects(m, rdfa, micro) {
+  var res = [];
+  var MIN_SIMILARITY = 0.1;
+  
+  //private items RDFa refers to
+  if(rdfa) {
+    for(var subject in rdfa) {
+      var itemValues = [];
+      
+      var props = rdfa[subject];
+      for(var prop in props) {
+        var value = props[prop];
+        itemValues.push(value);
+        if(m.projections[value]) {//search with subject
+          res.push(value);
+        }
+      }
+      
+      var subjects = m.getSimilarItems(itemValues, MIN_SIMILARITY);
+      res = res.concat(subjects);
+    }
+  }
+  //private items microdata refers to
+  if(micro && micro.items) {
+    for(var i = 0; i < micro.items.length; i++) {
+      var item = micro.items[i];
+      var props = item.properties;
+      var itemValues = [];
+      for(var prop in props) {
+        var values = props[prop];
+        itemValues = itemValues.concat(values);
+        for(var j = 0; j < values.length; j++) {
+          var value = values[j];
+          
+          if(m.projections[value]) {//search with subject
+            res.push(value);
+            break
+          }
+        }
+      }
+      
+      var subjects = m.getSimilarItems(itemValues, MIN_SIMILARITY);
+      res = res.concat(subjects);
+    }
+  }
+  //TODO : referred : find in triplestore
+  //for(var subject in m.projections) {
+  //}
+  
   return res;
 }
 function generateInsertedHTML(m, v, subjects) {

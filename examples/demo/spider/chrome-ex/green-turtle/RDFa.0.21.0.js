@@ -15,7 +15,7 @@ RDFa.trackChanges = function(flag) {
       var observerConstructor = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
       if (RDFa.trackChanges && observerConstructor) {
          var changeObserved = function(mutations) {
-            console.log("document changed.");
+            //console.log("document changed.");
          };
          RDFa.observer = observerConstructor(changeObserved);
          RDFa.observer.observe(document.documentElement,{childList: true,attributes:true,characterData: true,subtree:true,
