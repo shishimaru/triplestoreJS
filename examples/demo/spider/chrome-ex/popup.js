@@ -8,9 +8,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }, function(tabs) {
       var tab = tabs.length === 0 ? tabs : tabs[0];
       
-      m = new Manager(tab);
+      var bg = chrome.extension.getBackgroundPage();
+      m = bg.bg_res.m;
+      m.init(tab);
       v = new Viewer(m, tab);
-      m.renew();
       v.resetTypes();
       v.resetItems();
   });

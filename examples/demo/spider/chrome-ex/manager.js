@@ -2,17 +2,18 @@
 String.prototype.trim = function() {
   return this.replace(/^\s+|\s+$/g, "");
 };
-var Manager = function(tab){
-  this.init(tab);
+var Manager = function(){
+  this.app_id = chrome.i18n.getMessage("@@extension_id");
+  this.app_url = "chrome-extension://" + this.app_id + "/";
+  this.tst = new Triplestore();
+  this.lst = localStorage;
 };
 Manager.PROP_FOUNDAt = "__FOUND_At__";
 Manager.PROP_FAVICON = "__FAVICON__";
-Manager.PROP_TITLE = "__TITLE__";
+Manager.PROP_TITLE =   "__TITLE__";
 Manager.PROP_EXPIRES = "__EXPIRES__";
+
 Manager.prototype.init =function(tab) {
-  this.app_id = chrome.i18n.getMessage("@@extension_id");
-  this.app_url = "chrome-extension://" + this.app_id + "/";
-  
   this.tab = tab;
   var bg = chrome.extension.getBackgroundPage();
   if(bg && tab) {
@@ -22,9 +23,6 @@ Manager.prototype.init =function(tab) {
     this.expires = this.bg_res[tab.url] ? this.bg_res[tab.url].expires : null;
     this.onSelectionChanged = this.bg_res[tab.url] ? this.bg_res[tab.url].onSelectionChanged : null;
   }
-
-  this.tst = new Triplestore();
-  this.lst = localStorage;
 };
 Manager.prototype.getSubjects = function(property, value, isLax) {
   var res = [];
@@ -416,7 +414,7 @@ Manager.dict_preposition = ["aboard", "about", "above", "across", "after", "agai
 
 Manager.sanitize = function(words) {
   function toLower(words) {
-    for(var i in words) {
+    for(var i = 0; i < words.length; i++) {
       words[i] = words[i].toLowerCase();
     }
   }

@@ -130,7 +130,8 @@ function countVisitNumber(url) {
 }
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
-      var m = new Manager(sender.tab);
+      var m = bg_res.m;
+      m.init(sender.tab);
       m.renew();
       
       if(request.action == "extracted") {
@@ -143,12 +144,10 @@ chrome.runtime.onMessage.addListener(
         var results = {};
         if(request.rdfa) {
           console.log("bg received RDFa");
-          //sendResponse({farewell: "goodbye: " + res});
           results.rdfa = request.rdfa;
         }
         if(request.micro) {
           console.log("bg received microdata");
-          //sendResponse({farewell: "goodbye: " + res});
           results.micro = request.micro;
         }
         if((request.rdfa && Manager.hasKey(request.rdfa)) ||
@@ -213,8 +212,8 @@ chrome.webRequest.onResponseStarted.addListener(
 );
 //clean expired items only once
 function cleanOldItems() {
-  var m = new Manager(null);
-  m.renew();
+  var m = bg_res.m;
+  m.init(null);
  
   var now = new Date();
   for(var subject in m.projections) {
@@ -229,6 +228,10 @@ function cleanOldItems() {
   }
 }
 document.addEventListener('DOMContentLoaded', function () {
+  var m = new Manager();
+  m.init(null);
+  m.renew();
+  bg_res["m"] = m;
   if(Options.is_remove()) {
     cleanOldItems();
   }
