@@ -62,6 +62,7 @@ function extract() {
       {
         action : "extracted",
         url: document.URL,
+        title: document.title,
         rdfa: rdfa,
         micro: micro
       },
@@ -78,7 +79,8 @@ function extract() {
             chrome.runtime.sendMessage(
                 {
                   action : "long-stay",
-                  url: document.URL
+                  url: document.URL,
+                  title: document.title
                 },
                 function(res) {
                   var html = res.html;

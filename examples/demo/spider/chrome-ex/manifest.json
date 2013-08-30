@@ -33,6 +33,7 @@
     "background": {
         "scripts": ["jquery-1.9.1.min.js",
                     "options.js",
+                    "ml.js",
                     "background.js",
                     "triplestore.js",
                     "manager.js",

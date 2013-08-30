@@ -294,7 +294,7 @@ Manager.hasKey = function(o) {
 }
 Manager.prototype.save = function() {
   //save triple only which doesn't have same value  
-  function _save(m, subject, property, value) {
+  function _save(m, subject, property, value, isAdd) {
     var values = m.tst.getValues(subject, property);
     var found = false;
     if(values.length) {
@@ -306,7 +306,11 @@ Manager.prototype.save = function() {
       }
     }
     if(!found) {
-      m.tst.add(subject, property, value);
+      if(isAdd) {
+        m.tst.add(subject, property, value);
+      } else {
+        m.tst.set(subject, property, value);
+      }
     }
   }
   
@@ -318,13 +322,13 @@ Manager.prototype.save = function() {
       for(var prop in props) {
         var value = props[prop];
         console.log(subject, prop, value);
-        _save(this, subject, prop, value);
+        _save(this, subject, prop, value, true);
       }
       //store site url
-      _save(this, subject, Manager.PROP_FOUNDAt, this.tab.url);
+      _save(this, subject, Manager.PROP_FOUNDAt, this.tab.url, true);
       //store expires
       if(this.expires) {
-        _save(this, subject, Manager.PROP_EXPIRES, this.expires.toUTCString());
+        _save(this, subject, Manager.PROP_EXPIRES, this.expires.toUTCString(), false);
       }
     }
     console.log("end save RDFa");
@@ -348,35 +352,33 @@ Manager.prototype.save = function() {
           if(typeof(value) == "object") {
             value = JSON.stringify(value);
           }
-          _save(this, subject, prop, value);
+          _save(this, subject, prop, value, true);
         }
       }
       //store site url
-      _save(this, subject, Manager.PROP_FOUNDAt, this.tab.url);
+      _save(this, subject, Manager.PROP_FOUNDAt, this.tab.url, true);
       //store expires
       if(this.expires) {
-        _save(this, subject, Manager.PROP_EXPIRES, this.expires.toUTCString());
+        _save(this, subject, Manager.PROP_EXPIRES, this.expires.toUTCString(), false);
       }
     }
     console.log("end save microdata");
   }
   
   //save this site
-  if(Manager.isSiteURL(this.tab.url)) {
+  /*if(Manager.isSiteURL(this.tab.url)) {
     var subject = this.tab.url;
-    _save(this, subject, Manager.PROP_TITLE, this.tab.title);
+    _save(this, subject, Manager.PROP_TITLE, this.tab.title, true);
     if(!this.tst.getValues(subject, "title").length) {
-      _save(this, subject, "title", this.tab.title);
+      _save(this, subject, "title", this.tab.title, true);
     }
     if(this.tab.favIconUrl) {
-      _save(this, subject, Manager.PROP_FAVICON, this.tab.favIconUrl);
+      _save(this, subject, Manager.PROP_FAVICON, this.tab.favIconUrl, true);
     }
-  }
+  }*/
   
   //renew internal status
   this.renew();
-  //TODO : feedback to content script
-  //this.onSelectionChanged(m.tab.id);
 };
 Manager.prototype.remove = function(subject) {
   if(this.projections[subject]) {
@@ -388,21 +390,66 @@ Manager.prototype.clear = function() {
   this.tst.remove();
   this.renew();
 };
-Manager.removeStopWord = function(words) {
-  var i = 0;
-  while(i < words.length) {
-    if(words[i].length < 4){
-      words.splice(i,1);
-    } else {
-      //words[i] = words[i].toLowerCase();
-      i++;
+
+Manager.dict_pronoun = ["i", "my", "me", "mine",
+                        "we", "our", "us", "ours",
+                        "you", "your", "yours",
+                        "he", "his", "him",
+                        "she", "her", "hers",
+                        "it", "its",
+                        "they", "their", "them", "theirs",
+                        "this", "that", "these", "those"];
+Manager.dict_verb = ["is", "am", "are", "was", "were", "do", "does", "did", "done", "have", "has", "had", "been"];
+Manager.dict_article = ["a", "an", "the"];
+Manager.dict_auxiliary = ["can", "must", "will", "may", "shall", "should", "could", "would",
+                          "might", "would"];
+Manager.dict_preposition = ["aboard", "about", "above", "across", "after", "against", "along",
+                            "alongside", "and", "around", "as", "at", "before", "behind", "below",
+                            "beneath", "beside", "besides", "between", "beyond", "but", "by",
+                            "concerning", "despite", "down", "during", "except", "excluding",
+                            "for", "from", "in", "including", "inside", "into", "like", "near",
+                            "of", "off", "on", "onto", "out", "outside", "over", "past", "per",
+                            "pro", "regarding", "since", "than", "through", "till", "to",
+                            "toward", "under", "unlike", "until", "up", "upon", "versus",
+                            "via", "with", "within", "without"];
+
+
+Manager.sanitize = function(words) {
+  function toLower(words) {
+    for(var i in words) {
+      words[i] = words[i].toLowerCase();
     }
   }
+  function checkDict(word, dict) {
+    for(var i = 0; i < dict.length; i++) {
+      if(word == dict[i]) {
+        return true;
+      }
+    }
+    return false;
+  }
+  function removeStopWord(words) {
+    var i = 0;
+    while(i < words.length) {
+      if(words[i].trim().length == 0 ||
+          checkDict(words[i], Manager.dict_pronoun) ||
+          checkDict(words[i], Manager.dict_verb) ||
+          checkDict(words[i], Manager.dict_article) ||
+          checkDict(words[i], Manager.dict_auxiliary) ||
+          checkDict(words[i], Manager.dict_preposition)) {
+        words.splice(i,1);
+      } else {
+        i++;
+      }
+    }
+  }
+  toLower(words);
+  removeStopWord(words);
 }
 Manager.prototype.getSimilarItems = function(targetValues, similarityThreshold) {
-  var SEP = /[\s\d\t\n,\.\/!\?"#$%&'"\(\):;\[\]\^]+/;
+  var SEP = /[\s\d\t\n,\.\/!\?"#$%&'"\(\):;\[\]\^®]+/;
   var w1 = targetValues.join(" ").split(SEP);//sanitize
-  Manager.removeStopWord(w1);//sanitize
+  Manager.sanitize(w1);//sanitize
   
   var res = [];
   for(var subject in this.projections) {
@@ -413,23 +460,27 @@ Manager.prototype.getSimilarItems = function(targetValues, similarityThreshold) 
     for(var i = 0; i < props.length; i++) {
       if(props[i].match(/name$/) ||
           props[i].match(/title$/) ||
-          props[i].match(/discription$/)){
+          //props[i].match(/discription$/) ||
+          props[i] == Manager.PROP_TITLE
+      ){
         values = values.concat(projection.getAll(props[i]));
       }
     }
     
     var w2 = values.join(" ").split(SEP);//sanitize
-    Manager.removeStopWord(w2);//sanitize
+    Manager.sanitize(w2);//sanitize
     
     //detect similarity and register to res
     if(w1.length && w2.length) {
-      var similarity = MC.jaccord(w1, w2);
-
+      var similarity = ML.jaccord(w1, w2);
+      
+      //console.log("@similarity : " + similarity + " : " + subject);
+      //console.log("@s1: " + w1);
+      //console.log("@s2: " + w2);
+      
       if(similarity > similarityThreshold) {
-        res.push(subject);
-        //console.log("@similarity : " + similarity + " : " + subject);
-        //console.log("@s1: " + w1);
-        //console.log("@s2: " + w2);
+        res.push({subject: subject,
+          similarity: similarity});
       }
     }
   }
@@ -446,27 +497,6 @@ Datatype.isPrice = function(s) {
 Datatype.isPhone = function(s) {
   return s.trim().search(/^tel:\+\d+/) != -1;
 }
-
-var MC = function() {};
-MC.jaccord = function(w1,w2) {
-  var total_size = w1.length + w2.length;
-  
-  var sameNum = 0;
-  var matchedId = {};
-  for(var i = 0; i < w1.length; i++) {
-    var find = false;
-    for(var j = 0; j < w2.length; j++) {
-      if(w1[i] == w2[j]) {
-        matchedId[j] = null;
-        find = true;
-      }
-    }
-    if(find) {
-      sameNum++;
-    }
-  }
-  for(var id in matchedId) {
-    sameNum++;
-  }
-  return sameNum / total_size;
+Datatype.isURL = function(s) {
+  return s.trim().search(/^http[s]?:\/\//) != -1; 
 }

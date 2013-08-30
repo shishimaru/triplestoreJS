@@ -2,60 +2,28 @@
 var bg_res = {};
 var expires = {};
 
-function getRelatedSubjects_old(m, rdfa, micro) {
-  var res = [];
+function getRelatedSubjects(m, title, rdfa, micro) {
+  var items = [];
+  var MIN_SIMILARITY = 0.4;
+  var MIN_PROPS_LEN = 0 + 6;//at least 6
+  var RESULT_SIZE =  7;
   
-  //private items RDFa refers to
-  if(rdfa) {
-    for(var subject in rdfa) {
-      var props = rdfa[subject];
-      for(var prop in props) {
-        var value = props[prop];
-        
-        if(m.projections[value]) {//search with subject
-          res.push(value);
-        } else if(
-            prop.search(/name$/) != -1
-            ||prop.search(/title$/) != -1) {
-          var subjects = m.getSubjects(null, value, true);
-          res = res.concat(subjects);
-        }
+  function sanitize(items) {
+    var i = 0;
+    while(i < items.length) {
+      var props = m.projections[items[i].subject].getProperties();
+      if(props.length < MIN_PROPS_LEN) {
+        items.splice(i, 1);
+      } else {
+        i++;
       }
-    }
+    } 
   }
-  //private items microdata refers to
-  if(micro && micro.items) {
-    for(var i = 0; i < micro.items.length; i++) {
-      var item = micro.items[i];
-      var subject = item.id ? item.id : (item.properties["url"] ? item.properties["url"] : null);
-      var type = item.type;
-      var props = item.properties;
-      
-      for(var prop in props) {
-        var values = props[prop];
-        for(var j = 0; j < values.length; j++) {
-          var value = values[j];
-          
-          if(m.projections[value]) {//search with subject
-            res.push(value);
-          }
-          if(prop.search(/#?name$/) != -1
-              || prop.search(/#?title$/) != -1) {
-            var subjects = m.getSubjects(null, value, true);
-            res = res.concat(subjects);
-          }
-        }
-      }
-    }
+  
+  //find similar items using site title
+  if(title) {
+    items = items.concat(m.getSimilarItems([title], MIN_SIMILARITY));
   }
-  //TODO : referred : find in triplestore
-  //for(var subject in m.projections) {
-  //}
-  return res;
-}
-function getRelatedSubjects(m, rdfa, micro) {
-  var res = [];
-  var MIN_SIMILARITY = 0.1;
   
   //private items RDFa refers to
   if(rdfa) {
@@ -65,14 +33,17 @@ function getRelatedSubjects(m, rdfa, micro) {
       var props = rdfa[subject];
       for(var prop in props) {
         var value = props[prop];
-        itemValues.push(value);
         if(m.projections[value]) {//search with subject
-          res.push(value);
+          items.push({"subject": value,
+            "similarity": 1.0});
+        }
+        if(prop.match(/name$/) ||
+            prop.match(/title$/) ||
+            prop == Manager.PROP_TITLE) {
+          itemValues.push(value);
         }
       }
-      
-      var subjects = m.getSimilarItems(itemValues, MIN_SIMILARITY);
-      res = res.concat(subjects);
+      items = items.concat(m.getSimilarItems(itemValues, MIN_SIMILARITY));
     }
   }
   //private items microdata refers to
@@ -83,26 +54,43 @@ function getRelatedSubjects(m, rdfa, micro) {
       var itemValues = [];
       for(var prop in props) {
         var values = props[prop];
-        itemValues = itemValues.concat(values);
+
         for(var j = 0; j < values.length; j++) {
           var value = values[j];
           
           if(m.projections[value]) {//search with subject
-            res.push(value);
-            break
+            items.push({"subject": value,
+              "similarity": 1.0});
           }
         }
+        if(prop.match(/name$/) ||
+            prop.match(/title$/) ||
+            prop == Manager.PROP_TITLE) {
+          itemValues = itemValues.concat(values);
+        }
       }
-      
-      var subjects = m.getSimilarItems(itemValues, MIN_SIMILARITY);
-      res = res.concat(subjects);
+      items = items.concat(m.getSimilarItems(itemValues, MIN_SIMILARITY));
     }
   }
   //TODO : referred : find in triplestore
   //for(var subject in m.projections) {
   //}
   
-  return res;
+  sanitize(items);
+  //sort by similarity with ascending
+  items = items.sort(function(item1, item2) {
+    return item2.similarity - item1.similarity;
+  });
+  
+  //set subjects
+  var subjects = [];
+  for(var i = 0; i < items.length; i++) {
+    subjects.push(items[i]["subject"]);
+  }
+  subjects = Manager.trimDuplicate(subjects);
+  subjects = subjects.slice(0, RESULT_SIZE);
+  
+  return subjects;
 }
 function generateInsertedHTML(m, v, subjects) {
   if(!subjects.length) {
@@ -186,8 +174,8 @@ chrome.runtime.onMessage.addListener(
         m.save();
       }
       //feedback related items to content script
-      var subjects = getRelatedSubjects(m, bg_res[request.url].rdfa, bg_res[request.url].micro);
-      subjects = Manager.trimDuplicate(subjects);
+      var subjects = getRelatedSubjects(m, request.title,
+          bg_res[request.url].rdfa, bg_res[request.url].micro);
       
       var v = new Viewer(m, sender.tab);
       var html = generateInsertedHTML(m, v, subjects);

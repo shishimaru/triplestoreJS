@@ -10,7 +10,7 @@ var el_autostore_time = null;
 var el_autostore_visit = null;
 var el_autostore_remove = null;
 Options.DEFAULT_STORE = true;
-Options.DEFAULT_TIME = 1;
+Options.DEFAULT_TIME = 5;
 Options.DEFAULT_VISIT = 5;
 Options.DEFAULT_REMOVE = false;
 
@@ -34,18 +34,46 @@ Options.save_options = function() {
 }
 Options.reset_options = function() {
   el_autostore_on.checked = Options.DEFAULT_STORE;
+  el_autostore_off.checked = !el_autostore_on.checked; 
   el_autostore_time.value = Options.DEFAULT_TIME; 
   el_autostore_visit.value = Options.DEFAULT_VISIT;
   el_autostore_remove.checked = Options.DEFAULT_REMOVE;
-  el_autostore_setting.removeAttribute("class");
+  
+  if(Options.DEFAULT_STORE) {
+    el_autostore_setting.removeAttribute("class");    
+  } else {
+    el_autostore_setting.setAttribute("class", "disabled");
+  }
   Options.save_options();
+}
+Options.restore_options = function() {
+  var isAutosave = localStorage["__OPTIONS_AUTOSTORE_ON"];
+  var time = localStorage["__OPTIONS_AUTOSTORE_TIME"];
+  var visit = localStorage["__OPTIONS_AUTOSTORE_VISIT"];
+  var isAutoremove = localStorage["__OPTIONS_AUTOSTORE_REMOVE"];
+
+  el_autostore_on.checked = isAutosave == undefined ?
+      Options.DEFAULT_STORE : (isAutosave == "true" ? true : false);
+  el_autostore_off.checked = !el_autostore_on.checked;
+  el_autostore_time.value = time == undefined ?
+      Options.DEFAULT_TIME : parseFloat(time);
+  el_autostore_visit.value = visit == undefined ?
+      Options.DEFAULT_VISIT : parseInt(visit);
+  el_autostore_remove.checked = isAutoremove == undefined ?
+      Options.DEFAULT_REMOVE : (isAutoremove == "true" ? true : false);
+
+  //off setting field                                              
+  if(el_autostore_on.checked == false) {
+    el_autostore_setting.setAttribute("class", "disabled");
+  }
 }
 Options.get_time = function() {
   var autosave = localStorage["__OPTIONS_AUTOSTORE_ON"];
   var time = localStorage["__OPTIONS_AUTOSTORE_TIME"];
   
   var res = null;
-  if(autosave == undefined || autosave == "true") {
+  if(Options.DEFAULT_STORE && (autosave != "false") ||
+    !Options.DEFAULT_STORE && (autosave == "true")) {
     res = time == undefined ? Options.DEFAULT_TIME : parseFloat(time);
   }
   return res;
@@ -55,7 +83,8 @@ Options.get_visit = function() {
   var visit = localStorage["__OPTIONS_AUTOSTORE_VISIT"];
   
   var res = null;
-  if(autosave == undefined || autosave == "true") {
+  if(Options.DEFAULT_STORE && (autosave != "false") ||
+    !Options.DEFAULT_STORE && (autosave == "true")) {
     res = visit == undefined ? Options.DEFAULT_VISIT : parseInt(visit);
   }
   return res;
@@ -65,25 +94,6 @@ Options.is_remove = function() {
   
   var res = autoremove == "true" ? true : Options.DEFAULT_REMOVE;
   return res;
-}
-Options.restore_options = function() {
-  var isAutosave = localStorage["__OPTIONS_AUTOSTORE_ON"];
-  var time = localStorage["__OPTIONS_AUTOSTORE_TIME"];
-  var visit = localStorage["__OPTIONS_AUTOSTORE_VISIT"];
-  var isAutoremove = localStorage["__OPTIONS_AUTOSTORE_REMOVE"];
-  
-  el_autostore_on.checked = isAutosave == undefined ? el_autostore_on.checked : 
-    (isAutosave == "true" ? true : false);
-  el_autostore_off.checked = !el_autostore_on.checked; 
-  el_autostore_time.value = time == undefined ? el_autostore_time.value : parseFloat(time);
-  el_autostore_visit.value = visit == undefined ? el_autostore_visit.value : parseInt(visit);
-  el_autostore_remove.checked = isAutoremove == undefined ? Options.DEFAULT_REMOVE : 
-    (isAutoremove == "true" ? true : false);
-  
-  //off setting field
-  if(el_autostore_on.checked == false) {
-    el_autostore_setting.setAttribute("class", "disabled");
-  }
 }
 Options.clear_storage = function() {
   localStorage.clear();
