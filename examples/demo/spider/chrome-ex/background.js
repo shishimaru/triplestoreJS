@@ -4,9 +4,9 @@ var expires = {};
 
 function getRelatedSubjects(m, title, rdfa, micro) {
   var items = [];
-  var MIN_SIMILARITY = 0.4;
-  var MIN_PROPS_LEN = 0 + 7;//at least 7
-  var RESULT_SIZE =  7;
+  var MIN_SIMILARITY = 0.5;
+  var MIN_PROPS_LEN = 2 + 7;//at least 7
+  var MAX_RESULT_SIZE =  10;
   
   function sanitize(items) {
     var i = 0;
@@ -88,7 +88,7 @@ function getRelatedSubjects(m, title, rdfa, micro) {
     subjects.push(items[i]["subject"]);
   }
   subjects = Manager.trimDuplicate(subjects);
-  subjects = subjects.slice(0, RESULT_SIZE);
+  subjects = subjects.slice(0, MAX_RESULT_SIZE);
   
   return subjects;
 }
