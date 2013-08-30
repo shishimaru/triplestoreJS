@@ -322,8 +322,11 @@ Manager.prototype.save = function() {
         console.log(subject, prop, value);
         _save(this, subject, prop, value, true);
       }
-      //store site url
+      //store site info
       _save(this, subject, Manager.PROP_FOUNDAt, this.tab.url, true);
+      if(this.tab.favIconUrl) {
+        _save(this, subject, Manager.PROP_FAVICON, this.tab.favIconUrl, true);
+      }
       //store expires
       if(this.expires) {
         _save(this, subject, Manager.PROP_EXPIRES, this.expires.toUTCString(), false);
@@ -353,8 +356,11 @@ Manager.prototype.save = function() {
           _save(this, subject, prop, value, true);
         }
       }
-      //store site url
+      //store site info
       _save(this, subject, Manager.PROP_FOUNDAt, this.tab.url, true);
+      if(this.tab.favIconUrl) {
+        _save(this, subject, Manager.PROP_FAVICON, this.tab.favIconUrl, true);
+      }
       //store expires
       if(this.expires) {
         _save(this, subject, Manager.PROP_EXPIRES, this.expires.toUTCString(), false);
@@ -364,7 +370,7 @@ Manager.prototype.save = function() {
   }
   
   //save this site
-  /*if(Manager.isSiteURL(this.tab.url)) {
+  if(Manager.isSiteURL(this.tab.url)) {
     var subject = this.tab.url;
     _save(this, subject, Manager.PROP_TITLE, this.tab.title, true);
     if(!this.tst.getValues(subject, "title").length) {
@@ -373,7 +379,7 @@ Manager.prototype.save = function() {
     if(this.tab.favIconUrl) {
       _save(this, subject, Manager.PROP_FAVICON, this.tab.favIconUrl, true);
     }
-  }*/
+  }
   
   //renew internal status
   this.renew();

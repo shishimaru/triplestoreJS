@@ -386,6 +386,7 @@ Viewer.getSubjectHTML = function(m, projection, className, useAnchor) {
   var title = m.getValues(subject, ["title"]);
   var name = m.getValues(subject, ["name"]);
   var img = m.getValues(subject, ["image"]);
+  var favicon = m.getValues(subject, [Manager.PROP_FAVICON]);
   var url = m.getValues(subject, ["url"]);
   var type = m.getValues(subject, ["type"]);
   
@@ -394,12 +395,15 @@ Viewer.getSubjectHTML = function(m, projection, className, useAnchor) {
   
   var $td = $("<td/>", {"class" : className, "href" : subject});
   var $item = $("<" + (useAnchor? "a" : "span") + "/>", {"href" : subject, "title" : subject});
-  
-  
   $td.append($item);
   
-  if(type[0]) {
-    var imgFile = Viewer.getTypeImg(m, type[0]);
+  {//Set item icon/favicon
+    var imgFile = null;
+    if(favicon) {
+      imgFile = favicon;
+    } else if(type[0]) {
+      imgFile = Viewer.getTypeImg(m, type[0]);
+    }
     if(imgFile) {
       $item.append($("<img/>", {"src" : imgFile, "class" : "related_type"}));
     }

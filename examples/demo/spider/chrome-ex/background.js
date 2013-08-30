@@ -5,7 +5,7 @@ var expires = {};
 function getRelatedSubjects(m, title, rdfa, micro) {
   var items = [];
   var MIN_SIMILARITY = 0.4;
-  var MIN_PROPS_LEN = 0 + 6;//at least 6
+  var MIN_PROPS_LEN = 0 + 7;//at least 7
   var RESULT_SIZE =  7;
   
   function sanitize(items) {
@@ -211,10 +211,7 @@ chrome.webRequest.onResponseStarted.addListener(
     ["responseHeaders"]
 );
 //clean expired items only once
-function cleanOldItems() {
-  var m = bg_res.m;
-  m.init(null);
- 
+function cleanOldItems(m) {
   var now = new Date();
   for(var subject in m.projections) {
     var projection = m.projections[subject];
@@ -231,8 +228,8 @@ document.addEventListener('DOMContentLoaded', function () {
   var m = new Manager();
   m.init(null);
   m.renew();
-  bg_res["m"] = m;
+  bg_res.m = m;
   if(Options.is_remove()) {
-    cleanOldItems();
+    cleanOldItems(m);
   }
 });
