@@ -540,8 +540,8 @@ Viewer.changeIcon = function(tabId, color) {
   var icon_mark = "images/spider-blue.png";
 
   if(color) {
-    chrome.pageAction.setIcon({tabId: tabId, path: icon_mark});
+    chrome.browserAction.setIcon({tabId: tabId, path: icon_mark});
   } else {
-    chrome.pageAction.setIcon({tabId: tabId, path: icon_normal});
+    chrome.browserAction.setIcon({tabId: tabId, path: icon_normal});
   }
 }

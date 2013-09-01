@@ -16,7 +16,7 @@
         {
             "matches": ["http://*/*", "https://*/*"],
             "js": [
-                   "jquery-1.9.1.min.js",
+                   "jquery-1.10.2.min.js",
                    "green-turtle/RDFa.0.21.0.js",
                    "green-turtle/RDFaProcessor.0.21.0.js",
                    "microdataJS/jquery.microdata.js",
@@ -31,7 +31,7 @@
         "/images/*"
     ],
     "background": {
-        "scripts": ["jquery-1.9.1.min.js",
+        "scripts": ["jquery-1.10.2.min.js",
                     "options.js",
                     "ml.js",
                     "background.js",
