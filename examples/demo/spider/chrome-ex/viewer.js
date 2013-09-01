@@ -535,12 +535,13 @@ Viewer.prototype.show = function() {
   this.debug.innerHTML = "<div style='color:red'>RDFa<br><pre>" + JSON.stringify(this.m.rdfa, null, 2) + "</pre></div>";
   this.debug.innerHTML += "<div style='color:blue'>microdata<br><pre>" + JSON.stringify(this.m.micro, null, 2) + "</pre></div>"; 
 };
-Viewer.changeIcon = function(tabId, color) {
+Viewer.changeIcon = function(tabId, color, badgeText) {
   var icon_normal = "images/spider.png";
   var icon_mark = "images/spider-blue.png";
 
   if(color) {
     chrome.browserAction.setIcon({tabId: tabId, path: icon_mark});
+    chrome.browserAction.setBadgeText({tabId: tabId, text: badgeText});
   } else {
     chrome.browserAction.setIcon({tabId: tabId, path: icon_normal});
   }

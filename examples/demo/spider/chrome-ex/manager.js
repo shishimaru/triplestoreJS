@@ -290,6 +290,19 @@ Manager.hasKey = function(o) {
   for(var k in o) { return true; }
   return false;
 }
+Manager.getItemLen = function(items) {
+  var len = 0;
+  if(items) {
+    if(items instanceof Array) {
+      len = items.length;
+    } else {
+      for(var item in items) {
+        len++;
+      }
+    }
+  }
+  return len;
+}
 Manager.prototype.save = function() {
   //save triple only which doesn't have same value  
   function _save(m, subject, property, value, isAdd) {

@@ -153,7 +153,9 @@ chrome.runtime.onMessage.addListener(
         if((request.rdfa && Manager.hasKey(request.rdfa)) ||
             (request.micro && request.micro.items.length)) {
           //notify the site has annotation
-          Viewer.changeIcon(sender.tab.id, true);
+          var itemSize = Manager.getItemLen(request.rdfa);
+          itemSize += Manager.getItemLen(request.micro.items);
+          Viewer.changeIcon(sender.tab.id, true, String(itemSize));
         }
         results.expires = expires[request.url];
         results.onSelectionChanged = onSelectionChanged;
