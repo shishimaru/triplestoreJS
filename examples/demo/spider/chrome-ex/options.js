@@ -9,6 +9,8 @@ var el_autostore_off = null;
 var el_autostore_time = null;
 var el_autostore_visit = null;
 var el_autostore_remove = null;
+var bt_login_facebook = null;
+
 Options.DEFAULT_STORE = true;
 Options.DEFAULT_TIME = 5;
 Options.DEFAULT_VISIT = 5;
@@ -99,6 +101,20 @@ Options.clear_storage = function() {
   localStorage.clear();
   Options.save_options();
 }
+Options.loginFacebook = function() {
+  if(bt_login_facebook.innerText == "Log In") {
+    var fb_login_url = "https://hu-study.appspot.com/c/fb-login";
+    window.open(fb_login_url);
+    window.close();
+    
+  } else { //Log Out
+    localStorage.removeItem("__FB_ACCESS_TOKEN");
+    localStorage.removeItem("__FB_EXPIRES");
+    bt_login_facebook.innerText = "Log In";
+    Options.show_status("login_status", "Logged out");
+  }
+}
+
 function init() {
   el_autostore_setting = document.getElementById("autostore_setting");
   el_autostore_on = document.getElementById("autostore_on");
@@ -106,6 +122,7 @@ function init() {
   el_autostore_time = document.getElementById("autostore_time");
   el_autostore_visit = document.getElementById("autostore_visit");
   el_autostore_remove = document.getElementById("autostore_remove");
+  bt_login_facebook = document.getElementById("login_facebook");
   
   if(el_autostore_setting) {//works only in option setting
     document.querySelector('#autostore_save').addEventListener('click', function() {
@@ -126,8 +143,36 @@ function init() {
       Options.clear_storage();
       Options.show_status("storage_status", "Cleared");
     });
-    
+    document.querySelector('#login_facebook').addEventListener('click', function() {
+      Options.loginFacebook();
+    });
     Options.restore_options();
+    
+    
+    //SNS
+    var fb_access_token = localStorage["__FB_ACCESS_TOKEN"];
+    var fb_expires      = localStorage["__FB_EXPIRES"];
+    
+    //Callback from OAuth Proxy
+    if(window.location.search.length) {
+      var queries = window.location.search.substr(1).split('&');
+      for(var i = 0; i < queries.length; i++) {
+        var nv = queries[i].split('=');
+        var name = nv[0];
+        var value = nv[1];
+        if(name == "access_token") { fb_access_token = value; }
+        else if(name == "expires") { fb_expires = value; }
+      }
+      if(fb_access_token) {
+        localStorage["__FB_ACCESS_TOKEN"] = fb_access_token;
+        Options.show_status("login_status", "Logged In !");
+      }
+      if(fb_expires)      { localStorage["__FB_EXPIRES"] = fb_expires; }
+    }
+    //update button status
+    if(fb_access_token) {
+      bt_login_facebook.innerText = "Log Out";
+    }
   }
 } 
 

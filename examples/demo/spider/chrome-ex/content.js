@@ -1,12 +1,12 @@
 /* $Id$ */
-function showHTML(html) {
+function showHTML(html, opacity) {
   //resolve duplicated container
   jQuery("#spider-wrapper").remove();
   
   //init
   var $wrapper = jQuery(html);
   jQuery("body").append($wrapper);
-  var $container = $wrapper.find("#spider-container").css({'opacity' : 0.1});
+  var $container = $wrapper.find("#spider-container").css({'opacity' : opacity});
   var $details = $wrapper.find(".spider-detail");
   
   //hide details
@@ -16,7 +16,7 @@ function showHTML(html) {
     $container.css({'opacity' : 1.0 });
   });
   $container.mouseout(function(e){
-    $container.css({'opacity' : 0.1 });
+    $container.css({'opacity' : opacity });
   });
   $("#spider-wrapper #spider-visible").click(function(e) {
     $container.fadeToggle("fast");
@@ -70,7 +70,7 @@ function extract() {
         var html = res.html;
         if(html && html.length) {
           //alert("@render html");
-          showHTML(html);
+          showHTML(html, 0.1);
         }
         //set timer for autosave
         if(res.time) {
@@ -86,7 +86,7 @@ function extract() {
                   var html = res.html;
                   if(html && html.length) {
                     //alert("@render html by time");
-                    showHTML(html);
+                    showHTML(html, 0.1);
                   }
                 });
           }, time);
@@ -94,4 +94,9 @@ function extract() {
       }
   );
 }
+chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+      showHTML(request.html, 1.0);
+    }
+);
 extract();

@@ -35,9 +35,28 @@ h3 {
 	padding: 10px;
 	margin: 0 10px 10px 0;
 }
-
 .disabled {
 	opacity: 0.1;
+}
+@font-face
+{
+	font-family: facebookLetterFaces;
+	src: url('../images/FACEBOLF.OTF');
+}
+.facebookLogo{
+	font-family:facebookLetterFaces;
+	color:white;
+	font-size:40px;
+	cursor:default;
+	margin-top:10px;
+}
+.facebookBackground{
+	display: none;
+	width:220px;
+	height:80px;
+	background-image: -webkit-linear-gradient(bottom, rgb(58,89,150) 25%, rgb(63,97,161) 50%, rgb(67,104,173) 75%, rgb(72,112,186) 100%);
+	text-align:center;
+	padding: 10px;
 }
 </style>
 </head>
@@ -45,6 +64,19 @@ h3 {
     <a href="http://www.w3.org/2013/04/semweb-html5/"><img src="images/spider.png"></a>
 	<h2>Options</h2>
 	<div>
+		<div id="sns" class="fieldset">
+			<h3>SNS</h3>
+			<!-- p><img src="images/fb-logo.jpg" width="100%"></p>
+			<input id="login_facebook" value="log in" type="image" src="images/fb_login.png" width="40%" height="25px"-->
+			<div class="facebookBackground" style="display: block;">
+				<div class="facebookLogo">facebook</div>
+				<button id="login_facebook" style="width:100px;height:20px;margin-top:10px;">Log In</button>
+			</div>
+
+
+			<div id="fb-root"></div>
+			<span id="login_status"></span>
+		</div>
 		<div id="autostore" class="fieldset">
 			<h3 style="text-align: center;">Auto storing items</h3>
 			<h4>

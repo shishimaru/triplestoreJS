@@ -4,7 +4,7 @@ var expires = {};
 
 function getRelatedSubjects(m, title, rdfa, micro) {
   var items = [];
-  var MIN_SIMILARITY = 0.5;
+  var MIN_SIMILARITY = 0.3;//0.5;
   var MIN_PROPS_LEN = 2 + 7;//at least 7
   var MAX_RESULT_SIZE =  10;
   
@@ -92,7 +92,7 @@ function getRelatedSubjects(m, title, rdfa, micro) {
   
   return subjects;
 }
-function generateInsertedHTML(m, v, subjects) {
+function generateInsertedHTML(m, v, subjects, emailQuery) {
   if(!subjects.length) {
     return null;
   }
@@ -104,10 +104,10 @@ function generateInsertedHTML(m, v, subjects) {
   var $items = $("<div id='spider-items'>").appendTo($container);
   var $summaries = $("<table>", {"id" : "spider-summaries"}).appendTo($items);
   for(var i = 0; i < subjects.length; i++) {
-    var $summary = Viewer.getSubjectHTML(m, m.projections[subjects[i]], "referred_cell", true);
+    var $summary = Viewer.getSubjectHTML(m, m.projections[subjects[i]], "referred_cell", true, emailQuery);
     $summaries.append($("<tr class='spider-summary'>").append($summary));
     
-    var detail = v.getSummaryHTML(subjects[i]);
+    var detail = v.getSummaryHTML(subjects[i], emailQuery);
     var $detail = null;
     if(detail) {
       $detail = $($(detail).find(".item-detail")[0]);
@@ -139,7 +139,7 @@ chrome.runtime.onMessage.addListener(
           return;
         }
         //reset icon
-        Viewer.changeIcon(sender.tab.id, false);
+        Viewer.changeIcon(sender.tab.id);
         //init
         var results = {};
         if(request.rdfa) {
@@ -155,7 +155,7 @@ chrome.runtime.onMessage.addListener(
           //notify the site has annotation
           var itemSize = Manager.getItemLen(request.rdfa);
           itemSize += Manager.getItemLen(request.micro.items);
-          Viewer.changeIcon(sender.tab.id, true, String(itemSize));
+          Viewer.changeIcon(sender.tab.id, String(itemSize));
         }
         results.expires = expires[request.url];
         results.onSelectionChanged = onSelectionChanged;
@@ -226,6 +226,7 @@ function cleanOldItems(m) {
     }
   }
 }
+
 document.addEventListener('DOMContentLoaded', function () {
   var m = new Manager();
   m.init(null);
@@ -235,3 +236,59 @@ document.addEventListener('DOMContentLoaded', function () {
     cleanOldItems(m);
   }
 });
+
+//menu of sharing photos
+//A generic onclick callback function.
+function genericOnClick(info, tab) {
+  console.log("item " + info.menuItemId + " was clicked");
+  console.log("info: " + JSON.stringify(info));
+  console.log("tab: " + JSON.stringify(tab));
+    
+  var pageURL = info.pageUrl;
+  var email_subject = "Sharing ";
+  var email_body = "";
+  if(info.mediaType == "image" ||
+      info.mediaType == "video" ||
+      info.mediaType == "audio") {
+    email_subject += "media";
+    var srcURL = info.srcUrl;
+    email_body = srcURL;
+  } else if(info.linkUrl) {
+    alert("share linkUrl!");
+    email_subject += "URL";
+    email_body = info.linkUrl;
+  } else if(info.selectionText) {
+    alert("share selectionText!");
+    email_subject += "text";
+    email_body = info.selectionText;
+  }
+  
+  var m = bg_res.m;
+  var v = new Viewer(m, tab);
+  var subjects = m.filterSubjects(["mbox"]);
+  
+  if(subjects.length) {
+    var emailQuery = "?"
+      + ["subject=" + email_subject,
+         "body=" + email_body].join("&");
+    var html = generateInsertedHTML(m, v, subjects, emailQuery);
+    
+    chrome.tabs.sendMessage(tab.id,
+        {"html": html},
+        function(response) {
+        });
+  } else {
+    alert("Sorry, could not find any person having email.");
+  }
+}
+//new context menu
+//Create a parent item and two children.
+var menu_top = chrome.contextMenus.create(
+    {title: "Semantic Spider",
+      contexts: ["all"],
+    });
+var menu_share = chrome.contextMenus.create(
+    {title: "share",
+      parentId: menu_top,
+      contexts: ["all"],
+      onclick: genericOnClick});

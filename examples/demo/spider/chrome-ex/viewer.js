@@ -194,6 +194,9 @@ Viewer.getTypeImg = function(m, type) {
     } else if(tail.search(/^document$/i) != -1
         || tail.search(/text$/i) != -1) {
       res = "images/document.png";
+    } else if(tail.search(/mbox$/i) != -1 ||
+        tail.search(/email$/i) != -1 ){
+      res = "images/email.png";
     } else if(tail.search(/^endorsement$/i) != -1) {
       res = "images/endorsement.png";
     } else if(tail.search(/^event$/i) != -1) {
@@ -242,7 +245,7 @@ Viewer.getTypeImg = function(m, type) {
   }
   return res ? m.app_url + res : res;
 };
-Viewer.prototype.getSummaryHTML = function(subject) {
+Viewer.prototype.getSummaryHTML = function(subject, emailQuery) {
   function getWhitespace(s) {
     return s.replace(/./g,"&nbsp;");
   }
@@ -258,6 +261,7 @@ Viewer.prototype.getSummaryHTML = function(subject) {
   var address = null, phone = null;
   var rating = NaN;
   var elseHTML = "";
+  emailQuery = emailQuery ? emailQuery : "";
   for(var i = 0; i < props.length; i++) {
     var values = this.m.projections[subject].getAll(props[i]);
     for(var j = 0; j < values.length; j++) {
@@ -307,6 +311,10 @@ Viewer.prototype.getSummaryHTML = function(subject) {
             propImg = propImg ? propImg : this.m.app_url + "images/link.png";
             elseHTML += "<li><img src='" + propImg + "' class='related_icon'><a href='" + v + "' title='" + v + "'>" + tail + "</a></li>";
           }
+        } else if(v.search(/^mailto:/) != -1) {
+          elseHTML += "<li>";
+          if(propImg) { elseHTML += "<img src='" + propImg + "' class='related_icon'>"; }
+          elseHTML += tail + " : " + "<a href='" + v + emailQuery + "'>" + v + "</a></li>";
         } else if(v.length < 30) {
           if(propImg) {
             elseHTML += "<li><img src='" + propImg + "' class='related_icon'>" + tail + " : " + v + "</li>";
@@ -381,7 +389,7 @@ Viewer.prototype.getSummaryHTML = function(subject) {
   res += "</div>";
   return res;
 };
-Viewer.getSubjectHTML = function(m, projection, className, useAnchor) {
+Viewer.getSubjectHTML = function(m, projection, className, useAnchor, emailQuery) {
   var subject = projection.getSubject();
   var title = m.getValues(subject, ["title"]);
   var name = m.getValues(subject, ["name"]);
@@ -389,12 +397,16 @@ Viewer.getSubjectHTML = function(m, projection, className, useAnchor) {
   var favicon = m.getValues(subject, [Manager.PROP_FAVICON]);
   var url = m.getValues(subject, ["url"]);
   var type = m.getValues(subject, ["type"]);
+  var email = m.getValues(subject, ["mbox"]);
+  email = email ? (emailQuery ? email + emailQuery : email) : "";
   
   /*var $td = $("<td/>", {"class" : className, "href" : subject, "title" : subject});
   var $item = $("<" + (useAnchor? "a" : "span") + "/>", {"href" : subject});*/
   
   var $td = $("<td/>", {"class" : className, "href" : subject});
-  var $item = $("<" + (useAnchor? "a" : "span") + "/>", {"href" : subject, "title" : subject});
+  var $item = $("<" + (useAnchor? "a" : "span") + "/>",
+      {"href" : emailQuery ? email : subject,
+       "title" : subject});
   $td.append($item);
   
   {//Set item icon/favicon
@@ -535,14 +547,10 @@ Viewer.prototype.show = function() {
   this.debug.innerHTML = "<div style='color:red'>RDFa<br><pre>" + JSON.stringify(this.m.rdfa, null, 2) + "</pre></div>";
   this.debug.innerHTML += "<div style='color:blue'>microdata<br><pre>" + JSON.stringify(this.m.micro, null, 2) + "</pre></div>"; 
 };
-Viewer.changeIcon = function(tabId, color, badgeText) {
-  var icon_normal = "images/spider.png";
-  var icon_mark = "images/spider-blue.png";
-
-  if(color) {
-    chrome.browserAction.setIcon({tabId: tabId, path: icon_mark});
+Viewer.changeIcon = function(tabId, badgeText) {
+  if(badgeText) {
     chrome.browserAction.setBadgeText({tabId: tabId, text: badgeText});
   } else {
-    chrome.browserAction.setIcon({tabId: tabId, path: icon_normal});
+    chrome.browserAction.setBadgeText({tabId: tabId, text: ""});
   }
 }

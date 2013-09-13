@@ -8,6 +8,7 @@ var Manager = function(){
   this.tst = new Triplestore();
   this.lst = localStorage;
 };
+Manager.DEBUG = false;
 Manager.PROP_FOUNDAt = "__FOUND_At__";
 Manager.PROP_FAVICON = "__FAVICON__";
 Manager.PROP_TITLE =   "__TITLE__";
@@ -32,8 +33,16 @@ Manager.prototype.getSubjects = function(property, value, isLax) {
     if(property == null && value == null) {
       res.push(subject);
     } else if(property && value == null){
-      if(projection.getAll(property).length) {
-        res.push(subject);
+      if(isLax) {
+        var matchedProps = 
+          Manager.filter(property.split(" "), projection.getProperties(), true);
+        if(matchedProps.length) {
+          res.push(subject);
+        }
+      } else {
+        if(projection.getAll(property).length) {
+          res.push(subject);
+        }
       }
     } else if(property == null && value){
       if(isLax) {
@@ -184,7 +193,7 @@ Manager.filter = function(keywords, list, onlyTail) {
   }
   return res;
 };
-Manager.prototype.filterSubjects = function (keywords) {
+Manager.prototype.filterSubjects = function (keywords, isAll) {
   var subjects = [];
   for(var subject in this.projections) {
     var tmpProps = this.projections[subject].getProperties();
@@ -205,7 +214,7 @@ Manager.prototype.filterSubjects = function (keywords) {
         }
       }
       if(found) {
-        count++;
+        count = isAll ? count + 1 : keywords.length;
       }
     }
     if(count >= keywords.length) {
@@ -415,21 +424,22 @@ Manager.dict_pronoun = ["i", "my", "me", "mine",
                         "she", "her", "hers",
                         "it", "its",
                         "they", "their", "them", "theirs",
-                        "this", "that", "these", "those"];
+                        "this", "that", "these", "those",
+                        "one", "ones", "all"];
 Manager.dict_verb = ["is", "am", "are", "was", "were", "do", "does", "did", "done", "have", "has", "had", "been"];
 Manager.dict_article = ["a", "an", "the"];
 Manager.dict_auxiliary = ["can", "must", "will", "may", "shall", "should", "could", "would",
                           "might", "would"];
 Manager.dict_preposition = ["aboard", "about", "above", "across", "after", "against", "along",
-                            "alongside", "and", "around", "as", "at", "before", "behind", "below",
+                            "alongside", "all", "and", "around", "as", "at", "before", "behind", "below",
                             "beneath", "beside", "besides", "between", "beyond", "but", "by",
                             "concerning", "despite", "down", "during", "except", "excluding",
-                            "for", "from", "in", "including", "inside", "into", "like", "near",
+                            "few", "for", "from", "in", "including", "inside", "into", "like", "near",
                             "of", "off", "on", "onto", "out", "outside", "over", "past", "per",
-                            "pro", "regarding", "since", "than", "through", "till", "to",
+                            "pro", "regarding", "since", "such", "than", "through", "till", "to",
                             "toward", "under", "unlike", "until", "up", "upon", "versus",
                             "via", "with", "within", "without"];
-
+Manager.dict_code = ["-"];
 
 Manager.sanitize = function(words) {
   function toLower(words) {
@@ -448,12 +458,13 @@ Manager.sanitize = function(words) {
   function removeStopWord(words) {
     var i = 0;
     while(i < words.length) {
-      if(words[i].trim().length == 0 ||
+      if(words[i].trim().length < 2 ||
           checkDict(words[i], Manager.dict_pronoun) ||
           checkDict(words[i], Manager.dict_verb) ||
           checkDict(words[i], Manager.dict_article) ||
           checkDict(words[i], Manager.dict_auxiliary) ||
-          checkDict(words[i], Manager.dict_preposition)) {
+          checkDict(words[i], Manager.dict_preposition) ||
+          checkDict(words[i], Manager.dict_code)) {
         words.splice(i,1);
       } else {
         i++;
@@ -464,7 +475,7 @@ Manager.sanitize = function(words) {
   removeStopWord(words);
 }
 Manager.prototype.getSimilarItems = function(targetValues, similarityThreshold) {
-  var SEP = /[\s\d\t\n,\.\/!\?"#$%&'"\(\):;\[\]\^®]+/;
+  var SEP = /[\s\d\t\n,\.\/!\?"#$%=&'"\(\):;\[\]\^®]+/;
   var w1 = targetValues.join(" ").split(SEP);//sanitize
   Manager.sanitize(w1);//sanitize
   
@@ -491,11 +502,15 @@ Manager.prototype.getSimilarItems = function(targetValues, similarityThreshold) 
     if(w1.length && w2.length) {
       var similarity = ML.jaccord(w1, w2);
       
-      //console.log("@similarity : " + similarity + " : " + subject);
-      //console.log("@s1: " + w1);
-      //console.log("@s2: " + w2);
+      console.log("@similarity : " + similarity + " : " + subject);
+      console.log("@s1: " + w1);
+      console.log("@s2: " + w2);
       
+      if(Manager.DEBUG) {
+        this.tst.add(subject, "DEBUG_similarity", String(similarity));
+      }
       if(similarity > similarityThreshold) {
+        
         res.push({subject: subject,
           similarity: similarity});
       }
@@ -516,4 +531,7 @@ Datatype.isPhone = function(s) {
 }
 Datatype.isURL = function(s) {
   return s.trim().search(/^http[s]?:\/\//) != -1; 
+}
+Datatype.isEmail = function(s) {
+  return s.trim().search(/^mailto:/) != -1; 
 }
