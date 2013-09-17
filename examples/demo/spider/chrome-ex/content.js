@@ -21,6 +21,21 @@ function showHTML(html, opacity) {
   $("#spider-wrapper #spider-visible").click(function(e) {
     $container.fadeToggle("fast");
   });
+  /*$("#spider-items a").click(function(e) {
+    //check the url is related to facebook
+    if(e.currentTarget.href.indexOf(Manager.FB_BASE_URL) != -1) {
+      chrome.runtime.sendMessage(
+          {
+            action : "post-facebook",
+            url: e.currentTarget.href
+          },
+          function(res) {
+            return false;
+          }
+      );
+      return false;//prevent the page moving
+    }
+  });*/
   $(window).bind("scroll", function() {
     $details.hide();
   });

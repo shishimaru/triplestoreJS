@@ -99,7 +99,6 @@ Viewer.prototype.getHightlightURL = function(url_str) {
 Viewer.prototype.getRatingHTML = function(rating) {
   rating = rating > 5 ? 5 : rating;
 
-  //http://images.bestbuy.com/BestBuy_US/images/global/misc/ratings_star_3_5.gif
   var baseURL = "http://images.bestbuy.com/BestBuy_US/images/global/misc/ratings_star_";
   var url = baseURL + Math.floor(rating) + "_" + rating * 10 % 10 + ".gif";
   return "<img src='" + url + "'>";
@@ -245,7 +244,7 @@ Viewer.getTypeImg = function(m, type) {
   }
   return res ? m.app_url + res : res;
 };
-Viewer.prototype.getSummaryHTML = function(subject, emailQuery) {
+Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request) {
   function getWhitespace(s) {
     return s.replace(/./g,"&nbsp;");
   }
@@ -261,24 +260,21 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery) {
   var address = null, phone = null;
   var rating = NaN;
   var elseHTML = "";
-  emailQuery = emailQuery ? emailQuery : "";
   for(var i = 0; i < props.length; i++) {
     var values = this.m.projections[subject].getAll(props[i]);
     for(var j = 0; j < values.length; j++) {
       var v = values[j];
-      //console.log(props[i] + " : " + v);
       if(props[i].search(/^__.+__/) != -1) {//skip application original property
         continue;
       }
       if(!v || v.search(/^_:/) != -1) {
         continue;
       }
-      //var prop = props[i].toLowerCase();
       var prop = props[i].substr(props[i].lastIndexOf("/") + 1);
       
       if(prop.search(/type$/i) != -1) {
         type.push(v);
-      } else if(!name && prop.search(/#?name$/i) != -1
+      } else if(!name && prop.search(/^name$/i) != -1
           //|| prop.search(/creator$/i) != -1
           //|| prop.search(/publisher$/i) != -1
           //|| prop.search(/author$/i) != -1
@@ -288,7 +284,7 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery) {
         title = !title ? v : title;
       } else if(!description && prop.search(/#?description$/i) != -1) {
         description = v;
-      } else if(prop.search(/#?image$/i) != -1 || prop.search(/^img$/i) != -1) {
+      } else if(prop.search(/#?image$/i) != -1 || prop.search(/#?img$/i) != -1) {
         img = v;
       } else if(!color && prop.search(/color$/i) != -1) {
         color = v;
@@ -309,12 +305,30 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery) {
             elseHTML += "<li>" + tail + "<br><img src='" + v + "' title='" + v + "' class='property_img'></img></li>";
           } else {
             propImg = propImg ? propImg : this.m.app_url + "images/link.png";
-            elseHTML += "<li><img src='" + propImg + "' class='related_icon'><a href='" + v + "' title='" + v + "'>" + tail + "</a></li>";
+            var href = v;
+            //if(prop == "facebook-account") {
+            if(Manager.isFacebookProperty(prop, v)) {
+              var fb_userid = v.substr(v.lastIndexOf('/') + 1);
+              if(fb_request) {
+                if(fb_request.method == "dialog/feed") {
+                  fb_request.query.to = fb_userid;
+                  href = Manager.FB_DIALOG_FEED_URL + "?" + Manager.encode(fb_request.query);
+                } else if(fb_request.method == "dialog/send") {
+                  fb_request.query.to = fb_userid;
+                  href = Manager.FB_DIALOG_SEND_URL + "?" + Manager.encode(fb_request.query);
+                }
+              } else if(emailQuery){
+                href = "mailto:" + fb_userid + "@facebook.com?" + Manager.encode(emailQuery);
+              }
+            }
+            elseHTML += "<li><img src='" + propImg + "' class='related_icon'><a href='" + href + "' title='" + href + "'>" + tail + "</a></li>";
           }
         } else if(v.search(/^mailto:/) != -1) {
           elseHTML += "<li>";
           if(propImg) { elseHTML += "<img src='" + propImg + "' class='related_icon'>"; }
-          elseHTML += tail + " : " + "<a href='" + v + emailQuery + "'>" + v + "</a></li>";
+          var href = v;
+          if(emailQuery) { href += "?" + Manager.encode(emailQuery); } 
+          elseHTML += tail + " : " + "<a href='" + href + "' title='" + href + "'>" + v + "</a></li>";
         } else if(v.length < 30) {
           if(propImg) {
             elseHTML += "<li><img src='" + propImg + "' class='related_icon'>" + tail + " : " + v + "</li>";
@@ -394,6 +408,7 @@ Viewer.getSubjectHTML = function(m, projection, className, useAnchor, emailQuery
   var title = m.getValues(subject, ["title"]);
   var name = m.getValues(subject, ["name"]);
   var img = m.getValues(subject, ["image"]);
+  if(!img.length) { img =  m.getValues(subject, ["img"]); }
   var favicon = m.getValues(subject, [Manager.PROP_FAVICON]);
   var url = m.getValues(subject, ["url"]);
   var type = m.getValues(subject, ["type"]);

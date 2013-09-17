@@ -97,24 +97,148 @@ Options.is_remove = function() {
   var res = autoremove == "true" ? true : Options.DEFAULT_REMOVE;
   return res;
 }
+Options.logoutFacebook = function() {
+  localStorage.removeItem("__FB_ACCESS_TOKEN");
+  localStorage.removeItem("__FB_EXPIRES");
+  bt_login_facebook.innerText = "Log In";
+  Options.show_status("login_status", "Logged out");
+}
 Options.clear_storage = function() {
   localStorage.clear();
   Options.save_options();
+  Options.logoutFacebook();
 }
 Options.loginFacebook = function() {
   if(bt_login_facebook.innerText == "Log In") {
-    var fb_login_url = "https://hu-study.appspot.com/c/fb-login";
+    var fb_login_url = Manager.FB_LOGIN_URL;
     window.open(fb_login_url);
     window.close();
     
   } else { //Log Out
-    localStorage.removeItem("__FB_ACCESS_TOKEN");
-    localStorage.removeItem("__FB_EXPIRES");
-    bt_login_facebook.innerText = "Log In";
-    Options.show_status("login_status", "Logged out");
+    Options.logoutFacebook();
   }
 }
+Options.saveFacebookGraph = function(access_token) {
+  function saveMe(obj) {
+    var subject = Manager.FB_BASE_URL + obj.username;
+    var bg = chrome.extension.getBackgroundPage();
+    m = bg.bg_res.m;
+    
+    m.tst.set(subject, "__type", "http://xmlns.com/foaf/0.1/Person");
+    m.tst.set(subject, "facebook-account", subject);
+    if(obj.name)        { m.tst.set(subject, "foaf:name", obj.name); }
+    //if(obj.first_name) { m.tst.set(subject, "foaf:firstName", obj.first_name); }
+    //if(obj.last_name)  { m.tst.set(subject, "foaf:lastName", obj.last_name); }
+    if(obj.gender)      { m.tst.set(subject, "foaf:gender", obj.gender); }
+    if(obj.id)          { m.tst.set(subject, "facebook-id", obj.id); }
+    if(obj.email)       { m.tst.set(subject, "foaf:mbox", "mailto:" + obj.email); }
+    if(obj.link)        { m.tst.set(subject, "foaf:homepage", obj.link); }
+    if(obj.locale)      { m.tst.set(subject, "schema:addressCountry", obj.locale); }
+    if(obj.location)    { m.tst.set(subject, "schema:addressLocality", obj.locale.name); }
+    if(obj.timezone)    { m.tst.set(subject, "timezone", obj.locale.name); }
+    if(obj.updated_time){ m.tst.set(subject, "updated-time", obj.updated_time); }
+    if(obj.languages)   {
+      for(var i = 0; i < obj.languages.length; i++) {
+        var lang = obj.languages[i]
+        if(lang && lang.name) {
+          m.tst.add(subject, "language", lang.name);
+        }
+      }
+    }
+    if(obj.work)       {
+      for(var i = 0; i < obj.work.length; i++) {
+        var employer = obj.work[i].employer;
+        if(employer && employer.name) {
+          m.tst.add(subject, "work", employer.name);
+        }
+      }
+    }
+    return subject;
+  }
+  function saveFriends(me, obj) {
+    for(var i = 0; i < obj.data.length; i++) {
+      var friend = obj.data[i];
+      console.log(friend.name);
+      var friend_subject = Manager.FB_BASE_URL + friend.username;
+      m.tst.add(me, "foaf:knows", friend_subject);
+      m.tst.set(friend_subject, "__type", "http://xmlns.com/foaf/0.1/Person");
+      m.tst.set(friend_subject, "facebook-account", friend_subject);
+      if(friend.name)       { m.tst.set(friend_subject, "foaf:name", friend.name); }
+      //if(friend.first_name) { m.tst.set(friend_subject, "foaf:firstName", friend.first_name); }
+      //if(friend.last_name)  { m.tst.set(friend_subject, "foaf:lastName", friend.last_name); }
+      if(friend.id)         { m.tst.set(friend_subject, "facebook-id", friend.id); }
+      if(friend.picture && friend.picture.data && friend.picture.data.url) {
+        m.tst.set(friend_subject, "foaf:img", friend.picture.data.url);
+      }
+    }
+  }
+  
+  //Get /me and /me/frinds
+  var meURL = Manager.FB_GRAPH_URL + "me?" + Manager.encode({access_token: access_token});
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", meURL, true); //GEt /me
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      // JSON.parse does not evaluate the attacker's scripts.
+      var resp = JSON.parse(xhr.responseText);
+      console.log(resp);
+      var subject = saveMe(resp);
+      
+      var friendsURL = Manager.FB_GRAPH_URL + "me/friends?";
+      friendsURL += Manager.encode({
+        access_token: access_token,
+        fields: "name,last_name,first_name,username,picture,bio,birthday,education," +
+        "hometown,interested_in,location,favorite_athletes,favorite_teams,quotes," +
+        "relationship_status,religion,significant_other,website,work"
+      });
+      
+      xhr = new XMLHttpRequest();
+      xhr.open("GET", friendsURL, true); //GEt /me/friends
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+          // JSON.parse does not evaluate the attacker's scripts.
+          var resp = JSON.parse(xhr.responseText);
+          console.log(resp);
+          saveFriends(subject, resp);
+        }
+      }
+      xhr.send();
+    }
+  }
+  xhr.send();
 
+};
+Options.loginSNS = function() {
+  var fb_access_token = localStorage["__FB_ACCESS_TOKEN"];
+  var fb_expires      = localStorage["__FB_EXPIRES"];
+  
+  //Callback from OAuth Proxy
+  if(window.location.search.length) {
+    var queries = window.location.search.substr(1).split('&');
+    for(var i = 0; i < queries.length; i++) {
+      var nv = queries[i].split('=');
+      var name = nv[0];
+      var value = nv[1];
+      if(name == "access_token") { fb_access_token = value; }
+      else if(name == "expires") { fb_expires = value; }
+    }
+    if(fb_access_token) {
+      localStorage["__FB_ACCESS_TOKEN"] = fb_access_token;
+      Options.show_status("login_status", "Logged In !");
+      //Get the Graph Information
+      Options.saveFacebookGraph(fb_access_token);
+    }
+    if(fb_expires) { localStorage["__FB_EXPIRES"] = fb_expires; }
+
+  }
+  //update button status
+  if(fb_access_token) {
+    bt_login_facebook.innerText = "Log Out";
+  }
+}
+Options.getFacebookAccessToken = function() {
+  return localStorage["__FB_ACCESS_TOKEN"];
+}
 function init() {
   el_autostore_setting = document.getElementById("autostore_setting");
   el_autostore_on = document.getElementById("autostore_on");
@@ -148,31 +272,8 @@ function init() {
     });
     Options.restore_options();
     
-    
     //SNS
-    var fb_access_token = localStorage["__FB_ACCESS_TOKEN"];
-    var fb_expires      = localStorage["__FB_EXPIRES"];
-    
-    //Callback from OAuth Proxy
-    if(window.location.search.length) {
-      var queries = window.location.search.substr(1).split('&');
-      for(var i = 0; i < queries.length; i++) {
-        var nv = queries[i].split('=');
-        var name = nv[0];
-        var value = nv[1];
-        if(name == "access_token") { fb_access_token = value; }
-        else if(name == "expires") { fb_expires = value; }
-      }
-      if(fb_access_token) {
-        localStorage["__FB_ACCESS_TOKEN"] = fb_access_token;
-        Options.show_status("login_status", "Logged In !");
-      }
-      if(fb_expires)      { localStorage["__FB_EXPIRES"] = fb_expires; }
-    }
-    //update button status
-    if(fb_access_token) {
-      bt_login_facebook.innerText = "Log Out";
-    }
+    Options.loginSNS();
   }
 } 
 

@@ -5,14 +5,26 @@ String.prototype.trim = function() {
 var Manager = function(){
   this.app_id = chrome.i18n.getMessage("@@extension_id");
   this.app_url = "chrome-extension://" + this.app_id + "/";
-  this.tst = new Triplestore();
   this.lst = localStorage;
+  {//TriplestoreJS
+    this.tst = new Triplestore();
+    this.tst.setMapping("foaf", "http://xmlns.com/foaf/0.1/")
+    this.tst.setMapping("schema", "http://schema.org/")
+    
+  }
 };
 Manager.DEBUG = false;
 Manager.PROP_FOUNDAt = "__FOUND_At__";
 Manager.PROP_FAVICON = "__FAVICON__";
 Manager.PROP_TITLE =   "__TITLE__";
 Manager.PROP_EXPIRES = "__EXPIRES__";
+Manager.FB_APP_ID = "577151302344255";
+Manager.FB_BASE_URL = "https://www.facebook.com/";
+Manager.FB_GRAPH_URL = "https://graph.facebook.com/";
+Manager.FB_LOGIN_URL = "https://semantic-spider.appspot.com/c/fb-login";
+Manager.FB_REDIRECT_URL = "https://semantic-spider.appspot.com/c/fb-post";
+Manager.FB_DIALOG_FEED_URL = "https://www.facebook.com/dialog/feed";
+Manager.FB_DIALOG_SEND_URL = "https://www.facebook.com/dialog/send";
 
 Manager.prototype.init =function(tab) {
   this.tab = tab;
@@ -416,7 +428,27 @@ Manager.prototype.clear = function() {
   this.tst.remove();
   this.renew();
 };
-
+Manager.encode = function(kvMap) {
+  var res = "";
+  for(var key in kvMap) {
+    if(res.length) {
+      res += '&';
+    }
+    res += encodeURIComponent(key) + '=' + encodeURIComponent(kvMap[key]);
+  }
+  return res;
+}
+Manager.isFacebookProperty = function(name, value) {
+  if(name && value) {
+    if(name.search(/^facebook-/) != -1 ||
+       name.search(/holdsAccount$/) != -1) {
+      if(value.search(/^https?:\/\/www\.facebook\./) != -1) {
+        return true
+      }
+    }
+  }
+  return false;
+}
 Manager.dict_pronoun = ["i", "my", "me", "mine",
                         "we", "our", "us", "ours",
                         "you", "your", "yours",
@@ -502,9 +534,9 @@ Manager.prototype.getSimilarItems = function(targetValues, similarityThreshold) 
     if(w1.length && w2.length) {
       var similarity = ML.jaccord(w1, w2);
       
-      console.log("@similarity : " + similarity + " : " + subject);
-      console.log("@s1: " + w1);
-      console.log("@s2: " + w2);
+      //console.log("@similarity : " + similarity + " : " + subject);
+      //console.log("@s1: " + w1);
+      //console.log("@s2: " + w2);
       
       if(Manager.DEBUG) {
         this.tst.add(subject, "DEBUG_similarity", String(similarity));
