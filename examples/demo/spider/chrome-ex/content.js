@@ -1,5 +1,5 @@
 /* $Id$ */
-function showHTML(html, opacity) {
+function suggestHTML(html, opacity) {
   //resolve duplicated container
   jQuery("#spider-wrapper").remove();
   
@@ -22,18 +22,8 @@ function showHTML(html, opacity) {
     $container.fadeToggle("fast");
   });
   /*$("#spider-items a").click(function(e) {
-    //check the url is related to facebook
-    if(e.currentTarget.href.indexOf(Manager.FB_BASE_URL) != -1) {
-      chrome.runtime.sendMessage(
-          {
-            action : "post-facebook",
-            url: e.currentTarget.href
-          },
-          function(res) {
-            return false;
-          }
-      );
-      return false;//prevent the page moving
+    if(e.currentTarget.href.search(/^https?:\/\/plus.google.com\/.+/) != -1) {
+
     }
   });*/
   $(window).bind("scroll", function() {
@@ -85,7 +75,7 @@ function extract() {
         var html = res.html;
         if(html && html.length) {
           //alert("@render html");
-          showHTML(html, 0.1);
+          suggestHTML(html, 0.1);
         }
         //set timer for autosave
         if(res.time) {
@@ -101,7 +91,7 @@ function extract() {
                   var html = res.html;
                   if(html && html.length) {
                     //alert("@render html by time");
-                    showHTML(html, 0.1);
+                    suggestHTML(html, 0.1);
                   }
                 });
           }, time);
@@ -111,7 +101,8 @@ function extract() {
 }
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
-      showHTML(request.html, 1.0);
+      suggestHTML(request.html, 1.0);
     }
 );
+
 extract();

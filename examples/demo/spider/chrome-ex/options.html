@@ -55,7 +55,15 @@ h3 {
 	display: none;
 	width:220px;
 	height:80px;
-	background-image: -webkit-linear-gradient(bottom, rgb(58,89,150) 25%, rgb(63,97,161) 50%, rgb(67,104,173) 75%, rgb(72,112,186) 100%);
+	background-color: rgb(63,97,161);
+	text-align:center;
+	padding: 10px;
+}
+.googleBackground{
+	display: none;
+	width:220px;
+	height:80px;
+	background-color: #DD4C39;
 	text-align:center;
 	padding: 10px;
 }
@@ -67,16 +75,21 @@ h3 {
 	<div>
 		<div id="sns" class="fieldset">
 			<h3>SNS</h3>
-			<!-- p><img src="images/fb-logo.jpg" width="100%"></p>
-			<input id="login_facebook" value="log in" type="image" src="images/fb_login.png" width="40%" height="25px"-->
 			<div class="facebookBackground" style="display: block;">
 				<div class="facebookLogo">facebook</div>
-				<button id="login_facebook" style="width:100px;height:20px;margin-top:10px;">Log In</button>
+				<button id="login_facebook"
+					style="width: 100px; height: 20px; margin-top: 10px;">
+					Log In</button>
 			</div>
+			<div id="login_status_fb" style="height:2em;"></div>
 
-
-			<div id="fb-root"></div>
-			<span id="login_status"></span>
+			<div class="googleBackground" style="display: block;">
+				<div class="facebookLogo">Google+</div>
+				<button id="login_google"
+					style="width: 100px; height: 20px; margin-top: 10px;">
+					Log In</button>
+			</div>
+			<div id="login_status_gl" style="height:2em;"></div>
 		</div>
 		<div id="autostore" class="fieldset">
 			<h3 style="text-align: center;">Auto storing items</h3>

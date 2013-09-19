@@ -294,10 +294,11 @@ function menu_share_email(info, tab) {
   if(subjects.length) {
     var html = generateInsertedHTML(m, v, subjects, email_query);
     
-    chrome.tabs.sendMessage(tab.id,
-        {"html": html},
-        function(response) {
-        });
+    chrome.tabs.sendMessage(tab.id, {
+      "html": html
+    },
+    function(response) {
+    });
   } else {
     alert("Sorry, could not find any person having email address.");
   }
@@ -338,10 +339,11 @@ function menu_post_facebook(info, tab) {
     var html = generateInsertedHTML(m, v, subjects, null,
         fb_request);
     
-    chrome.tabs.sendMessage(tab.id,
-        {"html": html},
-        function(response) {
-        });
+    chrome.tabs.sendMessage(tab.id, {
+      "html": html
+    },
+    function(response) {
+    });
   } else {
     alert("Sorry, could not find any Facebook users.");
   }
@@ -350,7 +352,7 @@ function menu_send_facebook(info, tab) {
   console.log("item " + info.menuItemId + " was clicked");
   console.log("info: " + JSON.stringify(info));
   console.log("tab: " + JSON.stringify(tab));
-    
+  
   var pageURL = info.pageUrl;
   var fb_request = {
       method: "dialog/send",
@@ -379,15 +381,17 @@ function menu_send_facebook(info, tab) {
       var html = generateInsertedHTML(m, v, subjects, null,
           fb_request);
       
-      chrome.tabs.sendMessage(tab.id,
-          {"html": html},
-          function(response) {
-          });
+      chrome.tabs.sendMessage(tab.id, {
+        "html": html
+      },
+      function(response) {
+      });
     } else {
       alert("Sorry, could not find any Facebook users.");
     }
   }
 }
+
 //new context menu
 //Create a parent item and two children.
 
@@ -405,7 +409,6 @@ var menu_facebook = chrome.contextMenus.create({
   title: "Facebook",
   parentId: menu_share,
   contexts: ["all"],
-  onclick: menu_share_email
 });
 chrome.contextMenus.create({
   title: "Wall",
@@ -419,3 +422,14 @@ chrome.contextMenus.create({
   contexts: ["all"],
   onclick: menu_send_facebook
 });
+/*var menu_google = chrome.contextMenus.create({
+  title: "Google+",
+  parentId: menu_share,
+  contexts: ["all"],
+});
+chrome.contextMenus.create({
+  title: "Wall",
+  parentId: menu_google,
+  contexts: ["all"],
+  onclick: menu
+});*/

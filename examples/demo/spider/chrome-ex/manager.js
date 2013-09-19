@@ -26,6 +26,10 @@ Manager.FB_REDIRECT_URL = "https://semantic-spider.appspot.com/c/fb-post";
 Manager.FB_DIALOG_FEED_URL = "https://www.facebook.com/dialog/feed";
 Manager.FB_DIALOG_SEND_URL = "https://www.facebook.com/dialog/send";
 
+Manager.GL_BASE_URL = "https://plus.google.com/";
+Manager.GL_PEOPLE_URL = "https://www.googleapis.com/plus/v1/people/";
+Manager.GL_LOGIN_URL = "https://semantic-spider.appspot.com/c/g-login";
+
 Manager.prototype.init =function(tab) {
   this.tab = tab;
   var bg = chrome.extension.getBackgroundPage();
@@ -139,6 +143,20 @@ Manager.prototype.renew = function() {
   //sort with reference count
   this.projections = Manager.sortProjections(this.projections, rating);
 };
+//escape duplicated value
+Manager.prototype.add = function(subject, property, value) {
+  var values = this.tst.getValues(subject, property);
+  var has = false;
+  for(var i = 0; i < values.length; i++) {
+    if(values[i] == value) {
+      has = true;
+      break;
+    }
+  }
+  if(!has) {
+    this.tst.add(subject, property, value);
+  }
+}
 Manager.prototype.getReferredMap = function(projections) {
   var referred = {}
   for(var subject in projections) {
