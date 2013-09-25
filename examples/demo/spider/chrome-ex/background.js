@@ -2,6 +2,31 @@
 var bg_res = {};
 var expires = {};
 
+//sort subjects based on priority
+function sortSnsAccount(m, subjects) {
+  //sort with past select number
+  subjects.sort(function(s1, s2) {
+    var p1 = m.projections[s1];
+    var p2 = m.projections[s2];
+    var n1 = p1.get(Manager.PROP_SELECT_NUM);
+    var n2 = p2.get(Manager.PROP_SELECT_NUM);
+    n1 = n1 ? parseInt(n1) : 0;
+    n2 = n2 ? parseInt(n2) : 0;
+    return n2 - n1;
+  });
+  
+  //put user's SNS account on top
+  var fb_account = Options.getFacebookAccount();
+  var gl_account = Options.getGoogleAccount();
+  for(var i = 0; i < subjects.length; i++) {
+    var subject = subjects[i];
+    if(subject == fb_account || subject == gl_account) {
+      subjects.splice(i, 1);
+      subjects.unshift(subject);
+    }
+  }
+}
+
 function getRelatedSubjects(m, title, rdfa, micro) {
   var items = [];
   var MIN_SIMILARITY = 0.3;//0.5;
@@ -87,12 +112,13 @@ function getRelatedSubjects(m, title, rdfa, micro) {
   for(var i = 0; i < items.length; i++) {
     subjects.push(items[i]["subject"]);
   }
+  sortSnsAccount(m, subjects);
   subjects = Manager.trimDuplicate(subjects);
   subjects = subjects.slice(0, MAX_RESULT_SIZE);
   
   return subjects;
 }
-function generateInsertedHTML(m, v, subjects, emailQuery, fb_query) {
+function generateInsertedHTML(m, v, subjects, emailQuery, fb_request, gl_request) {
   if(!subjects.length) {
     return null;
   }
@@ -107,7 +133,7 @@ function generateInsertedHTML(m, v, subjects, emailQuery, fb_query) {
     var $summary = Viewer.getSubjectHTML(m, m.projections[subjects[i]], "referred_cell", true);
     $summaries.append($("<tr class='spider-summary'>").append($summary));
     
-    var detail = v.getSummaryHTML(subjects[i], emailQuery, fb_query);
+    var detail = v.getSummaryHTML(subjects[i], emailQuery, fb_request, gl_request);
     var $detail = null;
     if(detail) {
       $detail = $($(detail).find(".item-detail")[0]);
@@ -173,7 +199,11 @@ chrome.runtime.onMessage.addListener(
       else if(request.action == "long-stay") {
         //alert("save by time");
         m.save();
-      } else if(request.action == "post-facebook") {
+      }
+      else if(request.action == "selectNumber++") {
+        m.incrementSelectNumber(request.subject);
+      }
+      else if(request.action == "post-facebook") {
         var requestURL = request.url + '&' +
         Manager.encode({access_token: Options.getFacebookAccessToken()});
 
@@ -183,17 +213,10 @@ chrome.runtime.onMessage.addListener(
           if (xhr.readyState == 4) {
             // JSON.parse does not evaluate the attacker's scripts.
             var resp = JSON.parse(xhr.responseText);
-            console.log(resp);
             if(resp.id) {
               alert("Done");
             } else if(resp.error) {
               alert(resp.error.message);
-              
-              /*https://www.facebook.com/dialog/feed?
-                app_id=145634995501895
-                &display=popup&caption=An%20example%20caption 
-                &link=https%3A%2F%2Fdevelopers.facebook.com%2Fdocs%2Fdialogs%2F
-                &redirect_uri=https://developers.facebook.com/tools/explorer*/
             }
           }
         }
@@ -218,9 +241,10 @@ function onSelectionChanged(tabId) {
 /*chrome.tabs.onActivated.addListener(function(activeInfo) {
   onSelectionChanged(activeInfo.tabId);
 });*/
-chrome.tabs.onUpdated.addListener(function(id, changeInfo, tab) {
+
+/*TODO chrome.tabs.onUpdated.addListener(function(id, changeInfo, tab) {
   onSelectionChanged(id);  
-});
+});*/
 
 //get Expires header
 chrome.webRequest.onResponseStarted.addListener(
@@ -265,10 +289,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 //menu of sharing photos
 function menu_share_email(info, tab) {
-  console.log("item " + info.menuItemId + " was clicked");
-  console.log("info: " + JSON.stringify(info));
-  console.log("tab: " + JSON.stringify(tab));
-    
   var pageURL = info.pageUrl;
   var email_query = {
       subject: "Sharing ",
@@ -290,6 +310,7 @@ function menu_share_email(info, tab) {
   var m = bg_res.m;
   var v = new Viewer(m, tab);
   var subjects = m.filterSubjects(["mbox", "facebook-account", "www.facebook"]);
+  sortSnsAccount(m, subjects);
   
   if(subjects.length) {
     var html = generateInsertedHTML(m, v, subjects, email_query);
@@ -304,12 +325,7 @@ function menu_share_email(info, tab) {
   }
 }
 function menu_post_facebook(info, tab) {
-  console.log("item " + info.menuItemId + " was clicked");
-  console.log("info: " + JSON.stringify(info));
-  console.log("tab: " + JSON.stringify(tab));
-    
   var pageURL = info.pageUrl;
-  
   var fb_request = {
       method: "dialog/feed",
       query: {
@@ -334,6 +350,7 @@ function menu_post_facebook(info, tab) {
   var m = bg_res.m;
   var v = new Viewer(m, tab);
   var subjects = m.filterSubjects(["facebook-account"]);
+  sortSnsAccount(m, subjects);
   
   if(subjects.length) {
     var html = generateInsertedHTML(m, v, subjects, null,
@@ -349,10 +366,6 @@ function menu_post_facebook(info, tab) {
   }
 }
 function menu_send_facebook(info, tab) {
-  console.log("item " + info.menuItemId + " was clicked");
-  console.log("info: " + JSON.stringify(info));
-  console.log("tab: " + JSON.stringify(tab));
-  
   var pageURL = info.pageUrl;
   var fb_request = {
       method: "dialog/send",
@@ -376,6 +389,7 @@ function menu_send_facebook(info, tab) {
     var m = bg_res.m;
     var v = new Viewer(m, tab);
     var subjects = m.filterSubjects(["facebook-account"]);
+    sortSnsAccount(m, subjects);
     
     if(subjects.length) {
       var html = generateInsertedHTML(m, v, subjects, null,
@@ -391,15 +405,113 @@ function menu_send_facebook(info, tab) {
     }
   }
 }
+function menu_post_google(info, tab) {
+  var pageURL = info.pageUrl;
+  var gl_request = {
+      query: {
+        contenturl: tab.url
+      }
+  };
+  
+  if(info.mediaType == "image" ||
+      info.mediaType == "video" ||
+      info.mediaType == "audio") {
+    gl_request.query.contenturl = info.srcUrl;
+  } else if(info.linkUrl) {
+    gl_request.query.contenturl = info.linkUrl;
+  } else if(info.selectionText) {
+    gl_request.query.prefilltext = info.selectionText;
+  }
+  
+  var m = bg_res.m;
+  var v = new Viewer(m, tab);
+  var subjects = m.filterSubjects(["google-account"]);
+  sortSnsAccount(m, subjects);
+  
+  if(subjects.length) {
+    var html = generateInsertedHTML(m, v, subjects, null,
+        null, gl_request);
+    
+    chrome.tabs.sendMessage(tab.id, {
+      "html": html
+    },
+    function(response) {
+    });
+  } else {
+    alert("Sorry, could not find any Google users.");
+  }
+}
+function menu_share(info, tab) {
+  var pageURL = info.pageUrl;
+  var email_query = {
+      subject: "Sharing ",
+      body: ""
+  };
+  var fb_request = {
+      method: "dialog/send",
+      query: {
+        app_id: Manager.FB_APP_ID,
+        display: "popup",
+        link: pageURL,
+        redirect_uri: Manager.FB_REDIRECT_URL
+      }
+  };
+  var gl_request = {
+      query: {
+        contenturl: tab.url
+      }
+  };
+  
+  if(info.mediaType == "image" ||
+      info.mediaType == "video" ||
+      info.mediaType == "audio") {
+    email_query.subject += "media";
+    email_query.body = info.srcUrl;
+    
+    fb_request.query.link = info.srcUrl;
+    gl_request.query.contenturl = info.srcUrl;
+    
+  } else if(info.linkUrl) {
+    email_query.subject += "URL";
+    email_query.body = info.linkUrl;
+    
+    fb_request.query.link = info.linkUrl;
+    gl_request.query.contenturl = info.linkUrl;
+    
+  } else if(info.selectionText) {
+    email_query.subject += "text";
+    email_query.body = info.selectionText;
+    
+    gl_request.query.prefilltext = info.selectionText;
+  }
+  var m = bg_res.m;
+  var v = new Viewer(m, tab);
+  var subjects = m.filterSubjects(["mbox", "facebook-account", "google-account"]);
+  sortSnsAccount(m, subjects);
+  
+  if(subjects.length) {
+    var html = generateInsertedHTML(m, v, subjects, email_query,
+        fb_request, gl_request);
+    
+    chrome.tabs.sendMessage(tab.id, {
+      "html": html
+    },
+    function(response) {
+    });
+  } else {
+    alert("Sorry, could not find any contact to be sharable.");
+  }
+}
 
 //new context menu
 //Create a parent item and two children.
 
 var menu_share = chrome.contextMenus.create({
-  title: "Share by",
-  contexts: ["all"]
+  title: "Share",
+  contexts: ["all"],
+  onclick: menu_share
 });
-chrome.contextMenus.create({
+/*chrome.contextMenus.create({
   title: "Email",
   parentId: menu_share,
   contexts: ["all"],
@@ -422,7 +534,7 @@ chrome.contextMenus.create({
   contexts: ["all"],
   onclick: menu_send_facebook
 });
-/*var menu_google = chrome.contextMenus.create({
+var menu_google = chrome.contextMenus.create({
   title: "Google+",
   parentId: menu_share,
   contexts: ["all"],
@@ -431,5 +543,5 @@ chrome.contextMenus.create({
   title: "Wall",
   parentId: menu_google,
   contexts: ["all"],
-  onclick: menu
+  onclick: menu_post_google
 });*/

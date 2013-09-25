@@ -244,7 +244,7 @@ Viewer.getTypeImg = function(m, type) {
   }
   return res ? m.app_url + res : res;
 };
-Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request) {
+Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_request) {
   function getWhitespace(s) {
     return s.replace(/./g,"&nbsp;");
   }
@@ -308,18 +308,30 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request) {
             var href = v;
             //if(prop == "facebook-account") {
             if(Manager.isFacebookProperty(prop, v)) {
-              var fb_userid = v.substr(v.lastIndexOf('/') + 1);
+              propImg = this.m.app_url + "images/facebook.png";
+              var userid = v.substr(v.lastIndexOf('/') + 1);
               if(fb_request) {
                 if(fb_request.method == "dialog/feed") {
-                  fb_request.query.to = fb_userid;
+                  fb_request.query.to = userid;
                   href = Manager.FB_DIALOG_FEED_URL + "?" + Manager.encode(fb_request.query);
                 } else if(fb_request.method == "dialog/send") {
-                  fb_request.query.to = fb_userid;
+                  fb_request.query.to = userid;
                   href = Manager.FB_DIALOG_SEND_URL + "?" + Manager.encode(fb_request.query);
                 }
               } else if(emailQuery){
-                href = "mailto:" + fb_userid + "@facebook.com?" + Manager.encode(emailQuery);
+                href = "mailto:" + userid + "@facebook.com?" + Manager.encode(emailQuery);
               }
+            } else if(Manager.isGoogleProperty(prop, v)) {
+              propImg = this.m.app_url + "images/google.png";
+              var userid = v.substr(v.lastIndexOf('/') + 1);
+              if(gl_request) {
+                gl_request.query.recipients = userid;
+                href = Manager.GL_POST_URL + "?" + Manager.encode(gl_request.query);
+              }
+            }
+            if(prop == "knows") {
+              var displayName = this.m.getValues(v, ["http://xmlns.com/foaf/0.1/name"]);
+              tail = displayName.length ? tail + ": " + displayName[0] : tail;
             }
             elseHTML += "<li><img src='" + propImg + "' class='related_icon'><a href='" + href + "' title='" + href + "'>" + tail + "</a></li>";
           }

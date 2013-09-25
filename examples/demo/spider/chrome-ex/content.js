@@ -1,4 +1,33 @@
 /* $Id$ */
+function getSubject(element) {
+  if(element) {
+    if(!element.getAttribute("spider-items")) {
+      var id = element.getAttribute("id");
+      if(id) {
+        return id; 
+      } else {
+        return getSubject(element.parentNode);
+      }
+    }
+  }
+  return null;
+}
+function incrementVisitNumber(subject) {
+  if(subject) {
+    chrome.runtime.sendMessage(
+        {
+          action : "selectNumber++",
+          url: document.URL,
+          subject: subject
+        },
+        function(res) {
+        }
+    );
+  }
+}
+var setListener = false;
+var $container = null;
+var $details = null;
 function suggestHTML(html, opacity) {
   //resolve duplicated container
   jQuery("#spider-wrapper").remove();
@@ -6,10 +35,11 @@ function suggestHTML(html, opacity) {
   //init
   var $wrapper = jQuery(html);
   jQuery("body").append($wrapper);
-  var $container = $wrapper.find("#spider-container").css({'opacity' : opacity});
-  var $details = $wrapper.find(".spider-detail");
+  $container = $wrapper.find("#spider-container").css({'opacity' : opacity});
+  $details = $wrapper.find(".spider-detail");
   
-  //hide details
+  //hide in default
+  $container.hide();
   $details.hide();
   
   $container.mouseover(function(e){
@@ -21,11 +51,18 @@ function suggestHTML(html, opacity) {
   $("#spider-wrapper #spider-visible").click(function(e) {
     $container.fadeToggle("fast");
   });
-  /*$("#spider-items a").click(function(e) {
-    if(e.currentTarget.href.search(/^https?:\/\/plus.google.com\/.+/) != -1) {
-
-    }
-  });*/
+  $("#spider-container a").click(function(e) {
+    var subject = getSubject(e.target);
+    incrementVisitNumber(subject);
+  });
+  if(!setListener) {
+    setListener = true;
+    $("body").keyup(function(event) {
+      if(event.keyCode == 27) {
+        $container.fadeToggle("fast");
+      }
+    });
+  }
   $(window).bind("scroll", function() {
     $details.hide();
   });
@@ -102,6 +139,7 @@ function extract() {
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
       suggestHTML(request.html, 1.0);
+      $container.show("fast");
     }
 );
 

@@ -1,6 +1,6 @@
 /* $Id$ */
 #spider-wrapper {
-    position: absolute;
+    position: fixed;
     top: 0px;
     left: 0px;
     font-family: Arial;
@@ -13,31 +13,55 @@
     vertical-align: middle;
     padding: 5px 5px 5px 5px;
     border: 1px solid rgb(160, 160, 160);
-    background: no-repeat rgb(245, 245, 245);
+    background: no-repeat #F5F5F5;
     box-shadow: rgb(128, 128, 128) 0px 0px 10px;
     border-bottom-left-radius: 7px;
     border-bottom-right-radius: 7px;
     
     position: relative;
-    overflow-x: hidden;
-    overflow-y: hidden;
+    max-height: 700px;
+	overflow-x: hidden;
+    overflow-y: auto;
     /*text-align: center;*/
 }
 #spider-visible {
     cursor: pointer;
     text-align: center;
     border: 1px solid rgb(160, 160, 160);
-    background: no-repeat rgb(245, 245, 245);
+    background: no-repeat #F5F5F5;
     box-shadow: rgb(128, 128, 128) 0px 0px 10px;
     border-top-left-radius: 7px;
     border-top-right-radius: 7px;	
 }
 .spider-detail {
-    max-width: 300px;
+    max-height: 77%;
+    overflow-y: auto;
+    max-width: 350px;
+    word-wrap: break-word;
     /*padding: 10px 5px 10px 5px;*/
     border: 1px solid rgb(160, 160, 160);
     background: no-repeat rgb(245, 245, 245);
     box-shadow: rgb(128, 128, 128) 0px 0px 10px;
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
+}
+.spider-detail table {
+	font-size: 12px;
+}
+#spider-container::-webkit-scrollbar-track,
+.spider-detail::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px #BFBFBF;
+	background-color: #F0F0F0;
+}
+#spider-container::-webkit-scrollbar,
+.spider-detail::-webkit-scrollbar
+{
+	width: 6px;
+	background-color: #F0F0F0;
+}
+#spider-container::-webkit-scrollbar-thumb,
+.spider-detail::-webkit-scrollbar-thumb
+{
+	background-color: #A7A7A7;
 }

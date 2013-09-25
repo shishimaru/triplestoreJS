@@ -133,6 +133,7 @@ Options.saveFacebookGraph = function(access_token) {
     m.tst.set(subject, "__type", "http://xmlns.com/foaf/0.1/Person");
     m.tst.set(subject, "facebook-account", subject);
     if(obj.name)        { m.tst.set(subject, "foaf:name", obj.name); }
+    if(obj.username)    { m.tst.set(subject, "facebook-username", obj.username); }
     //if(obj.first_name) { m.tst.set(subject, "foaf:firstName", obj.first_name); }
     //if(obj.last_name)  { m.tst.set(subject, "foaf:lastName", obj.last_name); }
     if(obj.gender)      { m.tst.set(subject, "foaf:gender", obj.gender); }
@@ -140,8 +141,16 @@ Options.saveFacebookGraph = function(access_token) {
     if(obj.email)       { m.tst.set(subject, "foaf:mbox", "mailto:" + obj.email); }
     if(obj.link)        { m.tst.set(subject, "foaf:homepage", obj.link); }
     if(obj.locale)      { m.tst.set(subject, "schema:addressCountry", obj.locale); }
-    if(obj.location)    { m.tst.set(subject, "schema:addressLocality", obj.locale.name); }
-    if(obj.timezone)    { m.tst.set(subject, "timezone", obj.locale.name); }
+    if(obj.picture && obj.picture.data && obj.picture.data.url) {
+      m.tst.set(subject, "foaf:img", obj.picture.data.url);
+    }
+    if(obj.location && obj.location.name) {
+      m.tst.set(subject, "schema:addressLocality", obj.location.name);
+    }
+    if(obj.timezone)    { m.tst.set(subject, "timezone", String(obj.timezone)); }
+    if(obj.currency && obj.currency.user_currency) {
+      m.tst.set(subject, "currency", obj.currency.user_currency);
+    }
     if(obj.updated_time){ m.tst.set(subject, "updated-time", obj.updated_time); }
     if(obj.languages)   {
       for(var i = 0; i < obj.languages.length; i++) {
@@ -159,12 +168,19 @@ Options.saveFacebookGraph = function(access_token) {
         }
       }
     }
+    if(obj.devices)       {
+      for(var i = 0; i < obj.devices.length; i++) {
+        var hardware = obj.devices[i].hardware;
+        var os = obj.devices[i].os;
+        var device = hardware + "[" + os + "]";
+        m.add(subject, "device", device);
+      }
+    }
     return subject;
   }
   function saveFriends(me, obj) {
     for(var i = 0; i < obj.data.length; i++) {
       var friend = obj.data[i];
-      console.log(friend.name);
       var friend_subject = Manager.FB_BASE_URL + friend.username;
       m.add(me, "foaf:knows", friend_subject);
       m.tst.set(friend_subject, "__type", "http://xmlns.com/foaf/0.1/Person");
@@ -180,14 +196,19 @@ Options.saveFacebookGraph = function(access_token) {
   }
   
   //Get /me and /me/frinds
-  var meURL = Manager.FB_GRAPH_URL + "me?" + Manager.encode({access_token: access_token});
+  var meURL = Manager.FB_GRAPH_URL + "me?" + Manager.encode({
+    access_token: access_token,
+    fields: "id,name,first_name,last_name,gender,locale,languages,link,username,age_range,\
+      timezone,updated_time,bio,birthday,cover,currency,devices,education,email,\
+      hometown,interested_in,location,political,picture,quotes,relationship_status,\
+      religion,website,work"
+  });
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", meURL, true); //GEt /me
+  xhr.open("GET", meURL, true); //GET /me
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
       // JSON.parse does not evaluate the attacker's scripts.
       var resp = JSON.parse(xhr.responseText);
-      console.log(resp);
       var subject = saveMe(resp);
       el_status_fb.innerText = Options.getUserinfoFB();
       
@@ -200,12 +221,11 @@ Options.saveFacebookGraph = function(access_token) {
       });
       
       xhr = new XMLHttpRequest();
-      xhr.open("GET", friendsURL, true); //GEt /me/friends
+      xhr.open("GET", friendsURL, true); //GET /me/friends
       xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
           // JSON.parse does not evaluate the attacker's scripts.
           var resp = JSON.parse(xhr.responseText);
-          console.log(resp);
           saveFriends(subject, resp);
         }
       }
@@ -272,19 +292,26 @@ Options.saveGoogleGraph = function(access_token) {
     return subject;
   }
   function saveFriends(me, obj) {
-    for(var i = 0; i < obj.data.length; i++) {
-      var friend = obj.data[i];
-      console.log(friend.name);
-      var friend_subject = Manager.FB_BASE_URL + friend.username;
+    for(var i = 0; i < obj.items.length; i++) {
+      var friend = obj.items[i];
+      var friend_subject = friend.url;
       m.add(me, "foaf:knows", friend_subject);
-      m.tst.set(friend_subject, "__type", "http://xmlns.com/foaf/0.1/Person");
-      m.tst.set(friend_subject, "facebook-account", friend_subject);
-      if(friend.name)       { m.tst.set(friend_subject, "foaf:name", friend.name); }
-      //if(friend.first_name) { m.tst.set(friend_subject, "foaf:firstName", friend.first_name); }
-      //if(friend.last_name)  { m.tst.set(friend_subject, "foaf:lastName", friend.last_name); }
-      if(friend.id)         { m.tst.set(friend_subject, "facebook-id", friend.id); }
-      if(friend.picture && friend.picture.data && friend.picture.data.url) {
-        m.tst.set(friend_subject, "foaf:img", friend.picture.data.url);
+      if(!m.projections[friend_subject] ||
+          m.projections[friend_subject].get("__etag") != friend.etag) {
+        if(m.projections[friend_subject]) {
+          m.projections[friend_subject].remove();
+        }
+        
+        m.tst.set(friend_subject, "__etag", friend.etag);
+        m.tst.set(friend_subject, "__type", "http://xmlns.com/foaf/0.1/Person");
+        m.tst.set(friend_subject, "google-account", friend_subject);
+        if(friend.displayName)       { m.tst.set(friend_subject, "foaf:name", friend.displayName); }
+        //if(friend.first_name) { m.tst.set(friend_subject, "foaf:firstName", friend.first_name); }
+        //if(friend.last_name)  { m.tst.set(friend_subject, "foaf:lastName", friend.last_name); }
+        if(friend.id)         { m.tst.set(friend_subject, "google-id", friend.id); }
+        if(friend.image && friend.image.url) {
+          m.tst.set(friend_subject, "foaf:img", friend.image.url);
+        }
       }
     }
   }
@@ -292,31 +319,24 @@ Options.saveGoogleGraph = function(access_token) {
   //Get /me and /me/frinds
   var meURL = Manager.GL_PEOPLE_URL + "me?" + Manager.encode({access_token: access_token});
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", meURL, true); //GEt /me
+  xhr.open("GET", meURL, true); //GET /me
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
       // JSON.parse does not evaluate the attacker's scripts.
       var resp = JSON.parse(xhr.responseText);
-      console.log(resp);
       var subject = saveMe(resp);
       el_status_gl.innerText = Options.getUserinfoGL();
-      return;
-      
-      var friendsURL = Manager.FB_GRAPH_URL + "me/friends?";
-      friendsURL += Manager.encode({
-        access_token: access_token,
-        fields: "name,last_name,first_name,username,picture,bio,birthday,education," +
-        "hometown,interested_in,location,favorite_athletes,favorite_teams,quotes," +
-        "relationship_status,religion,significant_other,website,work"
-      });
+
+      var friendsURL = Manager.GL_PEOPLE_URL + "me/people/visible?";
+      friendsURL += Manager.encode({access_token: access_token});
       
       xhr = new XMLHttpRequest();
-      xhr.open("GET", friendsURL, true); //GEt /me/friends
+      xhr.open("GET", friendsURL, true); //GET /me/friends
+      //xhr.setRequestHeader("Authorization", "Basic " + access_token);
       xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
           // JSON.parse does not evaluate the attacker's scripts.
           var resp = JSON.parse(xhr.responseText);
-          console.log(resp);
           saveFriends(subject, resp);
         }
       }
@@ -382,6 +402,12 @@ Options.getFacebookAccessToken = function() {
 }
 Options.getGoogleAccessToken = function() {
   return localStorage["__GL_ACCESS_TOKEN"];
+}
+Options.getFacebookAccount = function() {
+  return localStorage["__FB_USERID"];
+}
+Options.getGoogleAccount = function() {
+  return localStorage["__GL_USERID"];
 }
 Options.getUserinfoFB = function() {
   var subject = localStorage["__FB_USERID"];

@@ -18,6 +18,7 @@ Manager.PROP_FOUNDAt = "__FOUND_At__";
 Manager.PROP_FAVICON = "__FAVICON__";
 Manager.PROP_TITLE =   "__TITLE__";
 Manager.PROP_EXPIRES = "__EXPIRES__";
+Manager.PROP_SELECT_NUM = "__SELECT_NUM__";
 Manager.FB_APP_ID = "577151302344255";
 Manager.FB_BASE_URL = "https://www.facebook.com/";
 Manager.FB_GRAPH_URL = "https://graph.facebook.com/";
@@ -26,9 +27,11 @@ Manager.FB_REDIRECT_URL = "https://semantic-spider.appspot.com/c/fb-post";
 Manager.FB_DIALOG_FEED_URL = "https://www.facebook.com/dialog/feed";
 Manager.FB_DIALOG_SEND_URL = "https://www.facebook.com/dialog/send";
 
+Manager.GL_API_KEY = "AIzaSyB0WP9D7xfLy2OZhT0q2GCvJKdeMfqsyj8"
 Manager.GL_BASE_URL = "https://plus.google.com/";
 Manager.GL_PEOPLE_URL = "https://www.googleapis.com/plus/v1/people/";
 Manager.GL_LOGIN_URL = "https://semantic-spider.appspot.com/c/g-login";
+Manager.GL_POST_URL = "https://semantic-spider.appspot.com/c/g-post";
 
 Manager.prototype.init =function(tab) {
   this.tab = tab;
@@ -94,10 +97,12 @@ Manager.prototype.getSubjects = function(property, value, isLax) {
 };
 Manager.prototype.getFilteredValues = function(subject, propKeywords) {
   var res = [];
-  var props = this.projections[subject].getProperties();
-  var type_props = Manager.filter(propKeywords, props, true);
-  for(var i = 0; i < type_props.length; i++) {
-    res = res.concat(this.projections[subject].getAll(type_props[i]));
+  if(this.projections[subject]) {
+    var props = this.projections[subject].getProperties();
+    var type_props = Manager.filter(propKeywords, props, true);
+    for(var i = 0; i < type_props.length; i++) {
+      res = res.concat(this.projections[subject].getAll(type_props[i]));
+    }
   }
   return res;
 };
@@ -446,6 +451,20 @@ Manager.prototype.clear = function() {
   this.tst.remove();
   this.renew();
 };
+Manager.prototype.incrementSelectNumber = function(subject) {
+  if(subject) {
+    var projection = this.projections[subject];
+    if(projection) {
+      var num = projection.get(Manager.PROP_SELECT_NUM);
+      if(!num) {
+        num = 1;
+      } else {
+        num = parseInt(num) + 1;
+      }
+      this.tst.set(subject, Manager.PROP_SELECT_NUM, String(num));
+    }
+  }
+};
 Manager.encode = function(kvMap) {
   var res = "";
   for(var key in kvMap) {
@@ -459,8 +478,21 @@ Manager.encode = function(kvMap) {
 Manager.isFacebookProperty = function(name, value) {
   if(name && value) {
     if(name.search(/^facebook-/) != -1 ||
-       name.search(/holdsAccount$/) != -1) {
+        name.search(/holdsAccount$/) != -1 ||
+        name.search(/knows$/) != -1){
       if(value.search(/^https?:\/\/www\.facebook\./) != -1) {
+        return true
+      }
+    }
+  }
+  return false;
+}
+Manager.isGoogleProperty = function(name, value) {
+  if(name && value) {
+    if(name.search(/^google-/) != -1 ||
+       name.search(/holdsAccount$/) != -1 ||
+       name.search(/knows$/) != -1) {
+      if(value.search(/^https?:\/\/plus.google\./) != -1) {
         return true
       }
     }

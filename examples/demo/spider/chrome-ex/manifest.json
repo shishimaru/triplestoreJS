@@ -9,7 +9,7 @@
         "16": "images/spider.png"},
     "offline_enabled": true,
     "permissions": ["tabs", "webRequest", "unlimitedStorage", "contextMenus",
-                    "file:///*", "http://*/*", "https://*/*"],
+                    "http://*/*", "https://*/*"],
     "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
     "options_page": "options.html",
     "content_scripts": [
