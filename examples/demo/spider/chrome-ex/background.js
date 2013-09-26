@@ -122,9 +122,9 @@ function generateInsertedHTML(m, v, subjects, emailQuery, fb_request, gl_request
   if(!subjects.length) {
     return null;
   }
-  $wrapper = $("<div>", {"id" : "spider-wrapper"});
+  var $wrapper = $("<div>", {"id" : "spider-wrapper"});
   var $img = $("<img>", {"class" : "related_type", "src" : m.app_url + "images/spider.png"});
-  $wrapper.append($("<div>", {"id" : "spider-visible"}).append($img));
+  $wrapper.append($("<div>", {"id" : "spider-visible", "title": "Toggle by ESC"}).append($img));
   var $container = $("<div>", {"id" : "spider-container"}).appendTo($wrapper);
   
   var $items = $("<div id='spider-items'>").appendTo($container);
@@ -184,7 +184,6 @@ chrome.runtime.onMessage.addListener(
           Viewer.changeIcon(sender.tab.id, String(itemSize));
         }
         results.expires = expires[request.url];
-        results.onSelectionChanged = onSelectionChanged;
         bg_res[request.url] = results;
         countVisitNumber(request.url);
         
@@ -241,10 +240,9 @@ function onSelectionChanged(tabId) {
 /*chrome.tabs.onActivated.addListener(function(activeInfo) {
   onSelectionChanged(activeInfo.tabId);
 });*/
-
-/*TODO chrome.tabs.onUpdated.addListener(function(id, changeInfo, tab) {
+chrome.tabs.onUpdated.addListener(function(id, changeInfo, tab) {
   onSelectionChanged(id);  
-});*/
+});
 
 //get Expires header
 chrome.webRequest.onResponseStarted.addListener(

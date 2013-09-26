@@ -25,13 +25,14 @@ function incrementVisitNumber(subject) {
     );
   }
 }
-var setListener = false;
 var $container = null;
 var $details = null;
+
 function suggestHTML(html, opacity) {
   //resolve duplicated container
   jQuery("#spider-wrapper").remove();
-  
+  $("body").off("keyup.spider");
+    
   //init
   var $wrapper = jQuery(html);
   jQuery("body").append($wrapper);
@@ -55,14 +56,11 @@ function suggestHTML(html, opacity) {
     var subject = getSubject(e.target);
     incrementVisitNumber(subject);
   });
-  if(!setListener) {
-    setListener = true;
-    $("body").keyup(function(event) {
-      if(event.keyCode == 27) {
-        $container.fadeToggle("fast");
-      }
-    });
-  }
+  $("body").on("keyup.spider", function(event) {
+    if(event.keyCode == 27) {
+      $container.fadeToggle("fast");
+    }
+  });
   $(window).bind("scroll", function() {
     $details.hide();
   });

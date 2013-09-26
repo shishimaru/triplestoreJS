@@ -311,6 +311,7 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
               propImg = this.m.app_url + "images/facebook.png";
               var userid = v.substr(v.lastIndexOf('/') + 1);
               if(fb_request) {
+                propImg = this.m.app_url + "images/facebook-br.gif";
                 if(fb_request.method == "dialog/feed") {
                   fb_request.query.to = userid;
                   href = Manager.FB_DIALOG_FEED_URL + "?" + Manager.encode(fb_request.query);
@@ -325,6 +326,7 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
               propImg = this.m.app_url + "images/google.png";
               var userid = v.substr(v.lastIndexOf('/') + 1);
               if(gl_request) {
+                propImg = this.m.app_url + "images/google-br.gif";
                 gl_request.query.recipients = userid;
                 href = Manager.GL_POST_URL + "?" + Manager.encode(gl_request.query);
               }

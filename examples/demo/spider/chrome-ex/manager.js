@@ -41,7 +41,6 @@ Manager.prototype.init =function(tab) {
     this.rdfa = this.bg_res[tab.url] ? this.bg_res[tab.url].rdfa : null;
     this.micro = this.bg_res[tab.url] ? this.bg_res[tab.url].micro : null;
     this.expires = this.bg_res[tab.url] ? this.bg_res[tab.url].expires : null;
-    this.onSelectionChanged = this.bg_res[tab.url] ? this.bg_res[tab.url].onSelectionChanged : null;
   }
 };
 Manager.prototype.getSubjects = function(property, value, isLax) {

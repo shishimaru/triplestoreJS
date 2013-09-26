@@ -6,9 +6,9 @@
     font-family: Arial;
     font-size: 12px;
     width: 80px;
-    z-index: 9999999; 
+    z-index: 9999999;
 }
-#spider-container {
+#spider-container   {
     display: inline-block;
     vertical-align: middle;
     padding: 5px 5px 5px 5px;
@@ -19,7 +19,7 @@
     border-bottom-right-radius: 7px;
     
     position: relative;
-    max-height: 700px;
+    max-height: 500px;
 	overflow-x: hidden;
     overflow-y: auto;
     /*text-align: center;*/
@@ -33,8 +33,8 @@
     border-top-left-radius: 7px;
     border-top-right-radius: 7px;	
 }
-.spider-detail {
-    max-height: 77%;
+.spider-detail  {
+	max-height: 500px;
     overflow-y: auto;
     max-width: 350px;
     word-wrap: break-word;
