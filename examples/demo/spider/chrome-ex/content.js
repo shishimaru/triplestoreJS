@@ -29,6 +29,7 @@ var $container = null;
 var $details = null;
 
 function suggestHTML(html, opacity) {
+  var fadeSpeed = "fast";
   //resolve duplicated container
   jQuery("#spider-wrapper").remove();
   $("body").off("keyup.spider");
@@ -50,7 +51,7 @@ function suggestHTML(html, opacity) {
     $container.css({'opacity' : opacity });
   });
   $("#spider-wrapper #spider-visible").click(function(e) {
-    $container.fadeToggle("fast");
+    $container.fadeToggle(fadeSpeed);
   });
   $("#spider-container a").click(function(e) {
     var subject = getSubject(e.target);
@@ -58,7 +59,7 @@ function suggestHTML(html, opacity) {
   });
   $("body").on("keyup.spider", function(event) {
     if(event.keyCode == 27) {
-      $container.fadeToggle("fast");
+      $container.fadeToggle(fadeSpeed);
     }
   });
   $(window).bind("scroll", function() {

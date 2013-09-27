@@ -338,10 +338,13 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
             elseHTML += "<li><img src='" + propImg + "' class='related_icon'><a href='" + href + "' title='" + href + "'>" + tail + "</a></li>";
           }
         } else if(v.search(/^mailto:/) != -1) {
+          var href = v;
+          if(emailQuery) {
+            propImg = this.m.app_url + "images/email-br.gif";
+            href += "?" + Manager.encode(emailQuery);
+          }
           elseHTML += "<li>";
           if(propImg) { elseHTML += "<img src='" + propImg + "' class='related_icon'>"; }
-          var href = v;
-          if(emailQuery) { href += "?" + Manager.encode(emailQuery); } 
           elseHTML += tail + " : " + "<a href='" + href + "' title='" + href + "'>" + v + "</a></li>";
         } else if(v.length < 30) {
           if(propImg) {

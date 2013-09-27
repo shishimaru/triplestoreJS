@@ -31,7 +31,7 @@ function getRelatedSubjects(m, title, rdfa, micro) {
   var items = [];
   var MIN_SIMILARITY = 0.3;//0.5;
   var MIN_PROPS_LEN = 2 + 7;//at least 7
-  var MAX_RESULT_SIZE =  10;
+  var MAX_RESULT_SIZE =  20;
   
   function sanitize(items) {
     var i = 0;
@@ -440,6 +440,7 @@ function menu_post_google(info, tab) {
   }
 }
 function menu_share(info, tab) {
+  var MAX_RESULT_SIZE =  100;
   var pageURL = info.pageUrl;
   var email_query = {
       subject: "Sharing ",
@@ -450,7 +451,7 @@ function menu_share(info, tab) {
       query: {
         app_id: Manager.FB_APP_ID,
         display: "popup",
-        link: pageURL,
+        link: pageURL,//if not reachable by FB, error happens
         redirect_uri: Manager.FB_REDIRECT_URL
       }
   };
@@ -479,13 +480,14 @@ function menu_share(info, tab) {
   } else if(info.selectionText) {
     email_query.subject += "text";
     email_query.body = info.selectionText;
-    
+
     gl_request.query.prefilltext = info.selectionText;
   }
   var m = bg_res.m;
   var v = new Viewer(m, tab);
   var subjects = m.filterSubjects(["mbox", "facebook-account", "google-account"]);
   sortSnsAccount(m, subjects);
+  subjects = subjects.slice(0, MAX_RESULT_SIZE);
   
   if(subjects.length) {
     var html = generateInsertedHTML(m, v, subjects, email_query,
@@ -497,7 +499,7 @@ function menu_share(info, tab) {
     function(response) {
     });
   } else {
-    alert("Sorry, could not find any contact to be sharable.");
+    alert("Sorry, could not find any contact for sharing.");
   }
 }
 

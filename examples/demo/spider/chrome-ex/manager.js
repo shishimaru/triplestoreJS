@@ -466,11 +466,17 @@ Manager.prototype.incrementSelectNumber = function(subject) {
 };
 Manager.encode = function(kvMap) {
   var res = "";
+  var dict = { "'": "%27"};
   for(var key in kvMap) {
     if(res.length) {
       res += '&';
     }
-    res += encodeURIComponent(key) + '=' + encodeURIComponent(kvMap[key]);
+    var k = encodeURIComponent(key);
+    var v = encodeURIComponent(kvMap[key]);
+    v = v.replace(/'/g, function(s) {
+      return dict[s];
+    });
+    res += k + '=' + v;
   }
   return res;
 }
