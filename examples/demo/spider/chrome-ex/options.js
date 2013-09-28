@@ -119,6 +119,7 @@ Options.loginFacebook = function() {
   }
 }
 Options.logoutFacebook = function() {
+  //TODO : revoke access token
   localStorage.removeItem("__FB_ACCESS_TOKEN");
   localStorage.removeItem("__FB_EXPIRES");
   localStorage.removeItem("__FB_USERID");
@@ -245,6 +246,7 @@ Options.loginGoogle = function() {
   }
 }
 Options.logoutGoogle = function() {
+  //TODO : revoke access token
   localStorage.removeItem("__GL_ACCESS_TOKEN");
   localStorage.removeItem("__GL_EXPIRES");
   localStorage.removeItem("__GL_USERID");
@@ -348,10 +350,31 @@ Options.saveGoogleGraph = function(access_token) {
 Options.loginSNS = function() {
   var fb_access_token = localStorage["__FB_ACCESS_TOKEN"];
   var fb_expires      = localStorage["__FB_EXPIRES"];
-  var fb_userid       = localStorage["__FB_USERID"]
+  var fb_userid       = localStorage["__FB_USERID"];
   var gl_access_token = localStorage["__GL_ACCESS_TOKEN"];
   var gl_expires      = localStorage["__GL_EXPIRES"];
-  var gl_userid       = localStorage["__GL_USERID"]
+  var gl_userid       = localStorage["__GL_USERID"];
+  fb_expires = fb_expires ? parseInt(fb_expires) : null;
+  gl_expires = gl_expires ? parseInt(gl_expires) : null;
+  
+  //check token expiraton of Facebook
+  if(new Date(fb_expires) < new Date()) {
+    fb_access_token = null;
+    fb_expires = null;
+    fb_userid = null;
+    localStorage.removeItem("__FB_ACCESS_TOKEN");
+    localStorage.removeItem("__FB_EXPIRES");
+    localStorage.removeItem("__FB_USERID");
+  }
+  //check token expiraton of Google
+  if(new Date(gl_expires) < new Date()) {
+    gl_access_token = null;
+    gl_expires = null;
+    gl_userid = null;
+    localStorage.removeItem("__GL_ACCESS_TOKEN");
+    localStorage.removeItem("__GL_EXPIRES");
+    localStorage.removeItem("__GL_USERID");
+  }
   
   //Callback from OAuth Proxy
   if(window.location.search.length) {
@@ -369,7 +392,7 @@ Options.loginSNS = function() {
     }
     if(token_for == "facebook") {
       fb_access_token = access_token;
-      fb_expires = expires;
+      fb_expires = new Date().getTime() + expires * 1000;
       localStorage["__FB_ACCESS_TOKEN"] = fb_access_token;
       localStorage["__FB_EXPIRES"] = fb_expires;
 
@@ -377,7 +400,7 @@ Options.loginSNS = function() {
       Options.saveFacebookGraph(fb_access_token);
     } else if(token_for == "google") {
       gl_access_token = access_token;
-      gl_expires = expires;
+      gl_expires = new Date().getTime() + expires * 1000;
 
       localStorage["__GL_ACCESS_TOKEN"] = gl_access_token;
       localStorage["__GL_EXPIRES"] = gl_expires;
