@@ -314,7 +314,8 @@ function menu_share_email(info, tab) {
     var html = generateInsertedHTML(m, v, subjects, email_query);
     
     chrome.tabs.sendMessage(tab.id, {
-      "html": html
+      "html": html,
+      "action": "suggest"
     },
     function(response) {
     });
@@ -355,7 +356,8 @@ function menu_post_facebook(info, tab) {
         fb_request);
     
     chrome.tabs.sendMessage(tab.id, {
-      "html": html
+      "html": html,
+      "action": "suggest"
     },
     function(response) {
     });
@@ -394,7 +396,8 @@ function menu_send_facebook(info, tab) {
           fb_request);
       
       chrome.tabs.sendMessage(tab.id, {
-        "html": html
+        "html": html,
+        "action": "suggest"
       },
       function(response) {
       });
@@ -431,7 +434,8 @@ function menu_post_google(info, tab) {
         null, gl_request);
     
     chrome.tabs.sendMessage(tab.id, {
-      "html": html
+      "html": html,
+      "action": "suggest"
     },
     function(response) {
     });
@@ -494,7 +498,8 @@ function menu_share(info, tab) {
         fb_request, gl_request);
     
     chrome.tabs.sendMessage(tab.id, {
-      "html": html
+      "html": html,
+      "action": "suggest"
     },
     function(response) {
     });
@@ -502,15 +507,36 @@ function menu_share(info, tab) {
     alert("Sorry, could not find any contact for sharing.");
   }
 }
+function menu_save(info, tab) {
+  var m = bg_res.m;
+  m.init(tab);
+  m.save();
+  chrome.tabs.sendMessage(tab.id, {
+    "html": Viewer.getMessageHtml("saved"),
+    "action": "message"
+  });
+}
 
 //new context menu
 //Create a parent item and two children.
 
+var menu_top = chrome.contextMenus.create({
+  title: "Semantic Spider",
+  contexts: ["all"],
+});
+var menu_save = chrome.contextMenus.create({
+  title: "Save",
+  contexts: ["all"],
+  parentId: menu_top,
+  onclick: menu_save
+});
 var menu_share = chrome.contextMenus.create({
   title: "Share",
   contexts: ["all"],
+  parentId: menu_top,
   onclick: menu_share
 });
+
 /*chrome.contextMenus.create({
   title: "Email",
   parentId: menu_share,

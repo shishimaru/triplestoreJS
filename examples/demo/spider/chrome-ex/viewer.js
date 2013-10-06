@@ -517,6 +517,16 @@ Viewer.getGraphHTML = function(m, subject) {
   }
   return div;
 };
+Viewer.getMessageHtml = function(message) {
+  var res = "<div id='spider-message'>";
+  res += "<div class='dialog-content'>";
+  
+  if(message) {
+    res += message;
+  }
+  res += "</div></div>";
+  return res;
+}
 Viewer.prototype.showItems = function(subjects) {
   //init
   var m = this.m;

@@ -135,10 +135,22 @@ function extract() {
       }
   );
 }
+function showMessage(html) {
+  jQuery("#spider-message").remove();
+  
+  var $msg = jQuery(html);
+  jQuery("html").append($msg);
+  $msg.fadeIn(1000);
+  $msg.fadeOut(3000);
+}
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
-      suggestHTML(request.html, 1.0);
-      $container.show("fast");
+      if(request.action == "suggest") {
+        suggestHTML(request.html, 1.0);
+        $container.show("fast");
+      } else if(request.action == "message") {
+        showMessage(request.html);
+      }
     }
 );
 
