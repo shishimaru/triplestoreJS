@@ -154,7 +154,7 @@ Viewer.prototype.showTypes = function(types) {
 };
 Viewer.getTypeImg = function(m, type) {
   var res = null;
-  tail = type.substr(type.lastIndexOf("/") + 1);
+  var tail = type.substr(type.lastIndexOf("/") + 1);
   
   if(tail) {
     //major web service icon
@@ -270,7 +270,14 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
       if(!v || v.search(/^_:/) != -1) {
         continue;
       }
-      var prop = props[i].substr(props[i].lastIndexOf("/") + 1);
+      var prop = null;
+      var sepIndex = props[i].lastIndexOf("#");
+      if(sepIndex != -1) {
+        prop = props[i].substr(sepIndex + 1);
+      } else {
+        prop = props[i].substr(props[i].lastIndexOf("/") + 1);
+      }
+      
       
       if(prop.search(/type$/i) != -1) {
         type.push(v);
@@ -295,18 +302,17 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
       } else if(isNaN(rating) && prop.search(/ratingvalue$/i) != -1) {
         rating = Manager.ave(v, 1);
       } else {
-        var tmpTail = props[i].substr(props[i].lastIndexOf("/") + 1);
-        tail = Manager.toHumanReadable(tmpTail);
-        var propImg = Viewer.getTypeImg(this.m, props[i]);
+        var propReadable = Manager.toHumanReadable(prop);
+        var propImg = Viewer.getTypeImg(this.m, prop);
         if(Manager.isSiteURL(v)) {
           if(v.search(/\.jpg$/i) != -1
               || v.search(/\.gif$/i) != -1
               || v.search(/\.png$/i) != -1) {
-            elseHTML += "<li>" + tail + "<br><img src='" + v + "' title='" + v + "' class='property_img'></img></li>";
+            elseHTML += "<li>" + propReadable + "<br><img src='" + v + "' title='" + v + "' class='property_img'></img></li>";
           } else {
             propImg = propImg ? propImg : this.m.app_url + "images/link.png";
             var href = v;
-            //if(prop == "facebook-account") {
+
             if(Manager.isFacebookProperty(prop, v)) {
               propImg = this.m.app_url + "images/facebook.png";
               var userid = v.substr(v.lastIndexOf('/') + 1);
@@ -333,9 +339,9 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
             }
             if(prop == "knows") {
               var displayName = this.m.getValues(v, ["http://xmlns.com/foaf/0.1/name"]);
-              tail = displayName.length ? tail + ": " + displayName[0] : tail;
+              propReadable = displayName.length ? propReadable + ": " + displayName[0] : propReadable;
             }
-            elseHTML += "<li><img src='" + propImg + "' class='related_icon'><a href='" + href + "' title='" + href + "'>" + tail + "</a></li>";
+            elseHTML += "<li><img src='" + propImg + "' class='related_icon'><a href='" + href + "' title='" + href + "'>" + propReadable + "</a></li>";
           }
         } else if(v.search(/^mailto:/) != -1) {
           var href = v;
@@ -345,19 +351,19 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
           }
           elseHTML += "<li>";
           if(propImg) { elseHTML += "<img src='" + propImg + "' class='related_icon'>"; }
-          elseHTML += tail + " : " + "<a href='" + href + "' title='" + href + "'>" + v + "</a></li>";
+          elseHTML += propReadable + " : " + "<a href='" + href + "' title='" + href + "'>" + v + "</a></li>";
         } else if(v.length < 30) {
           if(propImg) {
-            elseHTML += "<li><img src='" + propImg + "' class='related_icon'>" + tail + " : " + v + "</li>";
+            elseHTML += "<li><img src='" + propImg + "' class='related_icon'>" + propReadable + " : " + v + "</li>";
           } else if(Datatype.isPrice(v)) {//price
-            elseHTML += "<li><img src='" + this.m.app_url + "images/price.png' class='related_icon'>" + tail + " : " + v + "</li>";
+            elseHTML += "<li><img src='" + this.m.app_url + "images/price.png' class='related_icon'>" + propReadable + " : " + v + "</li>";
           } else if(Datatype.isDate(v)) {//date
-            elseHTML += "<li><img src='" + this.m.app_url + "images/calendar.png' class='related_icon'>" + tail + " : " + v + "</li>";
+            elseHTML += "<li><img src='" + this.m.app_url + "images/calendar.png' class='related_icon'>" + propReadable + " : " + v + "</li>";
           } else if(Datatype.isPhone(v)) {//phone
-            elseHTML += "<li><img src='" + this.m.app_url + "images/phone.png' class='related_icon'>" + tail + " : "
+            elseHTML += "<li><img src='" + this.m.app_url + "images/phone.png' class='related_icon'>" + propReadable + " : "
             + "<a href='" + v + "'>" + v + "</a></li>"; 
           } else {
-            elseHTML += "<li>" + tail + " : " + v + "</li>";
+            elseHTML += "<li>" + propReadable + " : " + v + "</li>";
           }
         }
       }

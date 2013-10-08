@@ -111,7 +111,7 @@ function extract() {
         var html = res.html;
         if(html && html.length) {
           //alert("@render html");
-          suggestHTML(html, 0.1);
+          suggestHTML(html, 1.0);
         }
         //set timer for autosave
         if(res.time) {
@@ -127,7 +127,7 @@ function extract() {
                   var html = res.html;
                   if(html && html.length) {
                     //alert("@render html by time");
-                    suggestHTML(html, 0.1);
+                    suggestHTML(html, 1.0);
                   }
                 });
           }, time);

@@ -30,7 +30,7 @@ function sortSnsAccount(m, subjects) {
 function getRelatedSubjects(m, title, rdfa, micro) {
   var items = [];
   var MIN_SIMILARITY = 0.3;//0.5;
-  var MIN_PROPS_LEN = 2 + 7;//at least 7
+  var MIN_PROPS_LEN = 2 + 5;//at least 5
   var MAX_RESULT_SIZE =  20;
   
   function sanitize(items) {

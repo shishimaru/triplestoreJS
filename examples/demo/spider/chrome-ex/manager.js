@@ -562,7 +562,8 @@ Manager.sanitize = function(words) {
   removeStopWord(words);
 }
 Manager.prototype.getSimilarItems = function(targetValues, similarityThreshold) {
-  var SEP = /[\s\d\t\n,\.\/!\?"#$%=&'"\(\):;\[\]\^®]+/;
+  //var SEP = /[\s\d\t\n,\.\/!\?"#$%=&'"\(\):;\[\]\^®]+/;
+  var SEP = /[\s\t\d\n,\.!\?"#$%=&'"\(\):;\[\]\^®]+/;
   var w1 = targetValues.join(" ").split(SEP);//sanitize
   Manager.sanitize(w1);//sanitize
   
