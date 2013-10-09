@@ -19,6 +19,8 @@ Options.DEFAULT_STORE = true;
 Options.DEFAULT_TIME = 5;
 Options.DEFAULT_VISIT = 5;
 Options.DEFAULT_REMOVE = false;
+Options.DEV_MODE = "product";
+//Options.DEV_MODE = "debug";
 
 Options.show_status = function(id, msg) {
   var status = document.getElementById(id);
@@ -110,10 +112,9 @@ Options.clear_storage = function() {
 }
 Options.loginFacebook = function() {
   if(bt_login_facebook.innerText == "Log In") {
-    var fb_login_url = Manager.FB_LOGIN_URL;
+    var fb_login_url = Manager.FB_LOGIN_URL + "?" + Manager.encode({state: Options.DEV_MODE});
     window.open(fb_login_url);
     window.close();
-    
   } else { //Log Out
     Options.logoutFacebook();
   }
@@ -237,10 +238,9 @@ Options.saveFacebookGraph = function(access_token) {
 };
 Options.loginGoogle = function() {
   if(bt_login_google.innerText == "Log In") {
-    var gl_login_url = Manager.GL_LOGIN_URL;
+    var gl_login_url = Manager.GL_LOGIN_URL + "?" + Manager.encode({state: Options.DEV_MODE});
     window.open(gl_login_url);
     window.close();
-    
   } else { //Log Out
     Options.logoutGoogle();
   }

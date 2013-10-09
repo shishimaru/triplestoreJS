@@ -1,9 +1,8 @@
 {
     "name": "Semantic Spider",
-    "version": "0.15",
+    "version": "0.16",
     "manifest_version": 2,
-    "description": "Chrome becomes more intelligent with W3C Semantic Web
-                    and you could find out knowledge you didn't realize so far",
+    "description": "Chrome becomes more intelligent and personalized with W3C Semantic Web",
     "icons": {
         "128": "images/spider-128.png",
         "16": "images/spider.png"},
