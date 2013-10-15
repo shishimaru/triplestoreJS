@@ -8,9 +8,9 @@ var Manager = function(){
   this.lst = localStorage;
   {//TriplestoreJS
     this.tst = new Triplestore();
-    this.tst.setMapping("foaf", "http://xmlns.com/foaf/0.1/")
-    this.tst.setMapping("schema", "http://schema.org/")
-    
+    this.tst.setMapping("foaf", "http://xmlns.com/foaf/0.1/");
+    this.tst.setMapping("schema", "http://schema.org/");
+    this.tst.setMapping("dc", "http://purl.org/dc/elements/1.1/");
   }
 };
 Manager.DEBUG = false;
@@ -32,6 +32,12 @@ Manager.GL_BASE_URL = "https://plus.google.com/";
 Manager.GL_PEOPLE_URL = "https://www.googleapis.com/plus/v1/people/";
 Manager.GL_LOGIN_URL = "https://semantic-spider.appspot.com/c/g-login";
 Manager.GL_POST_URL = "https://semantic-spider.appspot.com/c/g-post";
+//Manager.GL_CAL_URL = "https://www.google.com/calendar/feeds/default/owncalendars/full";
+Manager.GL_CAL_LIST_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList/";
+Manager.GL_CAL_EVENT_URL = "https://www.googleapis.com/calendar/v3/calendars/";
+
+//Manager.GL_CAL_URL = "https://www.googleapis.com/auth/calendar";
+  
 
 Manager.prototype.init =function(tab) {
   this.tab = tab;
@@ -478,6 +484,23 @@ Manager.encode = function(kvMap) {
     });
     res += k + '=' + v;
   }
+  return res;
+}
+Manager.toRFC3339 = function(date) {
+  //2013-10-10T00:00:00.000Z
+  //("0" + num).slice(-2)
+  var res = "";
+  var year = date.getFullYear();
+  var month = ("0" + (date.getMonth() + 1)).slice(-2);
+  var day = ("0" + date.getDate()).slice(-2);
+  var hour = ("0" + date.getHours()).slice(-2);
+  var min = ("0" + date.getMinutes()).slice(-2);
+  var sec = ("0" + date.getSeconds()).slice(-2);
+  var msec = ("0" + date.getMilliseconds()).slice(-3);
+  var zone = ("0" + date.getTimezoneOffset()/60).slice(-2);
+  res += year + "-" + month + "-" + day + "T";
+  res += hour + ":" + min + ":" + sec + "." + msec;
+  res += "-" + zone + ":00";
   return res;
 }
 Manager.isFacebookProperty = function(name, value) {

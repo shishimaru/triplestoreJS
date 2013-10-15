@@ -19,8 +19,8 @@ Options.DEFAULT_STORE = true;
 Options.DEFAULT_TIME = 5;
 Options.DEFAULT_VISIT = 5;
 Options.DEFAULT_REMOVE = false;
-Options.DEV_MODE = "product";
-//Options.DEV_MODE = "debug";
+//Options.DEV_MODE = "product";
+Options.DEV_MODE = "debug";
 
 Options.show_status = function(id, msg) {
   var status = document.getElementById(id);
@@ -253,6 +253,132 @@ Options.logoutGoogle = function() {
   bt_login_google.innerText = "Log In";
   Options.show_status("login_status_gl", "Logged out");
 }
+Options.saveGoogleFriends = function(subject, access_token) {
+  function save(me, obj) {
+    for(var i = 0; i < obj.items.length; i++) {
+      var friend = obj.items[i];
+      var friend_subject = friend.url;
+      m.add(me, "foaf:knows", friend_subject);
+      if(!m.projections[friend_subject] ||
+          m.projections[friend_subject].get("__etag") != friend.etag) {
+        if(m.projections[friend_subject]) {
+          m.projections[friend_subject].remove();
+        }
+        
+        m.tst.set(friend_subject, "__etag", friend.etag);
+        m.tst.set(friend_subject, "__type", "http://xmlns.com/foaf/0.1/Person");
+        m.tst.set(friend_subject, "google-account", friend_subject);
+        if(friend.displayName)       { m.tst.set(friend_subject, "foaf:name", friend.displayName); }
+        //if(friend.first_name) { m.tst.set(friend_subject, "foaf:firstName", friend.first_name); }
+        //if(friend.last_name)  { m.tst.set(friend_subject, "foaf:lastName", friend.last_name); }
+        if(friend.id)         { m.tst.set(friend_subject, "google-id", friend.id); }
+        if(friend.image && friend.image.url) {
+          m.tst.set(friend_subject, "foaf:img", friend.image.url);
+        }
+      }
+    }
+  }
+  
+  var friendsURL = Manager.GL_PEOPLE_URL + "me/people/visible?";
+  friendsURL += Manager.encode({access_token: access_token});
+  
+  xhr = new XMLHttpRequest();
+  xhr.open("GET", friendsURL, false); //GET /me/friends
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      // JSON.parse does not evaluate the attacker's scripts.
+      var resp = JSON.parse(xhr.responseText);
+      console.log(resp);
+      save(subject, resp);
+    }
+  }
+  xhr.send();
+}
+Options.saveGoogleEvent = function(cal_id, subject, access_token) {
+  function save(me, obj) {
+    for(var i = 0; i < obj.items.length; i++) {
+      var event = obj.items[i];
+      var event_subject = event.htmlLink;
+      //m.add(me, "foaf:knows", friend_subject);
+      if(!m.projections[event_subject] ||
+          m.projections[event_subject].get("__etag") != event.etag) {
+        if(m.projections[event_subject]) {
+          m.projections[event_subject].remove();
+        }
+        
+        m.tst.set(event_subject, "__etag", event.etag);
+        m.tst.set(event_subject, "__type", "http://schema.org/Event");
+        
+        if(event.summary) { m.tst.set(event_subject, "dc:title", event.summary); }
+        if(event.description) { m.tst.set(event_subject, "dc:description", event.description); }
+        if(event.location) { m.tst.set(event_subject, "schema:location", event.location); }
+        if(event.start) {//datetime
+          if(event.start.dateTime) {
+            m.tst.set(event_subject, "schema:startDate", event.start.dateTime);
+          }
+        }
+        if(event.end) {//datetime
+          if(event.end.dateTime) {
+            m.tst.set(event_subject, "schema:endDate", event.end.dateTime);
+          }
+        }
+        if(event.creator) { m.tst.set(event_subject, "dc:creator", event.creator.displayName); }
+        //if(event.updated) { m.tst.set(event_subject, "dc:created", event.updated); }
+      }
+    }
+  }
+  //https://www.googleapis.com/calendar/v3/calendars/calendarId/events
+  var requestURL = Manager.GL_CAL_EVENT_URL + encodeURIComponent(cal_id) + "/events?";
+  requestURL += Manager.encode(
+      {key: Manager.GL_API_KEY,
+        singleEvents: true,
+        timeMin: Manager.toRFC3339(new Date(new Date().getTime() - 180 * 24 * 3600 * 1000)),//past half year
+        timeMax: Manager.toRFC3339(new Date(new Date().getTime() + 180 * 24 * 3600 * 1000)) //next half year
+      }
+  );
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", requestURL, false);
+  xhr.setRequestHeader("Authorization", "Bearer " + access_token);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      var resp = JSON.parse(xhr.responseText);
+      console.log(resp);
+      save(subject, resp);
+    }
+  };
+  xhr.send();
+}
+Options.saveGoogleCalendar = function(subject, access_token) {
+  function getCalendarIDs(calList) {
+    var idList = [];
+    for(var i = 0; i < calList.items.length; i++) {
+      var cal = calList.items[i];
+      idList.push(cal.id);
+    }
+    return idList;
+  }
+  var requestURL = Manager.GL_CAL_LIST_URL + "?";
+  requestURL += Manager.encode(
+      {key: Manager.GL_API_KEY});
+  
+  xhr = new XMLHttpRequest();
+  xhr.open("GET", requestURL, false);
+  xhr.setRequestHeader("Authorization", "Bearer " + access_token);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      // JSON.parse does not evaluate the attacker's scripts.
+      var resp = JSON.parse(xhr.responseText);
+      console.log(resp);
+      var ids = getCalendarIDs(resp);
+      console.log(ids);
+      
+      for(var i = 0; i < ids.length; i++) {
+        Options.saveGoogleEvent(ids[i], subject, access_token);
+      }
+    }
+  }
+  xhr.send();
+}
 Options.saveGoogleGraph = function(access_token) {
   function saveMe(obj) {
     var subject = Manager.GL_BASE_URL + obj.id;
@@ -293,30 +419,6 @@ Options.saveGoogleGraph = function(access_token) {
     }
     return subject;
   }
-  function saveFriends(me, obj) {
-    for(var i = 0; i < obj.items.length; i++) {
-      var friend = obj.items[i];
-      var friend_subject = friend.url;
-      m.add(me, "foaf:knows", friend_subject);
-      if(!m.projections[friend_subject] ||
-          m.projections[friend_subject].get("__etag") != friend.etag) {
-        if(m.projections[friend_subject]) {
-          m.projections[friend_subject].remove();
-        }
-        
-        m.tst.set(friend_subject, "__etag", friend.etag);
-        m.tst.set(friend_subject, "__type", "http://xmlns.com/foaf/0.1/Person");
-        m.tst.set(friend_subject, "google-account", friend_subject);
-        if(friend.displayName)       { m.tst.set(friend_subject, "foaf:name", friend.displayName); }
-        //if(friend.first_name) { m.tst.set(friend_subject, "foaf:firstName", friend.first_name); }
-        //if(friend.last_name)  { m.tst.set(friend_subject, "foaf:lastName", friend.last_name); }
-        if(friend.id)         { m.tst.set(friend_subject, "google-id", friend.id); }
-        if(friend.image && friend.image.url) {
-          m.tst.set(friend_subject, "foaf:img", friend.image.url);
-        }
-      }
-    }
-  }
   
   //Get /me and /me/frinds
   var meURL = Manager.GL_PEOPLE_URL + "me?" + Manager.encode({access_token: access_token});
@@ -324,25 +426,18 @@ Options.saveGoogleGraph = function(access_token) {
   xhr.open("GET", meURL, true); //GET /me
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
-      // JSON.parse does not evaluate the attacker's scripts.
-      var resp = JSON.parse(xhr.responseText);
-      var subject = saveMe(resp);
-      el_status_gl.innerText = Options.getUserinfoGL();
-
-      var friendsURL = Manager.GL_PEOPLE_URL + "me/people/visible?";
-      friendsURL += Manager.encode({access_token: access_token});
-      
-      xhr = new XMLHttpRequest();
-      xhr.open("GET", friendsURL, true); //GET /me/friends
-      //xhr.setRequestHeader("Authorization", "Basic " + access_token);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-          // JSON.parse does not evaluate the attacker's scripts.
-          var resp = JSON.parse(xhr.responseText);
-          saveFriends(subject, resp);
-        }
+      if(xhr.status >= 400) {
+        Options.removeGlSession();
+        Options.logoutGoogle();
+      } else {
+        // JSON.parse does not evaluate the attacker's scripts.
+        var resp = JSON.parse(xhr.responseText);
+        var subject = saveMe(resp);
+        el_status_gl.innerText= Options.getUserinfoGL();
+        
+        Options.saveGoogleFriends(subject, access_token);
+        Options.saveGoogleCalendar(subject, access_token);
       }
-      xhr.send();
     }
   }
   xhr.send();
@@ -358,22 +453,18 @@ Options.loginSNS = function() {
   gl_expires = gl_expires ? parseInt(gl_expires) : null;
   
   //check token expiraton of Facebook
-  if(new Date(fb_expires) < new Date()) {
+  if(fb_expires && new Date(fb_expires) < new Date()) {
     fb_access_token = null;
     fb_expires = null;
     fb_userid = null;
-    localStorage.removeItem("__FB_ACCESS_TOKEN");
-    localStorage.removeItem("__FB_EXPIRES");
-    localStorage.removeItem("__FB_USERID");
+    Options.logoutFacebook();
   }
   //check token expiraton of Google
-  if(new Date(gl_expires) < new Date()) {
+  if(gl_expires && new Date(gl_expires) < new Date()) {
     gl_access_token = null;
     gl_expires = null;
     gl_userid = null;
-    localStorage.removeItem("__GL_ACCESS_TOKEN");
-    localStorage.removeItem("__GL_EXPIRES");
-    localStorage.removeItem("__GL_USERID");
+    Options.logoutGoogle();
   }
   
   //Callback from OAuth Proxy
