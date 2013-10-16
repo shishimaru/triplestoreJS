@@ -35,9 +35,8 @@ Manager.GL_POST_URL = "https://semantic-spider.appspot.com/c/g-post";
 //Manager.GL_CAL_URL = "https://www.google.com/calendar/feeds/default/owncalendars/full";
 Manager.GL_CAL_LIST_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList/";
 Manager.GL_CAL_EVENT_URL = "https://www.googleapis.com/calendar/v3/calendars/";
-
-//Manager.GL_CAL_URL = "https://www.googleapis.com/auth/calendar";
-  
+Manager.GL_PHOTO_ALBUM_URL = "https://picasaweb.google.com/data/feed/api/user/default"; 
+  //Manager.GL_CAL_URL = "https://www.googleapis.com/auth/calendar";
 
 Manager.prototype.init =function(tab) {
   this.tab = tab;

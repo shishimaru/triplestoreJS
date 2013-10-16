@@ -283,13 +283,14 @@ Options.saveGoogleFriends = function(subject, access_token) {
   friendsURL += Manager.encode({access_token: access_token});
   
   xhr = new XMLHttpRequest();
-  xhr.open("GET", friendsURL, false); //GET /me/friends
+  xhr.open("GET", friendsURL, true); //GET /me/friends
+  el_status_gl.innerText = "Accessing Friend Graph...";
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
       // JSON.parse does not evaluate the attacker's scripts.
       var resp = JSON.parse(xhr.responseText);
-      console.log(resp);
       save(subject, resp);
+      Options.saveGoogleCalendar(subject, access_token);
     }
   }
   xhr.send();
@@ -308,9 +309,9 @@ Options.saveGoogleEvent = function(cal_id, subject, access_token) {
         
         m.tst.set(event_subject, "__etag", event.etag);
         m.tst.set(event_subject, "__type", "http://schema.org/Event");
-        
-        if(event.summary) { m.tst.set(event_subject, "dc:title", event.summary); }
-        if(event.description) { m.tst.set(event_subject, "dc:description", event.description); }
+
+        if(event.summary) { m.tst.set(event_subject, "schema:name", event.summary); }
+        if(event.description) { m.tst.set(event_subject, "schema:description", event.description); }
         if(event.location) { m.tst.set(event_subject, "schema:location", event.location); }
         if(event.start) {//datetime
           if(event.start.dateTime) {
@@ -323,27 +324,25 @@ Options.saveGoogleEvent = function(cal_id, subject, access_token) {
           }
         }
         if(event.creator) { m.tst.set(event_subject, "dc:creator", event.creator.displayName); }
-        //if(event.updated) { m.tst.set(event_subject, "dc:created", event.updated); }
       }
     }
   }
-  //https://www.googleapis.com/calendar/v3/calendars/calendarId/events
   var requestURL = Manager.GL_CAL_EVENT_URL + encodeURIComponent(cal_id) + "/events?";
   requestURL += Manager.encode(
       {key: Manager.GL_API_KEY,
         singleEvents: true,
-        timeMin: Manager.toRFC3339(new Date(new Date().getTime() - 180 * 24 * 3600 * 1000)),//past half year
-        timeMax: Manager.toRFC3339(new Date(new Date().getTime() + 180 * 24 * 3600 * 1000)) //next half year
+        timeMin: Manager.toRFC3339(new Date(new Date().getTime() - 90 * 24 * 3600 * 1000)),//past
+        timeMax: Manager.toRFC3339(new Date(new Date().getTime() + 90 * 24 * 3600 * 1000)) //future
       }
   );
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", requestURL, false);
+  xhr.open("GET", requestURL, true);
   xhr.setRequestHeader("Authorization", "Bearer " + access_token);
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
       var resp = JSON.parse(xhr.responseText);
-      console.log(resp);
       save(subject, resp);
+      Options.saveGoogleAlbums(subject, access_token);
     }
   };
   xhr.send();
@@ -361,20 +360,141 @@ Options.saveGoogleCalendar = function(subject, access_token) {
   requestURL += Manager.encode(
       {key: Manager.GL_API_KEY});
   
+  
   xhr = new XMLHttpRequest();
-  xhr.open("GET", requestURL, false);
+  xhr.open("GET", requestURL, true);
   xhr.setRequestHeader("Authorization", "Bearer " + access_token);
+  el_status_gl.innerText = "Accessing Calendar...";
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
       // JSON.parse does not evaluate the attacker's scripts.
       var resp = JSON.parse(xhr.responseText);
-      console.log(resp);
       var ids = getCalendarIDs(resp);
-      console.log(ids);
       
       for(var i = 0; i < ids.length; i++) {
         Options.saveGoogleEvent(ids[i], subject, access_token);
       }
+    }
+  }
+  xhr.send();
+}
+/*Options.saveGooglePhotos = function(subject, access_token) {
+  function savePhotos(doc) {
+    var $doc = $(doc);
+    
+    var entries = $doc.find("entry");
+    for(var i = 0; i < entries.length; i++) {
+      var $entry = $(entries[i]);
+      var subject = $entry.find("link[rel='alternate']").attr("href");
+      var title = $entry.find("title").text();
+      var summary = $entry.find("summary").text();
+      
+      m.tst.set(subject, "__type", "http://schema.org/ImageObject");
+      m.tst.set(subject, "schema:name", title);
+      m.tst.set(subject, "schema:description", summary);
+      
+      var img = $entry.find("content").attr("src");
+      m.tst.set(subject, "schema:image", img);
+      
+      var timestamp = $entry.find("gphoto\\:timestamp");
+      if(timestamp.length) {
+        m.tst.set(subject, "dc:date", timestamp.text());
+      }
+      var width = $entry.find("gphoto\\:width");
+      if(width.length) {
+        m.tst.set(subject, "schema:width", width.text());
+      }
+      var height = $entry.find("gphoto\\:height");
+      if(height.length) {
+        m.tst.set(subject, "schema:height", height.text());
+      }
+      var size = $entry.find("gphoto\\:size");
+      if(size.length) {
+        m.tst.set(subject, "schema:contentSize", size.text());
+      }
+      
+      var location = $entry.find("gml\\:post");
+      if(location.length) {
+        m.tst.set(subject, "schema:contentLocation", location.text());
+      }
+    }
+  }
+  
+  //var requestURL = Manager.GL_CAL_LIST_URL + "?";
+  var requestURL = "https://picasaweb.google.com/data/feed/api/user/default?kind=photo&max-results=10&";
+  requestURL += Manager.encode(
+      {key: Manager.GL_API_KEY});
+  
+  xhr = new XMLHttpRequest();
+  xhr.open("GET", requestURL, true);
+  xhr.setRequestHeader("Authorization", "Bearer " + access_token);
+  xhr.setRequestHeader("GData-Version", "2");
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      var resp = xhr.responseText;
+      savePhotos(resp);
+    }
+  }
+  xhr.send();
+}*/
+Options.saveGoogleAlbums = function(subject, access_token) {
+  function saveAlbums(doc) {
+    var $doc = $(doc);
+    
+    var entries = $doc.find("entry");
+    for(var i = 0; i < entries.length; i++) {
+      var $entry = $(entries[i]);
+      var subject = $entry.find("link[rel='alternate']").attr("href");
+      var title = $entry.find("title").text();
+      var summary = $entry.find("summary").text();
+      
+      m.tst.set(subject, "__type", "http://schema.org/ImageObject");
+      m.tst.set(subject, "schema:name", title);
+      m.tst.set(subject, "schema:description", summary);
+      
+      var img = $entry.find("media\\:thumbnail").attr("url");
+      m.tst.set(subject, "schema:image", img);
+      
+      var user = $entry.find("author > name");
+      if(user.length) {
+        m.tst.set(subject, "schema:author", user.text());
+      }
+      var timestamp = $entry.find("gphoto\\:timestamp");
+      if(timestamp.length) {
+        m.tst.set(subject, "dc:date", new Date(parseInt(timestamp.text())).toLocaleDateString());
+      }
+      var number = $entry.find("gphoto\\:numphotos");
+      if(number.length) {
+        m.tst.set(subject, "schema:number", number.text());
+      }
+      var size = $entry.find("gphoto\\:bytesUsed");
+      if(size.length) {
+        var value = parseInt(size.text()) / Math.pow(10, 6);//MB
+        value = Math.round(value * 100) / 100;
+        m.tst.set(subject, "schema:contentSize", new String(value) + " MB");
+      }
+      var location = $entry.find("gphoto\\:location");
+      if(location.length) {
+        m.tst.set(subject, "schema:contentLocation", location.text());
+      }
+      var keywords = $entry.find("media\\:keywords");
+      if(keywords.length) {
+        m.tst.set(subject, "schema:keywords", keywords.text());
+      }
+    }
+  }
+  
+  var requestURL = Manager.GL_PHOTO_ALBUM_URL;
+  xhr = new XMLHttpRequest();
+  xhr.open("GET", requestURL, true);
+  xhr.setRequestHeader("Authorization", "Bearer " + access_token);
+  xhr.setRequestHeader("GData-Version", "2");
+  el_status_gl.innerText = "Accessing Photo Albums...";
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      var resp = xhr.responseText;
+      saveAlbums(resp);
+      el_status_gl.innerText = Options.getUserinfoGL();
     }
   }
   xhr.send();
@@ -424,6 +544,7 @@ Options.saveGoogleGraph = function(access_token) {
   var meURL = Manager.GL_PEOPLE_URL + "me?" + Manager.encode({access_token: access_token});
   var xhr = new XMLHttpRequest();
   xhr.open("GET", meURL, true); //GET /me
+  el_status_gl.innerText = "Accessing Personal Profile...";
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
       if(xhr.status >= 400) {
@@ -433,10 +554,9 @@ Options.saveGoogleGraph = function(access_token) {
         // JSON.parse does not evaluate the attacker's scripts.
         var resp = JSON.parse(xhr.responseText);
         var subject = saveMe(resp);
-        el_status_gl.innerText= Options.getUserinfoGL();
         
         Options.saveGoogleFriends(subject, access_token);
-        Options.saveGoogleCalendar(subject, access_token);
+        //??el_status_gl.innerText = Options.getUserinfoGL();
       }
     }
   }

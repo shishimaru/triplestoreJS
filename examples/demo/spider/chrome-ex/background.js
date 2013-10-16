@@ -30,14 +30,20 @@ function sortSnsAccount(m, subjects) {
 function getRelatedSubjects(m, title, rdfa, micro) {
   var items = [];
   var MIN_SIMILARITY = 0.3;//0.5;
-  var MIN_PROPS_LEN = 2 + 5;//at least 5
+  var MIN_PROPS_LEN = 2;//at least 2
   var MAX_RESULT_SIZE =  20;
   
   function sanitize(items) {
     var i = 0;
     while(i < items.length) {
       var props = m.projections[items[i].subject].getProperties();
-      if(props.length < MIN_PROPS_LEN) {
+      var valid_prop_len = 0;
+      for(var j = 0; j < props.length; j++) {
+        if(!props[j].match(/^__/)) {
+          valid_prop_len++;
+        }
+      }
+      if(valid_prop_len < MIN_PROPS_LEN) {
         items.splice(i, 1);
       } else {
         i++;

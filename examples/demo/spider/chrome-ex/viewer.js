@@ -179,8 +179,6 @@ Viewer.getTypeImg = function(m, type) {
         || tail.search(/^recipe$/i) != -1
         || tail.search(/^page$/i) != -1) {
       res = "images/news.png";
-    } else if(tail.search(/^address$/i) != -1) {
-      res = "images/map-marker.png";
     } else if(tail.search(/^book$/i) != -1) {
       res = "images/book.png";
     } else if(tail.search(/^building$/i) != -1
@@ -226,8 +224,9 @@ Viewer.getTypeImg = function(m, type) {
         || tail.search(/^photograph$/i) != -1) {
       res = "images/picture.png";
     } else if(tail.search(/^map$/i) != -1
-        || tail.search(/^place$/i) != -1
-        || tail.search(/^location$/i) != -1) {
+        || tail.search(/place$/i) != -1
+        || tail.search(/location$/i) != -1
+        || tail.search(/address$/i) != -1) {
       res = "images/map-marker.png";
     } else if(tail.search(/^phone$/i) != -1) {
       res = "images/phone.png";
@@ -297,7 +296,11 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
         color = v;
       } else if(prop.search(/#?url$/i) != -1) {
         url = !url ? v : url;
-      } else if(!address && prop.search(/^address$/i) != -1) {
+      } else if(!address && (
+          prop.search(/address$/i) != -1 ||
+          prop.search(/location$/i) != -1 ||
+          prop.search(/^map$/i) != -1 ||
+          prop.search(/place$/i) != -1)) {
         address = v;
       } else if(isNaN(rating) && prop.search(/ratingvalue$/i) != -1) {
         rating = Manager.ave(v, 1);
@@ -412,9 +415,8 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
     }
     {//precise info
       res += "</td><td><ul>";
-      res += address ? "<li>Address: " +
-        "<a href='https://www.google.com/maps?q=" + address +"'>" +
-        		"<img src='" + this.m.app_url + "images/map-marker.png' class='related_type'></a> "+address+"</li>": "";
+      res += address ? "<li><a href='https://www.google.com/maps?q=" + address +"'>" +
+          "<img src='" + this.m.app_url + "images/map-marker.png' class='related_type'></a>Address : " + address + "</li>": "";
       res += !isNaN(rating) ? "<li>Rate: " + rating + this.getRatingHTML(rating) + "</li>" : "";
       res += color ? "<li>Color: <span style='background-color:"+ color + 
                      "'>&nbsp;&nbsp;</span> "+color+"</li>": "";
@@ -437,9 +439,6 @@ Viewer.getSubjectHTML = function(m, projection, className, useAnchor, emailQuery
   var type = m.getValues(subject, ["type"]);
   var email = m.getValues(subject, ["mbox"]);
   email = email ? (emailQuery ? email + emailQuery : email) : "";
-  
-  /*var $td = $("<td/>", {"class" : className, "href" : subject, "title" : subject});
-  var $item = $("<" + (useAnchor? "a" : "span") + "/>", {"href" : subject});*/
   
   var $td = $("<td/>", {"class" : className, "href" : subject});
   var $item = $("<" + (useAnchor? "a" : "span") + "/>",
