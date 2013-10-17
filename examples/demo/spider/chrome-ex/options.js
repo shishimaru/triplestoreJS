@@ -19,8 +19,8 @@ Options.DEFAULT_STORE = true;
 Options.DEFAULT_TIME = 5;
 Options.DEFAULT_VISIT = 5;
 Options.DEFAULT_REMOVE = false;
-//Options.DEV_MODE = "product";
-Options.DEV_MODE = "debug";
+Options.DEV_MODE = "product";
+//Options.DEV_MODE = "debug";
 
 Options.show_status = function(id, msg) {
   var status = document.getElementById(id);

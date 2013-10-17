@@ -6,7 +6,8 @@ os.execute(cmd .. " > " .. log_filename)
 local fin = io.open(log_filename)
 local stopwords = {"[^\/]+console.log\(.*\)",
                    "[^\/]+alert(.*\)",
-                   "\/\/TODO"}
+                   "\/\/TODO",
+                   "debug"}
 
 function checkfile(filename)
    local fin = io.open(filename)
