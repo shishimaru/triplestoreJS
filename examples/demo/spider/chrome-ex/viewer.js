@@ -226,7 +226,7 @@ Viewer.getTypeImg = function(m, type) {
     } else if(tail.search(/^map$/i) != -1
         || tail.search(/place$/i) != -1
         || tail.search(/location$/i) != -1
-        || tail.search(/address$/i) != -1) {
+        || tail.search(/^address$/i) != -1) {
       res = "images/map-marker.png";
     } else if(tail.search(/^phone$/i) != -1) {
       res = "images/phone.png";
@@ -297,7 +297,7 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
       } else if(prop.search(/#?url$/i) != -1) {
         url = !url ? v : url;
       } else if(!address && (
-          prop.search(/address$/i) != -1 ||
+          prop.search(/^address$/i) != -1 ||
           prop.search(/location$/i) != -1 ||
           prop.search(/^map$/i) != -1 ||
           prop.search(/place$/i) != -1)) {

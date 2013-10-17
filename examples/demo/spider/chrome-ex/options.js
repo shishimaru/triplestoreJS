@@ -19,8 +19,8 @@ Options.DEFAULT_STORE = true;
 Options.DEFAULT_TIME = 5;
 Options.DEFAULT_VISIT = 5;
 Options.DEFAULT_REMOVE = false;
-Options.DEV_MODE = "product";
-//Options.DEV_MODE = "debug";
+//Options.DEV_MODE = "product";
+Options.DEV_MODE = "debug";
 
 Options.show_status = function(id, msg) {
   var status = document.getElementById(id);
@@ -317,6 +317,9 @@ Options.saveGoogleEvent = function(cal_id, subject, access_token) {
           if(event.start.dateTime) {
             m.tst.set(event_subject, "schema:startDate", event.start.dateTime);
           }
+          if(event.start.date) {
+            m.tst.set(event_subject, "dc:date", event.start.date);
+          }
         }
         if(event.end) {//datetime
           if(event.end.dateTime) {
@@ -556,7 +559,6 @@ Options.saveGoogleGraph = function(access_token) {
         var subject = saveMe(resp);
         
         Options.saveGoogleFriends(subject, access_token);
-        //??el_status_gl.innerText = Options.getUserinfoGL();
       }
     }
   }
