@@ -129,7 +129,7 @@ function generateInsertedHTML(m, v, subjects, emailQuery, fb_request, gl_request
     return null;
   }
   var $wrapper = $("<div>", {"id" : "spider-wrapper"});
-  var $img = $("<img>", {"class" : "related_type", "src" : m.app_url + "images/spider.png"});
+  var $img = $("<img>", {"class" : "related_type", "src" : Manager.APP_URL + "images/spider.png"});
   $wrapper.append($("<div>", {"id" : "spider-visible", "title": "Toggle by ESC"}).append($img));
   var $container = $("<div>", {"id" : "spider-container"}).appendTo($wrapper);
   
@@ -165,6 +165,7 @@ chrome.runtime.onMessage.addListener(
       var m = bg_res.m;
       m.init(sender.tab);
       m.renew();
+      var v = new Viewer(m, sender.tab);
       
       if(request.action == "extracted") {
         if(!sender.tab || !sender.tab.id) {
@@ -208,7 +209,26 @@ chrome.runtime.onMessage.addListener(
       else if(request.action == "selectNumber++") {
         m.incrementSelectNumber(request.subject);
       }
-      else if(request.action == "post-facebook") {
+      else if(request.action == "getKeyword") {
+        if(request.keyword && request.keyword.length) {
+          var keywords = request.keyword.split(" ");
+          //var subjects = m.getSubjects("__type", request.type, true);
+          var subjects = m.getSubjects("__type", null, true);
+          var values = [];
+          for(var i = 0; i < subjects.length; i++) {
+            values = values.concat(m.getFilteredValues(subjects[i], ["name"]));
+          }
+          for(var i = 0; i < values.length; i++) {
+            values[i] = values[i].substr(0, 45);
+          }
+          values = Manager.trimDuplicate(values);
+          values = Manager.filter(keywords, values);
+          var html = Viewer.getKeywordSearchHTML(values);
+          sendResponse({html: html});
+        }
+        return false;
+      }
+      else if(request.action == "post-facebook") {//TODO:delete
         var requestURL = request.url + '&' +
         Manager.encode({access_token: Options.getFacebookAccessToken()});
 
@@ -232,7 +252,6 @@ chrome.runtime.onMessage.addListener(
       var subjects = getRelatedSubjects(m, request.title,
           bg_res[request.url].rdfa, bg_res[request.url].micro);
       
-      var v = new Viewer(m, sender.tab);
       var html = generateInsertedHTML(m, v, subjects);
       var time = Options.get_time();
       sendResponse({html: html, time: time});
@@ -247,7 +266,7 @@ function onSelectionChanged(tabId) {
   onSelectionChanged(activeInfo.tabId);
 });*/
 chrome.tabs.onUpdated.addListener(function(id, changeInfo, tab) {
-  onSelectionChanged(id);  
+  onSelectionChanged(id);
 });
 
 //get Expires header

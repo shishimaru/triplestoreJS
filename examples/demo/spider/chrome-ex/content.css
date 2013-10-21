@@ -3,7 +3,7 @@
     position: fixed;
     top: 0px;
     left: 0px;
-    font-family: Arial;
+	font-family: Arial;
     font-size: 12px;
     width: 80px;
     z-index: 9999999;
@@ -34,16 +34,26 @@
     border-top-left-radius: 7px;
     border-top-right-radius: 7px;	
 }
-.spider-detail   {
+.spider-detail {
     max-height: 500px;
-    overflow-y: auto;
+    min-height: 1em;
     max-width: 350px;
+    min-width: 200px;
+    overflow-y: auto;
     word-wrap: break-word;
     border: 1px solid rgb(160, 160, 160);
-    background: no-repeat rgb(245, 245, 245);
+    background: no-repeat #FFFFFF;
     box-shadow: rgb(128, 128, 128) 0px 0px 10px;
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
+}
+.spider-detail * {
+	color: black;
+	font-family: Arial;
+    font-size: 12px;
+}
+.spider-detail p {
+    background: no-repeat #F7F7F7;
 }
 #spider-message {
 	position:fixed;
@@ -56,7 +66,7 @@
 	border-top-left-radius: 10px;
 	border-top-right-radius: 10px;
 	opacity: 0.7;
-	z-index:7777;
+	z-index: 9999999;
 }
 #spider-message .dialog-content {
 	text-align: Center;
@@ -67,23 +77,47 @@
 	font-size: 30px;
 	font-weight: bold;
 }
-.spider-detail table {
-	font-size: 12px;
+.spider-keyword-search {
+	width: 200px;
+	max-height: 250px;
+	overflow-x: hidden;
+    overflow-y: auto;
+    border: 1px solid #AAAAAA;
+    background: #FFFFFF;
+    z-index: 9999999;
+
+    font-family: Arial;
+    font-size: 12px;
+    text-align: left;
+    word-wrap: break-word;
+	/*white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;*/
+}
+.spider-keyword-search td {
+	padding: 0px;
+    margin: 0px;    
+}
+.spider-keyword-search img {
+	width: 20px;
 }
 #spider-container::-webkit-scrollbar-track,
-.spider-detail::-webkit-scrollbar-track
+.spider-detail::-webkit-scrollbar-track,
+.spider-keyword-search::-webkit-scrollbar-track
 {
 	-webkit-box-shadow: inset 0 0 6px #BFBFBF;
 	background-color: #F0F0F0;
 }
 #spider-container::-webkit-scrollbar,
-.spider-detail::-webkit-scrollbar
+.spider-detail::-webkit-scrollbar,
+.spider-keyword-search::-webkit-scrollbar
 {
 	width: 6px;
 	background-color: #F0F0F0;
 }
 #spider-container::-webkit-scrollbar-thumb,
-.spider-detail::-webkit-scrollbar-thumb
+.spider-detail::-webkit-scrollbar-thumb,
+.spider-keyword-search::-webkit-scrollbar-thumb
 {
 	background-color: #A7A7A7;
 }

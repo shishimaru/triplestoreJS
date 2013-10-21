@@ -62,7 +62,7 @@ Viewer.prototype.search = function() {
     v.showItems(subjects);
   }
 };
-Viewer.prototype.shortenString = function(s, len) {
+Viewer.shortenString = function(s, len) {
   var res = s;
   if(s.length > len) {
     var separator = " ... ";
@@ -241,7 +241,7 @@ Viewer.getTypeImg = function(m, type) {
       res = "images/skull.png";
     }
   }
-  return res ? m.app_url + res : res;
+  return res ? Manager.APP_URL + res : res;
 };
 Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_request) {
   function getWhitespace(s) {
@@ -313,14 +313,14 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
               || v.search(/\.png$/i) != -1) {
             elseHTML += "<li>" + propReadable + "<br><img src='" + v + "' title='" + v + "' class='property_img'></img></li>";
           } else {
-            propImg = propImg ? propImg : this.m.app_url + "images/link.png";
+            propImg = propImg ? propImg : Manager.APP_URL + "images/link.png";
             var href = v;
 
             if(Manager.isFacebookProperty(prop, v)) {
-              propImg = this.m.app_url + "images/facebook.png";
+              propImg = Manager.APP_URL + "images/facebook.png";
               var userid = v.substr(v.lastIndexOf('/') + 1);
               if(fb_request) {
-                propImg = this.m.app_url + "images/facebook-br.gif";
+                propImg = Manager.APP_URL + "images/facebook-br.gif";
                 if(fb_request.method == "dialog/feed") {
                   fb_request.query.to = userid;
                   href = Manager.FB_DIALOG_FEED_URL + "?" + Manager.encode(fb_request.query);
@@ -332,10 +332,10 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
                 href = "mailto:" + userid + "@facebook.com?" + Manager.encode(emailQuery);
               }
             } else if(Manager.isGoogleProperty(prop, v)) {
-              propImg = this.m.app_url + "images/google.png";
+              propImg = Manager.APP_URL + "images/google.png";
               var userid = v.substr(v.lastIndexOf('/') + 1);
               if(gl_request) {
-                propImg = this.m.app_url + "images/google-br.gif";
+                propImg = Manager.APP_URL + "images/google-br.gif";
                 gl_request.query.recipients = userid;
                 href = Manager.GL_POST_URL + "?" + Manager.encode(gl_request.query);
               }
@@ -349,7 +349,7 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
         } else if(v.search(/^mailto:/) != -1) {
           var href = v;
           if(emailQuery) {
-            propImg = this.m.app_url + "images/email-br.gif";
+            propImg = Manager.APP_URL + "images/email-br.gif";
             href += "?" + Manager.encode(emailQuery);
           }
           elseHTML += "<li>";
@@ -359,11 +359,11 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
           if(propImg) {
             elseHTML += "<li><img src='" + propImg + "' class='related_icon'>" + propReadable + " : " + v + "</li>";
           } else if(Datatype.isPrice(v)) {//price
-            elseHTML += "<li><img src='" + this.m.app_url + "images/price.png' class='related_icon'>" + propReadable + " : " + v + "</li>";
+            elseHTML += "<li><img src='" + Manager.APP_URL + "images/price.png' class='related_icon'>" + propReadable + " : " + v + "</li>";
           } else if(Datatype.isDate(v)) {//date
-            elseHTML += "<li><img src='" + this.m.app_url + "images/calendar.png' class='related_icon'>" + propReadable + " : " + v + "</li>";
+            elseHTML += "<li><img src='" + Manager.APP_URL + "images/calendar.png' class='related_icon'>" + propReadable + " : " + v + "</li>";
           } else if(Datatype.isPhone(v)) {//phone
-            elseHTML += "<li><img src='" + this.m.app_url + "images/phone.png' class='related_icon'>" + propReadable + " : "
+            elseHTML += "<li><img src='" + Manager.APP_URL + "images/phone.png' class='related_icon'>" + propReadable + " : "
             + "<a href='" + v + "'>" + v + "</a></li>"; 
           } else {
             elseHTML += "<li>" + propReadable + " : " + v + "</li>";
@@ -395,7 +395,7 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
     }
     
     {//trash button
-      res += "<img src='" + this.m.app_url + "images/trash.png' title='remove'" +
+      res += "<img src='" + Manager.APP_URL + "images/trash.png' title='remove'" +
       "class='trash' subject='" + subject + "'/>";
     }
     res += "</div>";
@@ -403,7 +403,7 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
   
   {//img and description
     res += "<div class='item-detail'>";
-    res += description ? "<p>" + this.shortenString(description, 300) + "</p>": "";
+    res += description ? "<p>" + Viewer.shortenString(description, 300) + "</p>": "";
     res += "<table><tr><td style='vertical-align:middle; text-align:center'>";
     if(img) {
       if(img.search(/^\/\//) != -1) {
@@ -411,12 +411,12 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
       }
       res += "<img src='" + img + "' class='item_img'/>";
     } else {
-      res += "<i style='color:grey;'>NO IMAGE</i>";
+      res += "<i style='color:grey; padding:10px;'>NO IMAGE</i>";
     }
     {//precise info
       res += "</td><td><ul>";
       res += address ? "<li><a href='https://www.google.com/maps?q=" + address +"'>" +
-          "<img src='" + this.m.app_url + "images/map-marker.png' class='related_type'></a>Address : " + address + "</li>": "";
+          "<img src='" + Manager.APP_URL + "images/map-marker.png' class='related_type'></a>Address : " + address + "</li>": "";
       res += !isNaN(rating) ? "<li>Rate: " + rating + this.getRatingHTML(rating) + "</li>" : "";
       res += color ? "<li>Color: <span style='background-color:"+ color + 
                      "'>&nbsp;&nbsp;</span> "+color+"</li>": "";
@@ -507,7 +507,7 @@ Viewer.getGraphHTML = function(m, subject) {
   var referringTable = Viewer.getSubjectsHTML(m, subject, values, 3, "refer_cell", false);
   if(referringTable) {
     referringTable.addClass("related_table");
-    var icon = $("img", {"src" : m.app_url + "images/referring.png", "class" : "related_icon"});
+    var icon = $("img", {"src" : Manager.APP_URL + "images/referring.png", "class" : "related_icon"});
     var section = $("<h4/>").append(icon).html("Refer to:")
     div.append(section).append(referringTable);
   }
@@ -516,7 +516,7 @@ Viewer.getGraphHTML = function(m, subject) {
   var referredTable = Viewer.getSubjectsHTML(m, subject, m.referred[subject], 5, "referred_cell", false);
   if(referredTable) {
     referredTable.addClass("related_table");
-    var icon = $("img", {"src" : m.app_url + "images/referred.png", "class" : "related_icon"});
+    var icon = $("img", {"src" : Manager.APP_URL + "images/referred.png", "class" : "related_icon"});
     var section = $("<h4/>").append(icon).html("Referred by:");
     div.append(section).append(referredTable);
   }
@@ -531,6 +531,18 @@ Viewer.getMessageHtml = function(message) {
   }
   res += "</div></div>";
   return res;
+}
+Viewer.getKeywordSearchHTML = function(keywords) {
+  var html = null;
+  if(keywords && keywords.length) {
+    //insert logo
+    html = "<table>";
+    for(var i = 0; i < keywords.length; i++) {
+      html += "<tr><td>" + keywords[i].trim() + "</td></tr>";
+    }
+    html += "</table>";
+  }
+  return html;
 }
 Viewer.prototype.showItems = function(subjects) {
   //init

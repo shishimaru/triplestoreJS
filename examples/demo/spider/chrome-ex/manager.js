@@ -3,8 +3,8 @@ String.prototype.trim = function() {
   return this.replace(/^\s+|\s+$/g, "");
 };
 var Manager = function(){
-  this.app_id = chrome.i18n.getMessage("@@extension_id");
-  this.app_url = "chrome-extension://" + this.app_id + "/";
+//  this.app_id = chrome.i18n.getMessage("@@extension_id");
+//  this.app_url = "chrome-extension://" + this.app_id + "/";
   this.lst = localStorage;
   {//TriplestoreJS
     this.tst = new Triplestore();
@@ -14,6 +14,8 @@ var Manager = function(){
   }
 };
 Manager.DEBUG = false;
+Manager.APP_ID = chrome.i18n.getMessage("@@extension_id");
+Manager.APP_URL = "chrome-extension://" + Manager.APP_ID + "/";
 Manager.PROP_FOUNDAt = "__FOUND_At__";
 Manager.PROP_FAVICON = "__FAVICON__";
 Manager.PROP_TITLE =   "__TITLE__";

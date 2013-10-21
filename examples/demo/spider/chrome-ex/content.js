@@ -150,8 +150,85 @@ chrome.runtime.onMessage.addListener(
         $container.show("fast");
       } else if(request.action == "message") {
         showMessage(request.html);
+      } else if(request.action == "pageUpdated") {
+        alert("pageUpdated");
+        Assist.search();
       }
     }
 );
+function Assist() {};
+Assist.search = function() {
+  $(".spider-keyword-search").remove();
+  
+  var $inputs = $(
+      "input[type='text'][title*='Search']" + //Amazon
+      ",input[type='text'][name='q']" + //Google
+      ",input[type='search'][name='q']" + //Bing
+      ",input[type='text'][name='query']" + //SkyDrive
+      //",div[role='search']" + //Facebook
+      ",input[type='text'][value*='Search']" //Oreilly 
+      );
+  
+  $inputs.sort(function(v1, v2) {//select largest input field
+    return $(v2).outerWidth() - $(v1).outerWidth();
+  });
+  
+  if($inputs.length) {
+    
+    var $input = $($inputs[0]);
+    console.log($input);
+    var input_width = $input.outerWidth();
+    var input_height = $input.outerHeight();
+    
+    var offset = $input.offset();
+    
+    //user starts to input search keyword
+    $input.off("keyup.spider");
+    $input.on("keyup.spider", function(event) {
+      var input_value = $(event.target).val();
+      
+      if(!input_value.length) {
+        $("div.spider-keyword-search").detach();
+      }
+      else {
+        chrome.runtime.sendMessage(
+            {
+              action: "getKeyword",
+              type: "product",
+              keyword: $(event.target).val(),
+              url: document.URL,
+              title: document.title,
+            },
+            function(res) {
+              $("div.spider-keyword-search").detach();
+              
+              var html = res.html;
+              if(html && html.length) {
+                //insert keywords
+                var $keywords_container = $("<div class='spider-keyword-search'" +
+                    " style='position:fixed; width:300px;" + 
+                    " top:" +  (offset.top + input_height) + "px;" +
+                    " left:" + (offset.left + input_width) + "px;'>" +
+                    "<img src='" + Manager.APP_URL + "images/spider.png" + "'>" +
+                    html + "</div>");
+                jQuery("body").append($keywords_container);
+                
+                //event : click keyword
+                $keywords_container.find("td").click(function(e) {
+                  var selectedKeyword = $(e.target).text();
+                  $input.val(selectedKeyword);
+                  $keywords_container.detach();
+                });
+                $(window).bind("scroll", function() {
+                  $keywords_container.detach();
+                });
+              }
+            }
+        );
+      }
+    });
+  }
+}
 
 extract();
+Assist.search();
