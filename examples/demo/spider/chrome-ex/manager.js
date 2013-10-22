@@ -13,7 +13,8 @@ var Manager = function(){
     this.tst.setMapping("dc", "http://purl.org/dc/elements/1.1/");
   }
 };
-Manager.DEBUG = false;
+//Manager.DEV_MODE = "debug";
+Manager.DEV_MODE = "product";
 Manager.APP_ID = chrome.i18n.getMessage("@@extension_id");
 Manager.APP_URL = "chrome-extension://" + Manager.APP_ID + "/";
 Manager.PROP_FOUNDAt = "__FOUND_At__";
@@ -617,13 +618,10 @@ Manager.prototype.getSimilarItems = function(targetValues, similarityThreshold) 
       //console.log("@similarity : " + similarity + " : " + subject);
       //console.log("@s1: " + w1);
       //console.log("@s2: " + w2);
-      
-      if(Manager.DEBUG) {
-        this.tst.add(subject, "DEBUG_similarity", String(similarity));
-      }
+
       if(similarity > similarityThreshold) {
-        
-        res.push({subject: subject,
+        res.push({
+          subject: subject,
           similarity: similarity});
       }
     }

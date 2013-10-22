@@ -212,17 +212,16 @@ chrome.runtime.onMessage.addListener(
       else if(request.action == "getKeyword") {
         if(request.keyword && request.keyword.length) {
           var keywords = request.keyword.split(" ");
-          //var subjects = m.getSubjects("__type", request.type, true);
           var subjects = m.getSubjects("__type", null, true);
           var values = [];
           for(var i = 0; i < subjects.length; i++) {
             values = values.concat(m.getFilteredValues(subjects[i], ["name"]));
           }
+          values = Manager.trimDuplicate(values);
+          values = Manager.filter(keywords, values);
           for(var i = 0; i < values.length; i++) {
             values[i] = values[i].substr(0, 45);
           }
-          values = Manager.trimDuplicate(values);
-          values = Manager.filter(keywords, values);
           var html = Viewer.getKeywordSearchHTML(values);
           sendResponse({html: html});
         }
