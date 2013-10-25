@@ -3,8 +3,6 @@ String.prototype.trim = function() {
   return this.replace(/^\s+|\s+$/g, "");
 };
 var Manager = function(){
-//  this.app_id = chrome.i18n.getMessage("@@extension_id");
-//  this.app_url = "chrome-extension://" + this.app_id + "/";
   this.lst = localStorage;
   {//TriplestoreJS
     this.tst = new Triplestore();
@@ -13,8 +11,8 @@ var Manager = function(){
     this.tst.setMapping("dc", "http://purl.org/dc/elements/1.1/");
   }
 };
-//Manager.DEV_MODE = "debug";
-Manager.DEV_MODE = "product";
+Manager.DEV_MODE = "debug";
+//Manager.DEV_MODE = "product";
 Manager.APP_ID = chrome.i18n.getMessage("@@extension_id");
 Manager.APP_URL = "chrome-extension://" + Manager.APP_ID + "/";
 Manager.PROP_FOUNDAt = "__FOUND_At__";
@@ -39,7 +37,7 @@ Manager.GL_POST_URL = "https://semantic-spider.appspot.com/c/g-post";
 Manager.GL_CAL_LIST_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList/";
 Manager.GL_CAL_EVENT_URL = "https://www.googleapis.com/calendar/v3/calendars/";
 Manager.GL_PHOTO_ALBUM_URL = "https://picasaweb.google.com/data/feed/api/user/default"; 
-  //Manager.GL_CAL_URL = "https://www.googleapis.com/auth/calendar";
+//Manager.GL_CAL_URL = "https://www.googleapis.com/auth/calendar";
 
 Manager.prototype.init =function(tab) {
   this.tab = tab;
@@ -102,11 +100,11 @@ Manager.prototype.getSubjects = function(property, value, isLax) {
   }
   return res;
 };
-Manager.prototype.getFilteredValues = function(subject, propKeywords) {
+Manager.prototype.getFilteredValues = function(subject, propKeywords, isOr) {
   var res = [];
   if(this.projections[subject]) {
     var props = this.projections[subject].getProperties();
-    var type_props = Manager.filter(propKeywords, props, true);
+    var type_props = Manager.filter(propKeywords, props, true, isOr);
     for(var i = 0; i < type_props.length; i++) {
       res = res.concat(this.projections[subject].getAll(type_props[i]));
     }
@@ -216,7 +214,7 @@ Manager.sortProjections = function(projections, rating) {
   }
   return res;
 };
-Manager.filter = function(keywords, list, onlyTail) {
+Manager.filter = function(keywords, list, onlyTail, isOr) {
   var res = [];
   for(var i = 0; i < list.length; i++) {
     if(list[i]) {
@@ -224,9 +222,16 @@ Manager.filter = function(keywords, list, onlyTail) {
       for(var j = 0; j < keywords.length; j++) {
         var regex = new RegExp(keywords[j] + (onlyTail ? "$" : ""), "i");
         if(!list[i].match(regex)) {
+          if(isOr) {
+            continue;
+          } else {
             break;
+          }
         }
         findNum++;
+      }
+      if(isOr && findNum) {
+        findNum = keywords.length;
       }
       if(findNum >= keywords.length) {
         res.push(list[i]);
@@ -276,6 +281,28 @@ Manager.trimDuplicate = function(list) {
   }
   return res;
 };
+/**
+ * Trim items whose similarities are more than
+ * the specified similarity ratio.
+ */
+Manager.trimSimilar = function(list, similarity) {
+  var res = []
+  list.sort(function(v1, v2) {
+    return v1.length - v2.length;
+  });
+  
+  for(var i = 0; i < list.length - 1 ; i++) {
+    for(var j = i + 1; j < list.length;) {
+      var simValue = ML.jaccord(list[i], list[j]);
+      if(simValue > similarity) {
+        list.splice(j,1);
+      } else {
+        j++;
+      }
+    }
+  }
+  return list;
+}
 Manager.isAbsoluteURI = function(url_str) {
   return (url_str && (url_str.indexOf("://") != -1)) ? true : false;
 };

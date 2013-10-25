@@ -110,7 +110,6 @@ function extract() {
       function(res) {
         var html = res.html;
         if(html && html.length) {
-          //alert("@render html");
           suggestHTML(html, 1.0);
         }
         //set timer for autosave
@@ -126,7 +125,6 @@ function extract() {
                 function(res) {
                   var html = res.html;
                   if(html && html.length) {
-                    //alert("@render html by time");
                     suggestHTML(html, 1.0);
                   }
                 });
@@ -150,9 +148,6 @@ chrome.runtime.onMessage.addListener(
         $container.show("fast");
       } else if(request.action == "message") {
         showMessage(request.html);
-      } else if(request.action == "pageUpdated") {
-        alert("pageUpdated");
-        Assist.search();
       }
     }
 );
@@ -174,14 +169,11 @@ Assist.search = function() {
   });
   
   if($inputs.length) {
-    
     var $input = $($inputs[0]);
-    console.log($input);
     var input_width = $input.outerWidth();
     var input_height = $input.outerHeight();
-    
     var offset = $input.offset();
-    
+     
     //user starts to input search keyword
     $input.off("keyup.spider");
     $input.on("keyup.spider", function(event) {
@@ -191,11 +183,16 @@ Assist.search = function() {
         $("div.spider-keyword-search").detach();
       }
       else {
+        var itemtype = $input.attr("itemtype");
+        itemtype = itemtype == "" ? null : itemtype;
+        var keyword = $(event.target).val().trim();
+        keyword = keyword == "" ? null : keyword;
+        
         chrome.runtime.sendMessage(
             {
               action: "getKeyword",
-              type: "product",
-              keyword: $(event.target).val(),
+              itemtype: itemtype,
+              keyword: keyword,
               url: document.URL,
               title: document.title,
             },
@@ -207,8 +204,8 @@ Assist.search = function() {
                 //insert keywords
                 var $keywords_container = $("<div class='spider-keyword-search'" +
                     " style='position:fixed; width:300px;" + 
-                    " top:" +  (offset.top + input_height) + "px;" +
-                    " left:" + (offset.left + input_width) + "px;'>" +
+                    " top:" +  (offset.top + input_height - window.scrollY) + "px;" +
+                    " left:" + (offset.left + input_width - window.scrollX) + "px;'>" +
                     "<img src='" + Manager.APP_URL + "images/spider.png" + "'>" +
                     html + "</div>");
                 jQuery("body").append($keywords_container);

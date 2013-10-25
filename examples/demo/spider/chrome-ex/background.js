@@ -197,13 +197,11 @@ chrome.runtime.onMessage.addListener(
         //auto save the items based on visit number
         var visit = Options.get_visit();
         if(visit && getVisitNumber(request.url) >= visit * 3) {
-          //alert("save by visit");
           m.save();
         }
       }
       //auto save for long stay at same site
       else if(request.action == "long-stay") {
-        //alert("save by time");
         m.save();
       }
       else if(request.action == "selectNumber++") {
@@ -212,16 +210,21 @@ chrome.runtime.onMessage.addListener(
       else if(request.action == "getKeyword") {
         if(request.keyword && request.keyword.length) {
           var keywords = request.keyword.split(" ");
-          var subjects = m.getSubjects("__type", null, true);
+          var subjects = null;
+          if(request.itemtype) {
+            subjects = m.getSubjects(null, request.itemtype, true);  
+          } else {
+            subjects = m.getSubjects(null);
+          }
           var values = [];
           for(var i = 0; i < subjects.length; i++) {
-            values = values.concat(m.getFilteredValues(subjects[i], ["name"]));
+            values = values.concat(m.getFilteredValues(subjects[i], ["name","title"], true));
           }
-          values = Manager.trimDuplicate(values);
           values = Manager.filter(keywords, values);
           for(var i = 0; i < values.length; i++) {
-            values[i] = values[i].substr(0, 45);
+            values[i] = values[i].substr(0, 45);//shorten long keyword
           }
+          values = Manager.trimSimilar(values, 0.8);
           var html = Viewer.getKeywordSearchHTML(values);
           sendResponse({html: html});
         }
@@ -309,164 +312,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
-//menu of sharing photos
-function menu_share_email(info, tab) {
-  var pageURL = info.pageUrl;
-  var email_query = {
-      subject: "Sharing ",
-      body: ""
-  };
-  
-  if(info.mediaType == "image" ||
-      info.mediaType == "video" ||
-      info.mediaType == "audio") {
-    email_query.subject += "media";
-    email_query.body = info.srcUrl;
-  } else if(info.linkUrl) {
-    email_query.subject += "URL";
-    email_query.body = info.linkUrl;
-  } else if(info.selectionText) {
-    email_query.subject += "text";
-    email_query.body = info.selectionText;
-  }
-  var m = bg_res.m;
-  var v = new Viewer(m, tab);
-  var subjects = m.filterSubjects(["mbox", "facebook-account", "www.facebook"]);
-  sortSnsAccount(m, subjects);
-  
-  if(subjects.length) {
-    var html = generateInsertedHTML(m, v, subjects, email_query);
-    
-    chrome.tabs.sendMessage(tab.id, {
-      "html": html,
-      "action": "suggest"
-    },
-    function(response) {
-    });
-  } else {
-    alert("Sorry, could not find any person having email address.");
-  }
-}
-function menu_post_facebook(info, tab) {
-  var pageURL = info.pageUrl;
-  var fb_request = {
-      method: "dialog/feed",
-      query: {
-        app_id: Manager.FB_APP_ID,
-        display: "popup",
-        //caption: tab.title,
-        link: pageURL,
-        redirect_uri: Manager.FB_REDIRECT_URL
-      }
-  };
-  
-  if(info.mediaType == "image" ||
-      info.mediaType == "video" ||
-      info.mediaType == "audio") {
-    fb_request.query.picture = info.srcUrl;
-  } else if(info.linkUrl) {
-    fb_request.query.link = info.linkUrl;
-  } else if(info.selectionText) {
-    fb_request.query.description = info.selectionText;
-  }
-  
-  var m = bg_res.m;
-  var v = new Viewer(m, tab);
-  var subjects = m.filterSubjects(["facebook-account"]);
-  sortSnsAccount(m, subjects);
-  
-  if(subjects.length) {
-    var html = generateInsertedHTML(m, v, subjects, null,
-        fb_request);
-    
-    chrome.tabs.sendMessage(tab.id, {
-      "html": html,
-      "action": "suggest"
-    },
-    function(response) {
-    });
-  } else {
-    alert("Sorry, could not find any Facebook users.");
-  }
-}
-function menu_send_facebook(info, tab) {
-  var pageURL = info.pageUrl;
-  var fb_request = {
-      method: "dialog/send",
-      query: {
-        app_id: Manager.FB_APP_ID,
-        display: "popup",
-        link: pageURL,
-        redirect_uri: Manager.FB_REDIRECT_URL
-      }
-  };
-  if(info.selectionText) {
-    alert("Facebook Message API doesn't support the sharing of selected text. Please share by wall.");
-  } else {
-    if(info.mediaType == "image" ||
-        info.mediaType == "video" ||
-        info.mediaType == "audio") {
-      fb_request.query.link = info.srcUrl;
-    } else if(info.linkUrl) {
-      fb_request.query.link = info.linkUrl;
-    }
-    var m = bg_res.m;
-    var v = new Viewer(m, tab);
-    var subjects = m.filterSubjects(["facebook-account"]);
-    sortSnsAccount(m, subjects);
-    
-    if(subjects.length) {
-      var html = generateInsertedHTML(m, v, subjects, null,
-          fb_request);
-      
-      chrome.tabs.sendMessage(tab.id, {
-        "html": html,
-        "action": "suggest"
-      },
-      function(response) {
-      });
-    } else {
-      alert("Sorry, could not find any Facebook users.");
-    }
-  }
-}
-function menu_post_google(info, tab) {
-  var pageURL = info.pageUrl;
-  var gl_request = {
-      query: {
-        contenturl: tab.url
-      }
-  };
-  
-  if(info.mediaType == "image" ||
-      info.mediaType == "video" ||
-      info.mediaType == "audio") {
-    gl_request.query.contenturl = info.srcUrl;
-  } else if(info.linkUrl) {
-    gl_request.query.contenturl = info.linkUrl;
-  } else if(info.selectionText) {
-    gl_request.query.prefilltext = info.selectionText;
-  }
-  
-  var m = bg_res.m;
-  var v = new Viewer(m, tab);
-  var subjects = m.filterSubjects(["google-account"]);
-  sortSnsAccount(m, subjects);
-  
-  if(subjects.length) {
-    var html = generateInsertedHTML(m, v, subjects, null,
-        null, gl_request);
-    
-    chrome.tabs.sendMessage(tab.id, {
-      "html": html,
-      "action": "suggest"
-    },
-    function(response) {
-    });
-  } else {
-    alert("Sorry, could not find any Google users.");
-  }
-}
 function menu_share(info, tab) {
   var MAX_RESULT_SIZE =  100;
   var pageURL = info.pageUrl;
@@ -554,44 +399,9 @@ var menu_save = chrome.contextMenus.create({
   parentId: menu_top,
   onclick: menu_save
 });
-var menu_share = chrome.contextMenus.create({
+chrome.contextMenus.create({
   title: "Share",
   contexts: ["all"],
   parentId: menu_top,
   onclick: menu_share
 });
-
-/*chrome.contextMenus.create({
-  title: "Email",
-  parentId: menu_share,
-  contexts: ["all"],
-  onclick: menu_share_email
-});
-var menu_facebook = chrome.contextMenus.create({
-  title: "Facebook",
-  parentId: menu_share,
-  contexts: ["all"],
-});
-chrome.contextMenus.create({
-  title: "Wall",
-  parentId: menu_facebook,
-  contexts: ["all"],
-  onclick: menu_post_facebook
-});
-chrome.contextMenus.create({
-  title: "Message",
-  parentId: menu_facebook,
-  contexts: ["all"],
-  onclick: menu_send_facebook
-});
-var menu_google = chrome.contextMenus.create({
-  title: "Google+",
-  parentId: menu_share,
-  contexts: ["all"],
-});
-chrome.contextMenus.create({
-  title: "Wall",
-  parentId: menu_google,
-  contexts: ["all"],
-  onclick: menu_post_google
-});*/
