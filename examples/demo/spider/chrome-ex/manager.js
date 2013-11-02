@@ -11,8 +11,8 @@ var Manager = function(){
     this.tst.setMapping("dc", "http://purl.org/dc/elements/1.1/");
   }
 };
-//Manager.DEV_MODE = "debug";
-Manager.DEV_MODE = "product";
+Manager.DEV_MODE = "debug";
+//Manager.DEV_MODE = "product";
 Manager.APP_ID = chrome.i18n.getMessage("@@extension_id");
 Manager.APP_URL = "chrome-extension://" + Manager.APP_ID + "/";
 Manager.PROP_FOUNDAt = "__FOUND_At__";
@@ -41,6 +41,12 @@ Manager.GL_PHOTO_ALBUM_URL = "https://picasaweb.google.com/data/feed/api/user/de
 
 Manager.prototype.init =function(tab) {
   this.tab = tab;
+  if(this.tab) {
+    var flagIndex = this.tab.url.lastIndexOf("#");
+    if(flagIndex != -1) {
+      this.tab.url = this.tab.url.substr(0, flagIndex);
+    }
+  }
   var bg = chrome.extension.getBackgroundPage();
   if(bg && tab) {
     this.bg_res = bg.bg_res;
@@ -461,7 +467,7 @@ Manager.prototype.save = function() {
   }
   
   //save this site
-  if(Manager.isSiteURL(this.tab.url)) {
+  /*if(Manager.isSiteURL(this.tab.url)) {
     var subject = this.tab.url;
     _save(this, subject, Manager.PROP_TITLE, this.tab.title, true);
     if(!this.tst.getValues(subject, "title").length) {
@@ -470,7 +476,7 @@ Manager.prototype.save = function() {
     if(this.tab.favIconUrl) {
       _save(this, subject, Manager.PROP_FAVICON, this.tab.favIconUrl, true);
     }
-  }
+  }*/
   
   //renew internal status
   this.renew();

@@ -32,7 +32,6 @@ function suggestHTML(html, opacity) {
   var fadeSpeed = "fast";
   //resolve duplicated container
   jQuery("#spider-wrapper").remove();
-  $("body").off("keyup.spider");
     
   //init
   var $wrapper = jQuery(html);
@@ -57,12 +56,17 @@ function suggestHTML(html, opacity) {
     var subject = getSubject(e.target);
     incrementVisitNumber(subject);
   });
-  $("body").on("keyup.spider", function(event) {
+  $("body").off("keyup.item.spider");
+  $("body").on("keyup.item.spider", function(event) {
     if(event.keyCode == 27) {
       $container.fadeToggle(fadeSpeed);
     }
   });
   $(window).bind("scroll", function() {
+    $details.hide();
+  });
+  $("body").off("click.item.spider");
+  $("body").on("click.item.spider", function(event) {
     $details.hide();
   });
   $("#spider-wrapper .spider-summary").mouseover(function(e) {
@@ -156,11 +160,14 @@ Assist.search = function() {
   $(".spider-keyword-search").remove();
   
   var $inputs = $(
-      "input[type='text'][title*='Search']" + //Amazon
-      ",input[type='text'][name='q']" + //Google
-      ",input[type='search'][name='q']" + //Bing
-      ",input[type='text'][name='query']" + //SkyDrive
-      //",div[role='search']" + //Facebook
+      "input[title*='Search']" + //Amazon
+      ",input[title*='search']" +
+      ",input[name='q']" +       //Google, Bing
+      ",input[name='query']" +   //SkyDrive
+      ",input[id*='search']" +   //Zappos
+      ",input[id*='Search']" +
+      ",input[id*='find']" +     //Yelp*/      
+      //",div[role='search']" +  //Facebook
       ",input[type='text'][value*='Search']" //Oreilly 
       );
   
@@ -175,8 +182,8 @@ Assist.search = function() {
     var offset = $input.offset();
      
     //user starts to input search keyword
-    $input.off("keyup.spider");
-    $input.on("keyup.spider", function(event) {
+    $input.off("keyup.keyword.spider");
+    $input.on("keyup.keyword.spider", function(event) {
       var input_value = $(event.target).val();
       
       if(!input_value.length) {
@@ -211,9 +218,17 @@ Assist.search = function() {
                 jQuery("body").append($keywords_container);
                 
                 //event : click keyword
-                $keywords_container.find("td").click(function(e) {
+                $keywords_container.find("td").off("click.keyword.spider");
+                $keywords_container.find("td").on("click.keyword.spider", function(e) {                
+                  console.log("click");
                   var selectedKeyword = $(e.target).text();
                   $input.val(selectedKeyword);
+                  $keywords_container.detach();
+                });
+                //event : click body besides keyword
+                $("body").off("click.keyword.spider");
+                $("body").on("click.keyword.spider", function(e) {
+                  console.log("detach");
                   $keywords_container.detach();
                 });
                 $(window).bind("scroll", function() {
