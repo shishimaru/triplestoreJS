@@ -1,22 +1,20 @@
 /* $Id$ */
 function getSubject(element) {
   if(element) {
-    if(!element.getAttribute("spider-items")) {
-      var id = element.getAttribute("id");
-      if(id) {
-        return id; 
-      } else {
-        return getSubject(element.parentNode);
-      }
+    var id = element.getAttribute("id");
+    if(id) {
+      return id; 
+    } else {
+      return getSubject(element.parentNode);
     }
   }
   return null;
 }
-function incrementVisitNumber(subject) {
+function incrementSelectItemNumber(subject) {
   if(subject) {
     chrome.runtime.sendMessage(
         {
-          action : "selectNumber++",
+          action : "selectItemNumber++",
           url: document.URL,
           subject: subject
         },
@@ -25,6 +23,22 @@ function incrementVisitNumber(subject) {
     );
   }
 }
+
+function incrementSelectKeywordNumber(keyword) {
+  if(keyword) {
+    chrome.runtime.sendMessage(
+        {
+          action : "selectKeywordNumber++",
+          url: document.URL,
+          keyword: keyword,
+        },
+        function(res) {
+        }
+    );
+  }
+}
+
+
 var $container = null;
 var $details = null;
 
@@ -54,7 +68,7 @@ function suggestHTML(html, opacity) {
   });
   $("#spider-container a").click(function(e) {
     var subject = getSubject(e.target);
-    incrementVisitNumber(subject);
+    incrementSelectItemNumber(subject);
   });
   $("body").off("keyup.item.spider");
   $("body").on("keyup.item.spider", function(event) {
@@ -213,22 +227,22 @@ Assist.search = function() {
                     " style='position:fixed; width:300px;" + 
                     " top:" +  (offset.top + input_height - window.scrollY) + "px;" +
                     " left:" + (offset.left + input_width - window.scrollX) + "px;'>" +
-                    "<img src='" + Manager.APP_URL + "images/spider.png" + "'>" +
+                    "<a href='http://www.w3.org/2013/04/semweb-html5/spider/index.html'>" + 
+                    "<img src='" + Manager.APP_URL + "images/spider.png" + "'></a>" +
                     html + "</div>");
                 jQuery("body").append($keywords_container);
                 
                 //event : click keyword
                 $keywords_container.find("td").off("click.keyword.spider");
                 $keywords_container.find("td").on("click.keyword.spider", function(e) {                
-                  console.log("click");
                   var selectedKeyword = $(e.target).text();
                   $input.val(selectedKeyword);
+                  incrementSelectKeywordNumber(selectedKeyword);
                   $keywords_container.detach();
                 });
                 //event : click body besides keyword
                 $("body").off("click.keyword.spider");
                 $("body").on("click.keyword.spider", function(e) {
-                  console.log("detach");
                   $keywords_container.detach();
                 });
                 $(window).bind("scroll", function() {

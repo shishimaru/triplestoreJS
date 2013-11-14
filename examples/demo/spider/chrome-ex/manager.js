@@ -293,10 +293,6 @@ Manager.trimDuplicate = function(list) {
  */
 Manager.trimSimilar = function(list, similarity) {
   var res = []
-  list.sort(function(v1, v2) {
-    return v1.length - v2.length;
-  });
-  
   for(var i = 0; i < list.length - 1 ; i++) {
     for(var j = i + 1; j < list.length;) {
       var simValue = ML.jaccord(list[i], list[j]);
@@ -504,6 +500,19 @@ Manager.prototype.incrementSelectNumber = function(subject) {
       this.tst.set(subject, Manager.PROP_SELECT_NUM, String(num));
     }
   }
+};
+Manager.prototype.getSelectNumber = function(subject) {
+  var res = 0;
+  if(subject) {
+    var projection = this.projections[subject];
+    if(projection) {
+      var num = projection.get(Manager.PROP_SELECT_NUM);
+      if(num) {
+        res = parseInt(num);
+      }
+    }
+  }
+  return res;
 };
 Manager.encode = function(kvMap) {
   var res = "";

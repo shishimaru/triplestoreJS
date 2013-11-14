@@ -204,8 +204,14 @@ chrome.runtime.onMessage.addListener(
       else if(request.action == "long-stay") {
         m.save();
       }
-      else if(request.action == "selectNumber++") {
+      else if(request.action == "selectItemNumber++") {
         m.incrementSelectNumber(request.subject);
+      }
+      else if(request.action == "selectKeywordNumber++") {
+        var subjects = m.getSubjects(null, request.keyword, true);
+        for(var i = 0; i < subjects.length; i++) {
+          m.incrementSelectNumber(subjects[i]);
+        }
       }
       else if(request.action == "getKeyword") {
         if(request.keyword && request.keyword.length) {
@@ -216,6 +222,9 @@ chrome.runtime.onMessage.addListener(
           } else {
             subjects = m.getSubjects(null);
           }
+          subjects.sort(function(s1, s2) {//sort with select number history
+            return m.getSelectNumber(s2) - m.getSelectNumber(s1);
+          });
           var values = [];
           for(var i = 0; i < subjects.length; i++) {
             values = values.concat(m.getFilteredValues(subjects[i], ["name","title"], true));
