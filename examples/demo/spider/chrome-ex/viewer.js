@@ -396,8 +396,10 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
     }
     
     {//sync button
-      res += "<img src='" + Manager.APP_URL + "images/sync.png' title='sync among your Chromes'" +
-      "class='sync' subject='" + subject + "'/>";
+      var isSyncing = this.m.projections[subject].get(Manager.PROP_SYNCING);
+      var icon_sync = Manager.APP_URL + (isSyncing ? "images/syncing.png" : "images/sync.png");
+      res += "<img src='" + icon_sync + "' title='sync among your Chromes'" +
+      " class='sync' subject='" + subject + "'/>";
     }
     {//trash button
       res += "<img src='" + Manager.APP_URL + "images/trash.png' title='remove'" +
@@ -585,20 +587,23 @@ Viewer.prototype.showItems = function(subjects) {
   });
   $(".sync").click(function(event){//click sync
     var subject = $($(this)).attr("subject");
-    
-    var propValue = {};
-    propValue.pv = m.getObject(subject);
-    propValue.t = new Date().getTime();
-    
-    var item = {};
-    item[subject] = propValue;
-    chrome.storage.sync.set(item, function() {
-      //TODO check chrome.runtime.lastError
-      event.target.src= Manager.APP_URL + "images/syncing.png";
-      setTimeout(function() {
-        event.target.src= Manager.APP_URL + "images/sync.png";
-      }, 1000);
-    });
+    //set to sync
+    if(event.target.src == Manager.APP_URL + "images/sync.png") {
+      var propValue = {};
+      propValue.pv = m.getObject(subject);
+      propValue.t = new Date().getTime();
+      
+      var item = {};
+      item[subject] = propValue;
+      chrome.storage.sync.set(item, function() {
+        event.target.src = Manager.APP_URL + "images/syncing.png";
+      });
+    }
+    //reset not to sync
+    else if(event.target.src == Manager.APP_URL + "images/syncing.png") {
+      m.stopSync(subject);
+      event.target.src = Manager.APP_URL + "images/sync.png";
+    }
   });
   $(".trash").click(function(event){//click trash
     var subject = $($(this)).attr("subject");

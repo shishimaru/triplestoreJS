@@ -312,6 +312,27 @@ function cleanOldItems(m) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+  function saveSyncItems() {//synchroize items
+    chrome.storage.sync.get(null, function(items) {
+      var now = new Date().getTime();
+      for(var subject in items) {
+        //save to storage
+        var propValue = items[subject].pv;
+        for(var prop in propValue) {
+          m.tst.set(subject, prop, propValue[prop]);
+        }
+        //remove old sycing items from sync storage
+        var savedTime = parseInt(items[subject].t);
+        if(now - savedTime > 3 * 24 * 3600 * 1000) { //default keep 3 days
+          m.stopSync(subject);
+        } else {
+          m.tst.set(subject, Manager.PROP_SYNCING, "1");
+        }
+      }
+      m.renew();
+    });
+  }
+  
   var m = new Manager();
   m.init(null);
   m.renew();
@@ -319,25 +340,11 @@ document.addEventListener('DOMContentLoaded', function () {
   if(Options.is_remove()) {
     cleanOldItems(m);
   }
-  
-  //synchroize items
-  chrome.storage.sync.get(null, function(items) {
-    var now = new Date().getTime();
-    for(var subject in items) {
-      //save to storage
-      var propValue = items[subject].pv;
-      for(var prop in propValue) {
-        m.tst.set(subject, prop, propValue[prop]);
-      }
-      //remove old sycing items from sync storage
-      var savedTime = parseInt(items[subject].t);
-      console.debug(savedTime);
-      if(now - savedTime > 3 * 24 * 3600 * 1000) { //default keep 3 days
-        chrome.storage.sync.remove(subject);
-      }
-    }
-    m.renew();
-  });
+  //start monitoring synced items
+  saveSyncItems();
+  setInterval(function() {
+    saveSyncItems();
+  }, 20 * 1000);
 });
 
 function menu_share(info, tab) {

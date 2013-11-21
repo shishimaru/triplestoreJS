@@ -20,6 +20,7 @@ Manager.PROP_FAVICON = "__FAVICON__";
 Manager.PROP_TITLE =   "__TITLE__";
 Manager.PROP_EXPIRES = "__EXPIRES__";
 Manager.PROP_SELECT_NUM = "__SELECT_NUM__";
+Manager.PROP_SYNCING = "__SYNCING__";
 Manager.FB_APP_ID = "577151302344255";
 Manager.FB_BASE_URL = "https://www.facebook.com/";
 Manager.FB_GRAPH_URL = "https://graph.facebook.com/";
@@ -205,6 +206,10 @@ Manager.prototype.getReferredMap = function(projections) {
     }
   }
   return referred;
+}
+Manager.prototype.stopSync = function(subject) {
+  chrome.storage.sync.remove(subject);
+  this.tst.remove(subject, Manager.PROP_SYNCING);
 }
 Manager.calcRating = function(projections, referredMap) {
   var rating = {};
