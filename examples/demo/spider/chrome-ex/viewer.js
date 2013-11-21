@@ -394,6 +394,10 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
       if(hasSiteURL) { res += "</a>"; }
     }
     
+    {//sync button
+      res += "<img src='" + Manager.APP_URL + "images/sync.png' title='sync among your Chromes'" +
+      "class='sync' subject='" + subject + "'/>";
+    }
     {//trash button
       res += "<img src='" + Manager.APP_URL + "images/trash.png' title='remove'" +
       "class='trash' subject='" + subject + "'/>";
@@ -577,6 +581,23 @@ Viewer.prototype.showItems = function(subjects) {
         "index": v.tab.index + 1
       });
     }
+  });
+  $(".sync").click(function(event){//click sync
+    var subject = $($(this)).attr("subject");
+    
+    var propValue = {};
+    propValue.pv = m.getObject(subject);
+    propValue.t = new Date().getTime();
+    
+    var item = {};
+    item[subject] = propValue;
+    chrome.storage.sync.set(item, function() {
+      //TODO check chrome.runtime.lastError
+      event.target.src= Manager.APP_URL + "images/syncing.png";
+      setTimeout(function() {
+        event.target.src= Manager.APP_URL + "images/sync.png";
+      }, 1000);
+    });
   });
   $(".trash").click(function(event){//click trash
     var subject = $($(this)).attr("subject");

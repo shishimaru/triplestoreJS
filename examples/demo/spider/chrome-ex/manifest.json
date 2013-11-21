@@ -1,13 +1,13 @@
 {
     "name": "Semantic Spider",
-    "version": "0.20",
+    "version": "0.21",
     "manifest_version": 2,
     "description": "Chrome becomes more intelligent and personalized with W3C Semantic Web",
     "icons": {
         "128": "images/spider-128.png",
         "16": "images/spider.png"},
     "offline_enabled": true,
-    "permissions": ["tabs", "webRequest", "unlimitedStorage", "contextMenus",
+    "permissions": ["tabs", "webRequest", "storage", "unlimitedStorage", "contextMenus",
                     "http://*/*", "https://*/*"],
     "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
     "options_page": "options.html",

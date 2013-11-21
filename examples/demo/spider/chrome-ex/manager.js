@@ -128,6 +128,19 @@ Manager.prototype.getValues = function(subject, propKeywords) {
   }
   return res;
 };
+Manager.prototype.getObject = function(subject) {
+  var obj = null;
+  if(subject && this.projections[subject]) {
+    obj = {};
+    var p = this.projections[subject];
+    var props = p.getProperties();
+    for(var i = 0; i < props.length; i++) {
+      var value = p.get(props[i]);
+      obj[props[i]] = value;
+    }
+  }
+  return obj;
+}
 Manager.prototype.renew = function() {
   //this.subjects = [];
   this.projections = {};
@@ -480,6 +493,7 @@ Manager.prototype.save = function() {
 Manager.prototype.remove = function(subject) {
   if(this.projections[subject]) {
     this.projections[subject].remove();
+    chrome.storage.sync.remove(subject);
   }
   this.renew();
 };

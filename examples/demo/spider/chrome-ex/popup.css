@@ -107,6 +107,12 @@ input#search{
     /*word-break: break-all;*/
     position: relative;
 }
+.sync {
+    width: 13px;
+    position: absolute;  
+    right: 18px;  
+    top: 8px;  
+}
 .trash {
     width: 13px;
     position: absolute;  

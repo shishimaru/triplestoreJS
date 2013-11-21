@@ -107,6 +107,7 @@ Options.clear_storage = function() {
   Options.save_options();
   Options.logoutFacebook();
   Options.logoutGoogle();
+  m.renew();
 }
 Options.loginFacebook = function() {
   if(bt_login_facebook.innerText == "Log In") {
@@ -227,6 +228,7 @@ Options.saveFacebookGraph = function(access_token) {
           // JSON.parse does not evaluate the attacker's scripts.
           var resp = JSON.parse(xhr.responseText);
           saveFriends(subject, resp);
+          m.renew();
         }
       }
       xhr.send();
@@ -495,6 +497,7 @@ Options.saveGoogleAlbums = function(subject, access_token) {
     if (xhr.readyState == 4) {
       var resp = xhr.responseText;
       saveAlbums(resp);
+      m.renew();
       el_status_gl.innerText = Options.getUserinfoGL();
     }
   }
