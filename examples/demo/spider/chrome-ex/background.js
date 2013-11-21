@@ -332,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function () {
       //remove old sycing items from sync storage
       var savedTime = parseInt(items[subject].t);
       console.debug(savedTime);
-      if(now - savedTime > 3 * 24 * 3600 * 1000) { //default keep 3 days 
+      if(now - savedTime > 3 * 24 * 3600 * 1000) { //default keep 3 days
         chrome.storage.sync.remove(subject);
       }
     }
@@ -413,6 +413,10 @@ function menu_save(info, tab) {
     "action": "message"
   });
 }
+function menu_options(info, tab) {
+  var url = Manager.APP_URL + "options.html";
+  chrome.tabs.create({url : url});
+}
 
 //new context menu
 //Create a parent item and two children.
@@ -432,4 +436,10 @@ chrome.contextMenus.create({
   contexts: ["all"],
   parentId: menu_top,
   onclick: menu_share
+});
+chrome.contextMenus.create({
+  title: "Options...",
+  contexts: ["all"],
+  parentId: menu_top,
+  onclick: menu_options
 });

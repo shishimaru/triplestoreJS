@@ -57,7 +57,7 @@ Viewer.prototype.search = function() {
     types = Manager.filter(keyword.trim().split(" "), types);
     v.showTypes(types);
   }
-  {//filter items
+  if(!(keyword.length % 3)){//filter items
     var subjects = this.m.filterSubjects(keyword.trim().split(" "));
     v.showItems(subjects);
   }
@@ -378,7 +378,7 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
     var hasSiteURL = Manager.isSiteURL(href);
     var favicon = this.m.tst.getValues(subject, Manager.PROP_FAVICON)[0];
     
-    res += "<div class='shorten title'>"; {
+    res += "<div class='title'>"; {
       if(favicon) {
         res += "<img src='" + favicon + "' class='favicon'/>";
       } else if(type.length){
@@ -387,9 +387,10 @@ Viewer.prototype.getSummaryHTML = function(subject, emailQuery, fb_request, gl_r
       }
       if(hasSiteURL) {res += "<a class='title' href='" + href + "' title='" + href + "'>";}
       if(name) {
-        res += "[" + name + (title ? ": " + title : "") + "]";
+        res += "[" + (name + (title ? ": " + title : "")).substr(0,50) + "]";
       } else {
-        res += "[" + (title ? title : subject) + "]";
+        res += "[" + (title ? title.substr(0, 50) : 
+          Viewer.shortenString(subject, 50)) + "]";
       }
       if(hasSiteURL) { res += "</a>"; }
     }
