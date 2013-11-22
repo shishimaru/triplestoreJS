@@ -21,16 +21,19 @@ var Viewer = function(m, tab){
   //event listener
   if(this.bt_save) {
     this.bt_save.addEventListener('click', function() {
-    this.m.save();
-    v.showTypes(this.m.types);
-    v.showItems(this.m.getSubjects());
-
-    //disable save button
-    v.disableButton(v.bt_save);
-  }.bind(this));
+      this.m.save();
+      v.showTypes(this.m.types);
+      v.showItems(this.m.getSubjects());
+      
+      //disable save button
+      v.disableButton(v.bt_save);
+    }.bind(this));
   }
   if(this.bt_clear) {
-    this.bt_clear.addEventListener('click', function() { this.m.clear(); v.reset(); }.bind(this));
+    this.bt_clear.addEventListener('click', function() {
+      m.clear();
+      v.reset();
+    }.bind(this));
   }
   
   this.focusSearchBox();
@@ -596,7 +599,11 @@ Viewer.prototype.showItems = function(subjects) {
       var item = {};
       item[subject] = propValue;
       chrome.storage.sync.set(item, function() {
-        event.target.src = Manager.APP_URL + "images/syncing.png";
+        if(chrome.runtime.lastError) {
+          alert("Can't synchronize any more for the moment");
+        } else {
+          event.target.src = Manager.APP_URL + "images/syncing.png";  
+        }
       });
     }
     //reset not to sync

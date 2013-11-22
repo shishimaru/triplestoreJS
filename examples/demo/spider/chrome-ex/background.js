@@ -195,7 +195,7 @@ chrome.runtime.onMessage.addListener(
         countVisitNumber(request.url);
         
         //auto save the items based on visit number
-        var visit = Options.get_visit();
+        var visit = Options.getAutostoreVisit();
         if(visit && getVisitNumber(request.url) >= visit * 3) {
           m.save();
         }
@@ -264,7 +264,7 @@ chrome.runtime.onMessage.addListener(
           bg_res[request.url].rdfa, bg_res[request.url].micro);
       
       var html = generateInsertedHTML(m, v, subjects);
-      var time = Options.get_time();
+      var time = Options.getAutostoreTime();
       sendResponse({html: html, time: time});
     }
 );
@@ -314,22 +314,31 @@ function cleanOldItems(m) {
 document.addEventListener('DOMContentLoaded', function () {
   function saveSyncItems() {//synchroize items
     chrome.storage.sync.get(null, function(items) {
-      var now = new Date().getTime();
-      for(var subject in items) {
-        //save to storage
-        var propValue = items[subject].pv;
-        for(var prop in propValue) {
-          m.tst.set(subject, prop, propValue[prop]);
-        }
-        //remove old sycing items from sync storage
-        var savedTime = parseInt(items[subject].t);
-        if(now - savedTime > 3 * 24 * 3600 * 1000) { //default keep 3 days
-          m.stopSync(subject);
-        } else {
-          m.tst.set(subject, Manager.PROP_SYNCING, "1");
-        }
+      if(!chrome.runtime.lastError) {
+        var maxSize = chrome.storage.sync.QUOTA_BYTES;
+        chrome.storage.sync.getBytesInUse(null, function(usedSize) {
+          if(!chrome.runtime.lastError) {
+            var expirationHours = -799 * (usedSize/maxSize * 0.9 + 0.1) + 800;
+            console.debug(expirationHours);
+            var now = new Date().getTime();
+            for(var subject in items) {
+              //save to storage
+              var propValue = items[subject].pv;
+              for(var prop in propValue) {
+                m.tst.set(subject, prop, propValue[prop]);
+              }
+              //remove old sycing items from sync storage
+              var savedTime = parseInt(items[subject].t);
+              if(now - savedTime > expirationHours * 3600 * 1000) { //keep 720~1 hours
+                m.stopSync(subject);
+              } else {
+                m.tst.set(subject, Manager.PROP_SYNCING, "1");
+              }
+            }
+            m.renew();
+          }
+        });
       }
-      m.renew();
     });
   }
   

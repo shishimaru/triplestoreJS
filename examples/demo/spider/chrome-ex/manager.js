@@ -206,11 +206,11 @@ Manager.prototype.getReferredMap = function(projections) {
     }
   }
   return referred;
-}
+};
 Manager.prototype.stopSync = function(subject) {
   chrome.storage.sync.remove(subject);
   this.tst.remove(subject, Manager.PROP_SYNCING);
-}
+};
 Manager.calcRating = function(projections, referredMap) {
   var rating = {};
   for(var subject in referredMap) {
@@ -497,8 +497,8 @@ Manager.prototype.save = function() {
 };
 Manager.prototype.remove = function(subject) {
   if(this.projections[subject]) {
-    this.projections[subject].remove();
     chrome.storage.sync.remove(subject);
+    this.projections[subject].remove();
   }
   this.renew();
 };

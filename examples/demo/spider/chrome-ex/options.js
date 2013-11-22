@@ -73,7 +73,7 @@ Options.restore_options = function() {
     el_autostore_setting.setAttribute("class", "disabled");
   }
 }
-Options.get_time = function() {
+Options.getAutostoreTime = function() {
   var autosave = localStorage["__OPTIONS_AUTOSTORE_ON"];
   var time = localStorage["__OPTIONS_AUTOSTORE_TIME"];
   
@@ -84,7 +84,7 @@ Options.get_time = function() {
   }
   return res;
 }
-Options.get_visit = function() {
+Options.getAutostoreVisit = function() {
   var autosave = localStorage["__OPTIONS_AUTOSTORE_ON"];
   var visit = localStorage["__OPTIONS_AUTOSTORE_VISIT"];
   
@@ -101,7 +101,6 @@ Options.is_remove = function() {
   var res = autoremove == "true" ? true : Options.DEFAULT_REMOVE;
   return res;
 }
-
 Options.clear_storage = function() {
   localStorage.clear();
   Options.save_options();
