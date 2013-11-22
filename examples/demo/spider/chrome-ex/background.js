@@ -319,7 +319,6 @@ document.addEventListener('DOMContentLoaded', function () {
         chrome.storage.sync.getBytesInUse(null, function(usedSize) {
           if(!chrome.runtime.lastError) {
             var expirationHours = -799 * (usedSize/maxSize * 0.9 + 0.1) + 800;
-            console.debug(expirationHours);
             var now = new Date().getTime();
             for(var subject in items) {
               //save to storage
