@@ -340,11 +340,12 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
-  
+  //init
   var m = new Manager();
   m.init(null);
   m.renew();
   bg_res.m = m;
+  //remove old items
   if(Options.is_remove()) {
     cleanOldItems(m);
   }
@@ -353,6 +354,12 @@ document.addEventListener('DOMContentLoaded', function () {
   setInterval(function() {
     saveSyncItems();
   }, 20 * 1000);
+  //show introduction page
+  chrome.runtime.onInstalled.addListener(function(details) {
+    if(details.reason == "install") {
+      chrome.tabs.create({url : Manager.APP_HOMEPAGE});
+    }
+  });
 });
 
 function menu_share(info, tab) {
@@ -428,7 +435,7 @@ function menu_save(info, tab) {
     "action": "message"
   });
 }
-function menu_options(info, tab) {
+function open_options(info, tab) {
   var url = Manager.APP_URL + "options.html";
   chrome.tabs.create({url : url});
 }
@@ -456,5 +463,5 @@ chrome.contextMenus.create({
   title: "Options...",
   contexts: ["all"],
   parentId: menu_top,
-  onclick: menu_options
+  onclick: open_options
 });

@@ -46,17 +46,22 @@
 .related_type {
     height: 1em;
     margin: 0px 4px 0px 4px;
+    padding: 0;
 }
 .related_img {
    max-height: 80%;
    max-width: 100%;
    text-align:center;
+   padding: 0px 2px 0px 2px;
 }
 .related_icon {
     height: 1em;
     margin: 0px 4px 0px 0px;
-    vertical-align: middle
+    padding: 0;
+    vertical-align: middle;
 }
 .item_img {
     width: 120px;
+    margin: 0 1em 0 1em;
+    padding: 0;
 }

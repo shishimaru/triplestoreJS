@@ -6,6 +6,7 @@
 	font-family: Arial;
     font-size: 12px;
     width: 80px;
+    line-height: 1.2em;
     z-index: 9999999;
 }
 #spider-container   {
@@ -69,7 +70,7 @@
 	z-index: 9999999;
 }
 #spider-message .dialog-content {
-	text-align: Center;
+	text-align: center;
     margin: 4px;
 	padding: 0px;
 	color:#FFFFFF;

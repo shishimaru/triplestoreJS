@@ -174,13 +174,14 @@ Assist.search = function() {
   $(".spider-keyword-search").remove();
   
   var $inputs = $(
-      "input[title*='Search']" + //Amazon
+      "input[type='search']" +
+      ",input[title*='Search']" + //Amazon
       ",input[title*='search']" +
       ",input[name='q']" +       //Google, Bing
       ",input[name='query']" +   //SkyDrive
       ",input[id*='search']" +   //Zappos
       ",input[id*='Search']" +
-      ",input[id*='find']" +     //Yelp*/      
+      ",input[id*='find']" +     //Yelp      
       //",div[role='search']" +  //Facebook
       ",input[type='text'][value*='Search']" //Oreilly 
       );
