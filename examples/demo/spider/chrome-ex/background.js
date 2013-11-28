@@ -30,10 +30,10 @@ function sortSnsAccount(m, subjects) {
 function getRelatedSubjects(m, title, rdfa, micro) {
   var items = [];
   var MIN_SIMILARITY = 0.3;//0.5;
-  var MIN_PROPS_LEN = 2;//at least 2
   var MAX_RESULT_SIZE =  20;
   
   function sanitize(items) {
+    var MIN_PROPS_LEN = 2;//at least 2
     var i = 0;
     while(i < items.length) {
       var props = m.projections[items[i].subject].getProperties();
@@ -59,48 +59,61 @@ function getRelatedSubjects(m, title, rdfa, micro) {
   //private items RDFa refers to
   if(rdfa) {
     for(var subject in rdfa) {
-      var itemValues = [];
-      
-      var props = rdfa[subject];
-      for(var prop in props) {
-        var value = props[prop];
-        if(m.projections[value]) {//search with subject
-          items.push({"subject": value,
-            "similarity": 1.0});
+      if(m.projections[subject]) {
+        items = items.concat({
+          subject: subject,
+          similarity: 1.0
+        });
+      } else {
+        var itemValues = [];
+        var props = rdfa[subject];
+        for(var prop in props) {
+          var value = props[prop];
+          if(m.projections[value]) {//search with subject
+            items.push({"subject": value,
+              "similarity": 1.0});
+          }
+          if(prop.match(/name$/) ||
+              prop.match(/title$/) ||
+              prop == Manager.PROP_TITLE) {
+            itemValues.push(value);
+          }
         }
-        if(prop.match(/name$/) ||
-            prop.match(/title$/) ||
-            prop == Manager.PROP_TITLE) {
-          itemValues.push(value);
-        }
+        items = items.concat(m.getSimilarItems(itemValues, MIN_SIMILARITY));
       }
-      items = items.concat(m.getSimilarItems(itemValues, MIN_SIMILARITY));
     }
   }
   //private items microdata refers to
   if(micro && micro.items) {
     for(var i = 0; i < micro.items.length; i++) {
       var item = micro.items[i];
-      var props = item.properties;
-      var itemValues = [];
-      for(var prop in props) {
-        var values = props[prop];
-
-        for(var j = 0; j < values.length; j++) {
-          var value = values[j];
+      if(item.id && m.projections[item.id]) {
+        items = items.concat({
+          subject: item.id,
+          similarity: 1.0
+        });
+      } else {
+        var props = item.properties;
+        var itemValues = [];
+        for(var prop in props) {
+          var values = props[prop];
           
-          if(m.projections[value]) {//search with subject
-            items.push({"subject": value,
-              "similarity": 1.0});
+          for(var j = 0; j < values.length; j++) {
+            var value = values[j];
+            
+            if(m.projections[value]) {//search with subject
+              items.push({"subject": value,
+                "similarity": 1.0});
+            }
+          }
+          if(prop.match(/name$/) ||
+              prop.match(/title$/) ||
+              prop == Manager.PROP_TITLE) {
+            itemValues = itemValues.concat(values);
           }
         }
-        if(prop.match(/name$/) ||
-            prop.match(/title$/) ||
-            prop == Manager.PROP_TITLE) {
-          itemValues = itemValues.concat(values);
-        }
+        items = items.concat(m.getSimilarItems(itemValues, MIN_SIMILARITY));
       }
-      items = items.concat(m.getSimilarItems(itemValues, MIN_SIMILARITY));
     }
   }
   //TODO : referred : find in triplestore
@@ -364,7 +377,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function menu_share(info, tab) {
   var MAX_RESULT_SIZE =  100;
+  var m = bg_res.m;
+  var v = new Viewer(m, tab);
   var pageURL = info.pageUrl;
+  
+  var prefilltext = tab.title;
+  //TODO : add tag using stored items
+  /*var related_subjects = getRelatedSubjects(m, tab.title,
+      bg_res[pageURL].rdfa, bg_res[pageURL].micro);
+  if(related_subjects.length) {
+    var name = m.getName(related_subjects[0])
+    if(name) {
+      prefilltext = name;
+    }
+  }*/
+  
   var email_query = {
       subject: "Sharing ",
       body: ""
@@ -374,13 +401,14 @@ function menu_share(info, tab) {
       query: {
         app_id: Manager.FB_APP_ID,
         display: "popup",
-        link: pageURL,//if not reachable by FB, error happens
+        link: pageURL,
         redirect_uri: Manager.FB_REDIRECT_URL
       }
   };
   var gl_request = {
       query: {
-        contenturl: tab.url
+        contenturl: tab.url,
+        prefilltext: prefilltext
       }
   };
   
@@ -406,8 +434,6 @@ function menu_share(info, tab) {
 
     gl_request.query.prefilltext = info.selectionText;
   }
-  var m = bg_res.m;
-  var v = new Viewer(m, tab);
   var subjects = m.filterSubjects(["mbox", "facebook-account", "google-account"]);
   sortSnsAccount(m, subjects);
   subjects = subjects.slice(0, MAX_RESULT_SIZE);

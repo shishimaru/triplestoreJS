@@ -34,12 +34,13 @@ Manager.GL_API_KEY = "AIzaSyB0WP9D7xfLy2OZhT0q2GCvJKdeMfqsyj8"
 Manager.GL_BASE_URL = "https://plus.google.com/";
 Manager.GL_PEOPLE_URL = "https://www.googleapis.com/plus/v1/people/";
 Manager.GL_LOGIN_URL = "https://semantic-spider.appspot.com/c/g-login";
+
 Manager.GL_POST_URL = "https://semantic-spider.appspot.com/c/g-post";
-//Manager.GL_CAL_URL = "https://www.google.com/calendar/feeds/default/owncalendars/full";
+//Manager.GL_POST_URL = "http://localhost:8080/c/g-post";
+
 Manager.GL_CAL_LIST_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList/";
 Manager.GL_CAL_EVENT_URL = "https://www.googleapis.com/calendar/v3/calendars/";
 Manager.GL_PHOTO_ALBUM_URL = "https://picasaweb.google.com/data/feed/api/user/default"; 
-//Manager.GL_CAL_URL = "https://www.googleapis.com/auth/calendar";
 
 Manager.prototype.init =function(tab) {
   this.tab = tab;
@@ -130,6 +131,23 @@ Manager.prototype.getValues = function(subject, propKeywords) {
   }
   return res;
 };
+Manager.prototype.getName = function(subject) {
+  var name = null;
+  if(subject && this.projections[subject]) {
+    var projection = this.projections[subject];
+    var props = projection.getProperties();
+    for(var i = 0; i < props.length; i++) {
+      var prop = props[i];
+      if(prop.match(/name$/) ||
+          prop.match(/title$/) ||
+          prop == Manager.PROP_TITLE) {
+        name = projection.get(prop);
+        break;
+      }
+    }
+  }
+  return name
+}
 Manager.prototype.getObject = function(subject) {
   var obj = null;
   if(subject && this.projections[subject]) {
@@ -542,11 +560,26 @@ Manager.encode = function(kvMap) {
       res += '&';
     }
     var k = encodeURIComponent(key);
-    var v = encodeURIComponent(kvMap[key]);
-    v = v.replace(/'/g, function(s) {
-      return dict[s];
-    });
-    res += k + '=' + v;
+    var v = kvMap[key];
+    
+    if(v.constructor.name == "Array") {
+      if(v.length) {
+        for(var i = 0; i < v.length; i++) {
+          if(i) {
+            res += '&';
+          }
+          res += k + '=' + encodeURIComponent(v[i]);
+        }
+      } else {
+        res += k;
+      }
+    } else {
+      v = encodeURIComponent(v);
+      v = v.replace(/'/g, function(s) {
+        return dict[s];
+      });
+      res += k + '=' + v;
+    }
   }
   return res;
 }

@@ -1,11 +1,11 @@
 /* $Id$ */
-function getSubject(element) {
+function getSubject(element, attrName) {
   if(element) {
-    var id = element.getAttribute("id");
+    var id = element.getAttribute(attrName);
     if(id) {
       return id; 
     } else {
-      return getSubject(element.parentNode);
+      return getSubject(element.parentNode, attrName);
     }
   }
   return null;
@@ -23,7 +23,6 @@ function incrementSelectItemNumber(subject) {
     );
   }
 }
-
 function incrementSelectKeywordNumber(keyword) {
   if(keyword) {
     chrome.runtime.sendMessage(
@@ -37,7 +36,15 @@ function incrementSelectKeywordNumber(keyword) {
     );
   }
 }
-
+function isSharingEndpoint() {
+  var res = false;
+  if((window.location.hostname == "localhost" ||
+      window.location.hostname == "semantic-spider.appspot.com") &&
+      window.location.pathname == "/c/g-post") {
+    res = true;
+  }
+  return res;
+}
 
 var $container = null;
 var $details = null;
@@ -67,22 +74,17 @@ function suggestHTML(html, opacity) {
     $container.fadeToggle(fadeSpeed);
   });
   $("#spider-container a").click(function(e) {
-    var subject = getSubject(e.target);
+    var subject = getSubject(e.target, "id");
     incrementSelectItemNumber(subject);
   });
+  //search word suggestion
   $("body").off("keyup.item.spider");
   $("body").on("keyup.item.spider", function(event) {
     if(event.keyCode == 27) {
       $container.fadeToggle(fadeSpeed);
     }
   });
-  $(window).bind("scroll", function() {
-    $details.hide();
-  });
-  $("body").off("click.item.spider");
-  $("body").on("click.item.spider", function(event) {
-    $details.hide();
-  });
+  //popup the item detail information 
   $("#spider-wrapper .spider-summary").mouseover(function(e) {
     $("#spider-wrapper .spider-detail").hide();
     
@@ -90,6 +92,14 @@ function suggestHTML(html, opacity) {
     var subject = $(this).children("td").attr("href");
     $detail = $("#spider-wrapper .spider-detail[id='" + subject + "']");
     $detail.attr("style", "position:fixed;top:" + (e.clientY - 15) +"px;left:80px");
+  });
+  //UI optimization
+  $(window).bind("scroll", function() {
+    $details.hide();
+  });
+  $("body").off("click.item.spider");
+  $("body").on("click.item.spider", function(event) {
+    $details.hide();
   });
 }
 function extract() {
@@ -128,7 +138,9 @@ function extract() {
       function(res) {
         var html = res.html;
         if(html && html.length) {
-          suggestHTML(html, 1.0);
+          if(!isSharingEndpoint()) {
+            suggestHTML(html, 1.0);
+          }
         }
         //set timer for autosave
         if(res.time) {
@@ -143,7 +155,9 @@ function extract() {
                 function(res) {
                   var html = res.html;
                   if(html && html.length) {
-                    suggestHTML(html, 1.0);
+                    if(!isSharingEndpoint()) {
+                      suggestHTML(html, 1.0);
+                    }
                   }
                 });
           }, time);
@@ -163,7 +177,7 @@ chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
       if(request.action == "suggest") {
         suggestHTML(request.html, 1.0);
-        $container.show("fast");
+        $container.show();
       } else if(request.action == "message") {
         showMessage(request.html);
       }
