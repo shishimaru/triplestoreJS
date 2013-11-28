@@ -415,21 +415,21 @@ function menu_share(info, tab) {
   if(info.mediaType == "image" ||
       info.mediaType == "video" ||
       info.mediaType == "audio") {
-    email_query.subject += "media";
+    email_query.subject += "media : " + prefilltext;
     email_query.body = info.srcUrl;
     
     fb_request.query.link = info.srcUrl;
     gl_request.query.contenturl = info.srcUrl;
     
   } else if(info.linkUrl) {
-    email_query.subject += "URL";
+    email_query.subject += "URL : " + prefilltext;
     email_query.body = info.linkUrl;
     
     fb_request.query.link = info.linkUrl;
     gl_request.query.contenturl = info.linkUrl;
     
   } else if(info.selectionText) {
-    email_query.subject += "text";
+    email_query.subject += "text : " + prefilltext;
     email_query.body = info.selectionText;
 
     gl_request.query.prefilltext = info.selectionText;
