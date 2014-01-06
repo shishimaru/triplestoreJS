@@ -36,6 +36,20 @@ function incrementSelectKeywordNumber(keyword) {
     );
   }
 }
+function showMessage(html, doFadeout) {
+  jQuery("#spider-message").remove();
+  
+  var $msg = jQuery(html);
+  jQuery("html").append($msg);
+  $msg.find(".dialog-close").click(function(e) {//click close button
+    $msg.fadeOut(0);
+  });
+  $msg.fadeIn(1000);
+  if(doFadeout) {
+    $msg.fadeOut(3000);
+  }
+  return $msg;
+}
 function isSharingEndpoint() {
   var res = false;
   if((window.location.hostname == "localhost" ||
@@ -46,10 +60,12 @@ function isSharingEndpoint() {
   return res;
 }
 
+var rdfa = {};
+var micro = null;
 var $container = null;
 var $details = null;
 
-function suggestHTML(html, opacity) {
+function suggestHTML(html, type, opacity, postBaseURL, $msg) {
   var fadeSpeed = "fast";
   //resolve duplicated container
   jQuery("#spider-wrapper").remove();
@@ -58,6 +74,7 @@ function suggestHTML(html, opacity) {
   var $wrapper = jQuery(html);
   jQuery("body").append($wrapper);
   $container = $wrapper.find("#spider-container").css({'opacity' : opacity});
+  $container.attr("type", type);
   $details = $wrapper.find(".spider-detail");
   
   //hide in default
@@ -76,6 +93,47 @@ function suggestHTML(html, opacity) {
   $("#spider-container a").click(function(e) {
     var subject = getSubject(e.target, "id");
     incrementSelectItemNumber(subject);
+    
+    if($container.attr("type") == "contact") {
+      chrome.runtime.sendMessage({
+        action : "extracted",
+        url: document.URL,
+        title: document.title,
+        rdfa: rdfa,
+        micro: micro
+      },
+      function(res) {
+        var html = res.html;
+        if(html && html.length) {
+          if(!isSharingEndpoint()) {
+            var postURL = getSubject(e.target, "href");
+            var $msg = showMessage(Viewer.getMessageHtml(
+                "Select an item used for annotation " +
+                "<i class='small'>or <a class='small' href='" + postURL + "' target='_blank'>SKIP</a></i>"));
+            suggestHTML(html, "tag", 1.0, postURL, $msg);
+            $container.show();
+          }
+        } else {
+          var win = window.open(getSubject(e.target, "href"), '_blank');
+          win.focus();
+        }
+      });
+      return false;
+    }
+    else if($container.attr("type") == "tag") {
+      chrome.runtime.sendMessage({
+        action : "getItemProps",
+        subject: subject
+      }, function(res) {
+        $msg.fadeOut(3000);//fadeout message
+        var prefilltext = res.name +
+        (res.prefilltext.length ? "\n{" + res.prefilltext + "}" : "");
+        var postURL = postBaseURL + '&' + Manager.encode({prefilltext:prefilltext});
+        var win = window.open(postURL, '_blank');
+        win.focus();
+      });
+      return false;
+    }
   });
   //search word suggestion
   $("body").off("keyup.item.spider");
@@ -103,8 +161,7 @@ function suggestHTML(html, opacity) {
   });
 }
 function extract() {
-  var rdfa = {};
-  {
+  {//RDFa
     RDFa.attach(document);
     var projections = document.data.getProjections();
     for ( var i = 0; projections && i < projections.length; i++) {
@@ -121,11 +178,23 @@ function extract() {
       rdfa[subject] = prop_value;
     }
   }
-  var micro = null;
-  {
+  {//microdata
     var $target = $("*");
     var json_str = $.microdata.json($target);
     micro = JSON.parse(json_str);
+  }
+  {//a@href of documents
+    var anchors = [];
+    var a_elements = document.getElementsByTagName("a");
+    for(var i = 0; i < a_elements.length; i++) {
+      var href = a_elements[i].getAttribute("href");
+      if(href && href.search(/^\//) != -1) {
+        href = document.location.protocol + "//" +document.location.hostname + href;
+        anchors.push(href);
+      } else if(href && href.search(/^https?:\/\//) != -1){
+        anchors.push(href);
+      }
+    }
   }
   chrome.runtime.sendMessage(
       {
@@ -133,13 +202,14 @@ function extract() {
         url: document.URL,
         title: document.title,
         rdfa: rdfa,
-        micro: micro
+        micro: micro,
+        anchors: anchors
       },
       function(res) {
         var html = res.html;
         if(html && html.length) {
           if(!isSharingEndpoint()) {
-            suggestHTML(html, 1.0);
+            suggestHTML(html, "related-items", 1.0);
           }
         }
         //set timer for autosave
@@ -153,73 +223,48 @@ function extract() {
                   title: document.title
                 },
                 function(res) {
-                  var html = res.html;
-                  if(html && html.length) {
-                    if(!isSharingEndpoint()) {
-                      suggestHTML(html, 1.0);
-                    }
-                  }
                 });
           }, time);
         }
       }
   );
 }
-function showMessage(html) {
-  jQuery("#spider-message").remove();
-  
-  var $msg = jQuery(html);
-  jQuery("html").append($msg);
-  $msg.fadeIn(1000);
-  $msg.fadeOut(3000);
-}
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
-      if(request.action == "suggest") {
-        suggestHTML(request.html, 1.0);
+      if(request.action == "suggest-contact") {
+        suggestHTML(request.html, "contact", 1.0);
         $container.show();
       } else if(request.action == "message") {
-        showMessage(request.html);
+        showMessage(request.html, true);
       }
     }
 );
 function Assist() {};
 Assist.search = function() {
   $(".spider-keyword-search").remove();
-  
   var $inputs = $(
-      "input[type='search']" +
-      ",input[title*='Search']" + //Amazon
-      ",input[title*='search']" +
-      ",input[name='q']" +       //Google, Bing
-      ",input[name='query']" +   //SkyDrive
-      ",input[id*='search']" +   //Zappos
+      "input[type='text']" +
+      ",input[type='search']" +
+      ",textarea" +
+      ",input[id*='search']" + //Zappos
       ",input[id*='Search']" +
-      ",input[id*='find']" +     //Yelp      
-      //",div[role='search']" +  //Facebook
-      ",input[type='text'][value*='Search']" //Oreilly 
-      );
-  
-  $inputs.sort(function(v1, v2) {//select largest input field
-    return $(v2).outerWidth() - $(v1).outerWidth();
-  });
-  
-  if($inputs.length) {
-    var $input = $($inputs[0]);
-    var input_width = $input.outerWidth();
-    var input_height = $input.outerHeight();
-    var offset = $input.offset();
-     
+      ",input[id*='find']"     //Yelp
+  );
+  for(var i = 0; i < $inputs.length; i++) {
     //user starts to input search keyword
-    $input.off("keyup.keyword.spider");
-    $input.on("keyup.keyword.spider", function(event) {
+    $($inputs[i]).off("keyup.keyword.spider");
+    $($inputs[i]).on("keyup.keyword.spider", function(event) {
       var input_value = $(event.target).val();
-      
       if(!input_value.length) {
         $("div.spider-keyword-search").detach();
       }
       else {
-        var itemtype = $input.attr("itemtype");
+        var $input = $(this);
+        var input_width = $input.outerWidth();
+        var input_height = $input.outerHeight();
+        var offset = $input.offset();
+        
+        var itemtype = $(this).attr("itemtype");
         itemtype = itemtype == "" ? null : itemtype;
         var keyword = $(event.target).val().trim();
         keyword = keyword == "" ? null : keyword;
@@ -249,9 +294,9 @@ Assist.search = function() {
                 
                 //event : click keyword
                 $keywords_container.find("td").off("click.keyword.spider");
-                $keywords_container.find("td").on("click.keyword.spider", function(e) {                
+                $keywords_container.find("td").on("click.keyword.spider", {input: $input}, function(e) {               
                   var selectedKeyword = $(e.target).text();
-                  $input.val(selectedKeyword);
+                  e.data.input.val(selectedKeyword);
                   incrementSelectKeywordNumber(selectedKeyword);
                   $keywords_container.detach();
                 });

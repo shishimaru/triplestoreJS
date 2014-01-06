@@ -450,7 +450,7 @@ Viewer.getSubjectHTML = function(m, projection, className, useAnchor, emailQuery
   var email = m.getValues(subject, ["mbox"]);
   email = email ? (emailQuery ? email + emailQuery : email) : "";
   
-  var $td = $("<td/>", {"class" : className, "href" : subject});
+  var $td = $("<td/>", {"class" : className, "href" : subject, "id" : subject});
   var $item = $("<" + (useAnchor? "a" : "span") + "/>",
       {"href" : emailQuery ? email : subject,
        "title" : subject});
@@ -535,6 +535,7 @@ Viewer.getGraphHTML = function(m, subject) {
 Viewer.getMessageHtml = function(message) {
   var res = "<div id='spider-message'>";
   res += "<div class='dialog-content'>";
+  res += "<img class='dialog-close' src='" + Manager.APP_URL + "images/icon-delete-white.png'></img>";
   
   if(message) {
     res += message;

@@ -59,7 +59,7 @@
 #spider-message {
 	position:fixed;
 	bottom: 0px;
-	height: 40px;
+	height: 60px;
 	width: 100%;
 	border: 1px solid rgb(30, 30, 30);
 	background:#202020;
@@ -69,14 +69,31 @@
 	opacity: 0.7;
 	z-index: 9999999;
 }
+#spider-message .dialog-close {
+	position:fixed;
+	bottom: 0px;
+	left: 10px;
+	height: 50px;
+	width: 65px;
+    margin: 4px;
+	padding: 0px;
+}
 #spider-message .dialog-content {
 	text-align: center;
     margin: 4px;
 	padding: 0px;
 	color:#FFFFFF;
 	font-family: Arial;
-	font-size: 30px;
+	font-size: 50px;
 	font-weight: bold;
+}
+#spider-message a {
+    color: #00FF00;
+    font-family: Arial;
+    font-weight: bold;
+}
+#spider-message .small {
+    font-size: 30px;
 }
 .spider-keyword-search {
 	width: 200px;

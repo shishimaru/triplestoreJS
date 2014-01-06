@@ -681,6 +681,15 @@ Manager.sanitize = function(words) {
   toLower(words);
   removeStopWord(words);
 }
+Manager.sanitizeString = function(str) {
+  var res = str;
+  if(str) {
+    var STOP_CH = /[!"#\$%\&'\(\)-=\^~|\\\[\{\}\]`@\*:\+;_\/\?<>,.®]/g;
+    res = res.replace(STOP_CH,"");
+    res = res.replace(/\s+/g," ");
+  }
+  return res;
+}
 Manager.prototype.getSimilarItems = function(targetValues, similarityThreshold) {
   //var SEP = /[\s\d\t\n,\.\/!\?"#$%=&'"\(\):;\[\]\^®]+/;
   var SEP = /[\s\t\d\n,\.!\?"#$%=&'"\(\):;\[\]\^®]+/;

@@ -27,7 +27,7 @@ function sortSnsAccount(m, subjects) {
   }
 }
 
-function getRelatedSubjects(m, title, rdfa, micro) {
+function getRelatedSubjects(m, title, rdfa, micro, anchors) {
   var items = [];
   var MIN_SIMILARITY = 0.3;//0.5;
   var MAX_RESULT_SIZE =  20;
@@ -55,7 +55,6 @@ function getRelatedSubjects(m, title, rdfa, micro) {
   if(title) {
     items = items.concat(m.getSimilarItems([title], MIN_SIMILARITY));
   }
-  
   //private items RDFa refers to
   if(rdfa) {
     for(var subject in rdfa) {
@@ -116,10 +115,18 @@ function getRelatedSubjects(m, title, rdfa, micro) {
       }
     }
   }
-  //TODO : referred : find in triplestore
-  //for(var subject in m.projections) {
-  //}
-  
+  //private items a@href refers to
+  if(anchors) {
+    for(var i = 0; i < anchors.length; i++) {
+      if(m.projections[anchors[i]]) {
+        items = items.concat({
+          subject: anchors[i],
+          similarity: 0.5
+        });
+      }
+    }
+  }
+
   sanitize(items);
   //sort by similarity with ascending
   items = items.sort(function(item1, item2) {
@@ -189,11 +196,9 @@ chrome.runtime.onMessage.addListener(
         //init
         var results = {};
         if(request.rdfa) {
-          console.log("bg received RDFa");
           results.rdfa = request.rdfa;
         }
         if(request.micro) {
-          console.log("bg received microdata");
           results.micro = request.micro;
         }
         if((request.rdfa && Manager.hasKey(request.rdfa)) ||
@@ -212,6 +217,14 @@ chrome.runtime.onMessage.addListener(
         if(visit && getVisitNumber(request.url) >= visit * 3) {
           m.save();
         }
+      //feedback related items to content script
+        var subjects = getRelatedSubjects(m, request.title,
+            bg_res[request.url].rdfa, bg_res[request.url].micro,
+            request.anchors);
+        
+        var html = generateInsertedHTML(m, v, subjects);
+        var time = Options.getAutostoreTime();
+        sendResponse({html: html, time: time});
       }
       //auto save for long stay at same site
       else if(request.action == "long-stay") {
@@ -245,12 +258,43 @@ chrome.runtime.onMessage.addListener(
           values = Manager.filter(keywords, values);
           for(var i = 0; i < values.length; i++) {
             values[i] = values[i].substr(0, 45);//shorten long keyword
+            values[i] = Manager.sanitizeString(values[i]);//delete low priority characters
           }
           values = Manager.trimSimilar(values, 0.8);
           var html = Viewer.getKeywordSearchHTML(values);
           sendResponse({html: html});
         }
-        return false;
+      }
+      else if(request.action == "getItemProps") {
+        if(request.subject && m.projections[request.subject]) {
+          var projection = m.projections[request.subject];
+          var props = projection.getProperties();
+          var prefilltext = "";
+          for(var i = 0; i < props.length; i++) {
+            if(props[i].search(/#?date$/) != -1 ||
+                props[i].search(/#?startDate$/) != -1 ||
+                props[i].search(/#?address$/) != -1 ||
+                props[i].search(/#?place$/) != -1 ||
+                props[i].search(/#?location$/) != -1) {
+              var value = projection.get(props[i]);
+              if(value.search(/^_:/) == -1 && value.search(/{/) == -1) {
+                var prop = null;
+                var sepIndex = props[i].lastIndexOf("#");
+                if(sepIndex != -1) {
+                  prop = props[i].substr(sepIndex + 1);
+                } else {
+                  prop = props[i].substr(props[i].lastIndexOf("/") + 1);
+                }
+                prefilltext += (prefilltext ? ", " : "") +
+                prop + " : " + value;
+              }
+            }
+          }
+          sendResponse({
+            name: m.getName(request.subject),
+            prefilltext: prefilltext.substr(0,1024)
+          });
+        }
       }
       else if(request.action == "post-facebook") {//TODO:delete
         var requestURL = request.url + '&' +
@@ -270,15 +314,7 @@ chrome.runtime.onMessage.addListener(
           }
         }
         xhr.send();
-        return false;
       }
-      //feedback related items to content script
-      var subjects = getRelatedSubjects(m, request.title,
-          bg_res[request.url].rdfa, bg_res[request.url].micro);
-      
-      var html = generateInsertedHTML(m, v, subjects);
-      var time = Options.getAutostoreTime();
-      sendResponse({html: html, time: time});
     }
 );
 function onSelectionChanged(tabId) {
@@ -408,7 +444,6 @@ function menu_share(info, tab) {
   var gl_request = {
       query: {
         contenturl: tab.url,
-        prefilltext: prefilltext
       }
   };
   
@@ -444,7 +479,7 @@ function menu_share(info, tab) {
     
     chrome.tabs.sendMessage(tab.id, {
       "html": html,
-      "action": "suggest"
+      "action": "suggest-contact"
     },
     function(response) {
     });
