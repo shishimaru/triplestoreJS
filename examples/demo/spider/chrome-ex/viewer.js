@@ -57,7 +57,7 @@ Viewer.prototype.search = function() {
     v.showTypes(types);
   }
   if(keyword.length && !(keyword.length % 3)){//filter items
-    var subjects = this.m.filterSubjects(keyword.trim().split(" "));
+    var subjects = this.m.filterSubjects(keyword.trim().split(" "), true);
     v.showItems(subjects);
   }
 };
