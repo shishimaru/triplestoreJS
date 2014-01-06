@@ -16,14 +16,14 @@ var Viewer = function(m, tab){
   this.container = document.getElementById("container");
   this.bt_save = document.getElementById("bt_save");
   this.bt_clear = document.getElementById("bt_clear");
-  this.selected_type = null; 
+  this.selected_type = null;
+  this.focusSearchBox();
 
   //event listener
   if(this.bt_save) {
     this.bt_save.addEventListener('click', function() {
       this.m.save();
       v.showTypes(this.m.types);
-      v.showItems(this.m.getSubjects());
       
       //disable save button
       v.disableButton(v.bt_save);
@@ -35,15 +35,11 @@ var Viewer = function(m, tab){
       v.reset();
     }.bind(this));
   }
-  
-  this.focusSearchBox();
-  $('#search').bind('focus', this.search.bind(this));
   $('#search').bind('input', this.search.bind(this));
   $('.search_box > .delete_input').click(function(event){
     v.focusSearchBox();
-    v.reset();
+    v.resetTypes();
   });
-  
   if((this.m.rdfa && Manager.hasKey(this.m.rdfa)) ||
       (this.m.micro && this.m.micro.items.length)) {
       this.visibleInspect();
@@ -60,7 +56,7 @@ Viewer.prototype.search = function() {
     types = Manager.filter(keyword.trim().split(" "), types);
     v.showTypes(types);
   }
-  if(!(keyword.length % 3)){//filter items
+  if(keyword.length && !(keyword.length % 3)){//filter items
     var subjects = this.m.filterSubjects(keyword.trim().split(" "));
     v.showItems(subjects);
   }

@@ -13,6 +13,6 @@ document.addEventListener('DOMContentLoaded', function () {
       m.init(tab);
       v = new Viewer(m, tab);
       v.resetTypes();
-      v.resetItems();
+      //v.resetItems();
   });
 });
