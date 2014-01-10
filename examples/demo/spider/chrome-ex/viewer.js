@@ -184,6 +184,8 @@ Viewer.getTypeImg = function(m, type) {
         || tail.search(/^buildings$/i) != -1
         || tail.search(/^structure$/i) != -1) {
       res = "images/building.png";
+    } else if(tail.search(/^comment$/i) != -1) {
+      res = "images/language.png";
     } else if(tail.search(/^copyright$/i) != -1
         || tail.search(/license$/i) != -1) {
       res = "images/copyright.png";
@@ -238,6 +240,8 @@ Viewer.getTypeImg = function(m, type) {
       res = "images/train.png";
     } else if(tail.search(/worst/i) != -1) {
       res = "images/skull.png";
+    } else {
+      res = "images/none.png";
     }
   }
   return res ? Manager.APP_URL + res : res;

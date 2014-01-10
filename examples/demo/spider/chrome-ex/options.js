@@ -125,6 +125,79 @@ Options.logoutFacebook = function() {
   bt_login_facebook.innerText = "Log In";
   Options.show_status("login_status_fb", "Logged out");
 }
+Options.saveFacebookPosting = function(subject, access_token) {
+  function savePosting($friend, data) {
+    for(var i = 0; i < data.length; i++) {
+      var posting = data[i];
+      var postingURL = Manager.FB_BASE_URL + $friend.id + "/posts/" + posting.id.split('_')[1];
+      //add the URL of this posting to one's item
+      //m.tst.add($friend.subject, "foaf:publications", postingURL);
+      
+      //save this posting itself
+      m.tst.set(postingURL, "schema:type", "http://schema.org/Comment");
+      m.tst.set(postingURL, "schema:author", $friend.subject);
+      m.tst.set(postingURL, "schema:provider", "Facebook");
+      if(posting.name) m.tst.set(postingURL, "schema:name", posting.name);
+      if(posting.message) m.tst.set(postingURL, "schema:description", posting.message);
+      if(posting.story) m.tst.set(postingURL, "schema:comment", posting.story);
+      if(posting.status_type) m.tst.set(postingURL, "schema:eventStatus", posting.status_type);
+      if(posting.picture) m.tst.set(postingURL, "schema:image", posting.picture);
+      if(posting.from.name) m.tst.set(postingURL, "schema:creator", posting.from.name);
+      if(posting.created_time) m.tst.set(postingURL, "schema:dateCreated", posting.created_time);
+      if(posting.link) m.tst.set(postingURL, "schema:citation", posting.link);
+      if(posting.caption) m.tst.set(postingURL, "schema:caption", posting.caption);
+      if(posting.source) m.tst.set(postingURL, "schema:video", posting.source);
+      if(posting.likes && posting.likes.data) {
+        for(var j = 0; i < posting.likes.data.length; i++) {
+          var like = posting.likes;
+          m.tst.set(postingURL, "schema:interactionCount", like.name + ":" + like.id);
+        }
+      }
+      if(posting.id) m.tst.set(postingURL, "id", posting.id);
+    }
+  }
+  function getPostings(fbFriends, i, savedNum) {
+    if(i > fbFriends.length - 1) {
+      m.renew();
+      el_status_fb.innerText = Options.getUserinfoFB(); //UI
+    } else {
+      var url = fbFriends[i].requestURL;
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", url, true); //GET /me
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+          // JSON.parse does not evaluate the attacker's scripts.
+          var resp = JSON.parse(xhr.responseText);
+          //save posting
+          savePosting(fbFriends[i], resp.data);
+          savedNum += resp.data.length;
+          //add additional a url for next page
+          if(resp.paging && resp.paging.next) {
+            fbFriends.push({
+              subject: fbFriends[i].subject,
+              id: fbFriends[i].id,
+              requestURL: resp.paging.next});
+          }
+          el_status_fb.innerText = "Saved " + savedNum + " friends' postings"; //UI
+          getPostings(fbFriends, i+1, savedNum)
+        }
+      }
+      xhr.send();
+    }
+  }
+  var fbFriends = [];
+  var knows = m.tst.getValues(subject, "foaf:knows");
+  for(var i = 0; i < knows.length; i++) {
+    var fbID = m.tst.getValues(knows[i], "facebook-id");
+    if(fbID.length) {
+      //construct request url for posting
+      var requestURL = Manager.FB_GRAPH_URL + fbID + "/posts?" +
+      Manager.encode({access_token: access_token});
+      fbFriends.push({subject:knows[i], id:fbID, requestURL:requestURL});
+    }
+  }
+  getPostings(fbFriends, 0, 0);
+};
 Options.saveFacebookGraph = function(access_token) {
   function saveMe(obj) {
     var subject = Manager.FB_BASE_URL + obj.username;
@@ -210,8 +283,6 @@ Options.saveFacebookGraph = function(access_token) {
       // JSON.parse does not evaluate the attacker's scripts.
       var resp = JSON.parse(xhr.responseText);
       var subject = saveMe(resp);
-      el_status_fb.innerText = Options.getUserinfoFB();
-      
       var friendsURL = Manager.FB_GRAPH_URL + "me/friends?";
       friendsURL += Manager.encode({
         access_token: access_token,
@@ -227,7 +298,7 @@ Options.saveFacebookGraph = function(access_token) {
           // JSON.parse does not evaluate the attacker's scripts.
           var resp = JSON.parse(xhr.responseText);
           saveFriends(subject, resp);
-          m.renew();
+          Options.saveFacebookPosting(subject, access_token);
         }
       }
       xhr.send();
@@ -270,6 +341,7 @@ Options.saveGoogleFriends = function(subject, access_token) {
         if(friend.displayName)       { m.tst.set(friend_subject, "foaf:name", friend.displayName); }
         //if(friend.first_name) { m.tst.set(friend_subject, "foaf:firstName", friend.first_name); }
         //if(friend.last_name)  { m.tst.set(friend_subject, "foaf:lastName", friend.last_name); }
+        if(friend.gender)       { m.tst.set(friend_subject, "foaf:gender", friend.gender); }
         if(friend.id)         { m.tst.set(friend_subject, "google-id", friend.id); }
         if(friend.image && friend.image.url) {
           m.tst.set(friend_subject, "foaf:img", friend.image.url);
@@ -496,8 +568,8 @@ Options.saveGoogleAlbums = function(subject, access_token) {
     if (xhr.readyState == 4) {
       var resp = xhr.responseText;
       saveAlbums(resp);
-      m.renew();
       el_status_gl.innerText = Options.getUserinfoGL();
+      m.renew();
     }
   }
   xhr.send();
