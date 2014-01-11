@@ -150,14 +150,15 @@ Options.saveFacebookPosting = function(subject, access_token) {
       if(posting.likes && posting.likes.data) {
         for(var j = 0; i < posting.likes.data.length; i++) {
           var like = posting.likes;
-          m.tst.set(postingURL, "schema:interactionCount", like.name + ":" + like.id);
+          m.tst.add(postingURL, "schema:interactionCount", like.name + ":" + like.id);
         }
       }
       if(posting.id) m.tst.set(postingURL, "id", posting.id);
     }
   }
+  //recursively GET postings
   function getPostings(fbFriends, i, savedNum) {
-    if(i > fbFriends.length - 1) {
+    if(i > fbFriends.length - 1 || !Options.getFacebookAccessToken()) {
       m.renew();
       el_status_fb.innerText = Options.getUserinfoFB(); //UI
     } else {
@@ -171,14 +172,14 @@ Options.saveFacebookPosting = function(subject, access_token) {
           //save posting
           savePosting(fbFriends[i], resp.data);
           savedNum += resp.data.length;
-          //add additional a url for next page
+          //add next paging url
           if(resp.paging && resp.paging.next) {
             fbFriends.push({
               subject: fbFriends[i].subject,
               id: fbFriends[i].id,
               requestURL: resp.paging.next});
           }
-          el_status_fb.innerText = "Saved " + savedNum + " friends' postings"; //UI
+          el_status_fb.innerText = "Accessing " + savedNum + " postings"; //UI
           getPostings(fbFriends, i+1, savedNum)
         }
       }
@@ -196,6 +197,11 @@ Options.saveFacebookPosting = function(subject, access_token) {
       fbFriends.push({subject:knows[i], id:fbID, requestURL:requestURL});
     }
   }
+  //add me to get my postings
+  fbFriends.push({subject: Options.getFacebookAccount(),
+    id: m.tst.getValues(Options.getFacebookAccount(), "facebook-id"),
+    requestURL: Manager.FB_GRAPH_URL + "me/posts?" + Manager.encode({access_token: access_token})});
+  //start to GET postings
   getPostings(fbFriends, 0, 0);
 };
 Options.saveFacebookGraph = function(access_token) {
@@ -298,6 +304,7 @@ Options.saveFacebookGraph = function(access_token) {
           // JSON.parse does not evaluate the attacker's scripts.
           var resp = JSON.parse(xhr.responseText);
           saveFriends(subject, resp);
+          el_status_fb.innerText = "Accessing friend graph"; //UI
           Options.saveFacebookPosting(subject, access_token);
         }
       }
@@ -511,6 +518,77 @@ Options.saveGoogleCalendar = function(subject, access_token) {
   }
   xhr.send();
 }*/
+Options.saveGooglePosting = function(subject, access_token) {
+  function savePostings(items) {
+    console.log(items);
+    for(var i = 0; i < items.length; i++) {
+      var item = items[i];
+      var postingURL = item.url;
+      var object = item.object;
+      
+      //save this posting itself
+      m.tst.set(postingURL, "schema:type", "http://schema.org/Comment");
+      m.tst.set(postingURL, "schema:author", subject);
+      m.tst.set(postingURL, "schema:provider", "Google+");
+      if(item.actor.displayName) {
+        m.tst.set(postingURL, "schema:creator", item.actor.displayName);
+      }
+      if(item.id) m.tst.set(postingURL, "id", item.id);
+      if(item.title) {
+        m.tst.set(postingURL, "schema:title", item.title);
+        m.tst.set(postingURL, "schema:description", item.title);
+      } else {
+        if(object.attachments && object.attachments.length) {
+          if(object.attachments[0].displayName) {
+            m.tst.set(postingURL, "schema:title", object.attachments[0].displayName);
+          }
+        }
+      }
+      //if(posting.story) m.tst.set(postingURL, "schema:comment", posting.story);
+      //if(posting.status_type) m.tst.set(postingURL, "schema:eventStatus", posting.status_type);
+      if(object.attachments && object.attachments.length) {
+        if(object.attachments[0].image) {
+          m.tst.set(postingURL, "schema:image", object.attachments[0].image.url);
+        } else if(object.attachments[0].thumnails && object.attachments[0].thumnails[0]) {
+          m.tst.set(postingURL, "schema:image", object.attachments[0].thumnails[0].image.url);
+        }
+        if(object.attachments[0].objectType == "video") {
+          m.tst.set(postingURL, "schema:video", object.attachments[0].url)
+        }
+      }
+      if(item.published) m.tst.set(postingURL, "schema:dateCreated", item.published);
+      var count = parseInt(object.plusoners.totalItems) +
+      parseInt(object.replies.totalItems) + parseInt(object.resharers.totalItems);
+      m.tst.set(postingURL, "schema:interactionCount", new String(count));
+    }
+  }
+  function getPostings(url, nextPageToken, savedNum) {
+    if(!nextPageToken || !Options.getGoogleAccessToken()) {
+      el_status_gl.innerText = Options.getUserinfoGL();
+      m.renew();
+      return;
+    }
+    var requestURL = Manager.GL_POSTING_URL;
+    if(savedNum && nextPageToken) {
+      requestURL += "?" + Manager.encode({pageToken: nextPageToken});
+    }
+    xhr = new XMLHttpRequest();
+    xhr.open("GET", requestURL, true);
+    xhr.setRequestHeader("Authorization", "Bearer " + access_token);
+    xhr.setRequestHeader("GData-Version", "2");
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == 4) {
+        var resp = JSON.parse(xhr.responseText);
+        savePostings(resp.items);
+        savedNum += resp.items.length;
+        el_status_gl.innerText = "Accessing my " + savedNum + " postings";
+        getPostings(url, resp.nextPageToken, savedNum)
+      }
+    }
+    xhr.send();
+  }
+  getPostings(Manager.GL_POSTING_URL, -1, 0);
+}
 Options.saveGoogleAlbums = function(subject, access_token) {
   function saveAlbums(doc) {
     var $doc = $(doc);
@@ -568,8 +646,7 @@ Options.saveGoogleAlbums = function(subject, access_token) {
     if (xhr.readyState == 4) {
       var resp = xhr.responseText;
       saveAlbums(resp);
-      el_status_gl.innerText = Options.getUserinfoGL();
-      m.renew();
+      Options.saveGooglePosting(subject, access_token);
     }
   }
   xhr.send();
