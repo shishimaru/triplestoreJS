@@ -733,6 +733,23 @@ Manager.prototype.getSimilarItems = function(targetValues, similarityThreshold) 
   }
   return res;
 };
+Manager.prototype.getCitingPosting = function(urls, similarity) {
+  var res = [];
+  var subjects = this.getSubjects("schema:type", "http://schema.org/Comment");
+  for(var i = 0; i < subjects.length; i++) {
+    var proj = this.projections[subjects[i]];
+    var citations = proj.getAll("schema:citation");
+    for(var j = 0; j < citations.length; j++) {
+      for(var k = 0; k < urls.length; k++) {
+        if(citations[j] == urls[k]) {
+          res.push({subject:subjects[i], similarity: similarity}); 
+          break;
+        }
+      }
+    }
+  }
+  return res;
+}
 Manager.prototype.export = function() {
   var res = '{"items":[';
   var flag = false;

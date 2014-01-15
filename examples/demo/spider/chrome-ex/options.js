@@ -130,16 +130,22 @@ Options.saveFacebookPosting = function(subject, access_token) {
     for(var i = 0; i < data.length; i++) {
       var posting = data[i];
       var postingURL = Manager.FB_BASE_URL + $friend.id + "/posts/" + posting.id.split('_')[1];
-      //add the URL of this posting to one's item
-      //m.tst.add($friend.subject, "foaf:publications", postingURL);
       
       //save this posting itself
       m.tst.set(postingURL, "schema:type", "http://schema.org/Comment");
       m.tst.set(postingURL, "schema:author", $friend.subject);
       m.tst.set(postingURL, "schema:provider", "Facebook");
-      if(posting.name) m.tst.set(postingURL, "schema:name", posting.name);
+      m.tst.set(postingURL, Manager.PROP_FAVICON, Manager.APP_URL + "images/facebook-blue.png");
+      
+      if(posting.message) {
+        m.tst.set(postingURL, "schema:name", posting.message);
+      } else if(posting.name) {
+        m.tst.set(postingURL, "schema:name", posting.name);
+      } else if(posting.story) {
+        m.tst.set(postingURL, "schema:name", posting.story);
+      } 
       if(posting.message) m.tst.set(postingURL, "schema:description", posting.message);
-      if(posting.story) m.tst.set(postingURL, "schema:comment", posting.story);
+      
       if(posting.status_type) m.tst.set(postingURL, "schema:eventStatus", posting.status_type);
       if(posting.picture) m.tst.set(postingURL, "schema:image", posting.picture);
       if(posting.from.name) m.tst.set(postingURL, "schema:creator", posting.from.name);
@@ -147,9 +153,17 @@ Options.saveFacebookPosting = function(subject, access_token) {
       if(posting.link) m.tst.set(postingURL, "schema:citation", posting.link);
       if(posting.caption) m.tst.set(postingURL, "schema:caption", posting.caption);
       if(posting.source) m.tst.set(postingURL, "schema:video", posting.source);
+      if(posting.comments && posting.comments.data) {
+        for(var j = 0; j < posting.comments.data.length; j++) {
+          var comment = posting.comments.data[j];
+          m.tst.set(postingURL, "schema:comment",
+              comment.from.name + " said: " + comment.message);
+        }
+        
+      }
       if(posting.likes && posting.likes.data) {
-        for(var j = 0; i < posting.likes.data.length; i++) {
-          var like = posting.likes;
+        for(var j = 0; j < posting.likes.data.length; j++) {
+          var like = posting.likes.data[j];
           m.tst.add(postingURL, "schema:interactionCount", like.name + ":" + like.id);
         }
       }
@@ -209,8 +223,9 @@ Options.saveFacebookGraph = function(access_token) {
     var subject = Manager.FB_BASE_URL + obj.username;
     
     localStorage["__FB_USERID"] = subject;
-    m.tst.set(subject, "__type", "http://xmlns.com/foaf/0.1/Person");
+    m.tst.set(subject, "schema:type", "http://xmlns.com/foaf/0.1/Person");
     m.tst.set(subject, "facebook-account", subject);
+    //m.tst.set(subject, Manager.PROP_FAVICON, Manager.APP_URL + "images/facebook-blue.png");
     if(obj.name)        { m.tst.set(subject, "foaf:name", obj.name); }
     if(obj.username)    { m.tst.set(subject, "facebook-username", obj.username); }
     //if(obj.first_name) { m.tst.set(subject, "foaf:firstName", obj.first_name); }
@@ -343,8 +358,9 @@ Options.saveGoogleFriends = function(subject, access_token) {
         }
         
         m.tst.set(friend_subject, "__etag", friend.etag);
-        m.tst.set(friend_subject, "__type", "http://xmlns.com/foaf/0.1/Person");
+        m.tst.set(friend_subject, "schema:type", "http://xmlns.com/foaf/0.1/Person");
         m.tst.set(friend_subject, "google-account", friend_subject);
+        //m.tst.set(friend_subject, Manager.PROP_FAVICON, Manager.APP_URL + "images/google-plus.png");
         if(friend.displayName)       { m.tst.set(friend_subject, "foaf:name", friend.displayName); }
         //if(friend.first_name) { m.tst.set(friend_subject, "foaf:firstName", friend.first_name); }
         //if(friend.last_name)  { m.tst.set(friend_subject, "foaf:lastName", friend.last_name); }
@@ -386,7 +402,7 @@ Options.saveGoogleEvent = function(cal_id, subject, access_token) {
         }
         
         m.tst.set(event_subject, "__etag", event.etag);
-        m.tst.set(event_subject, "__type", "http://schema.org/Event");
+        m.tst.set(event_subject, "schema:type", "http://schema.org/Event");
 
         if(event.summary) { m.tst.set(event_subject, "schema:name", event.summary); }
         if(event.description) { m.tst.set(event_subject, "schema:description", event.description); }
@@ -520,7 +536,6 @@ Options.saveGoogleCalendar = function(subject, access_token) {
 }*/
 Options.saveGooglePosting = function(subject, access_token) {
   function savePostings(items) {
-    console.log(items);
     for(var i = 0; i < items.length; i++) {
       var item = items[i];
       var postingURL = item.url;
@@ -530,6 +545,7 @@ Options.saveGooglePosting = function(subject, access_token) {
       m.tst.set(postingURL, "schema:type", "http://schema.org/Comment");
       m.tst.set(postingURL, "schema:author", subject);
       m.tst.set(postingURL, "schema:provider", "Google+");
+      m.tst.set(postingURL, Manager.PROP_FAVICON, Manager.APP_URL + "images/google-plus.png");
       if(item.actor.displayName) {
         m.tst.set(postingURL, "schema:creator", item.actor.displayName);
       }
@@ -547,6 +563,9 @@ Options.saveGooglePosting = function(subject, access_token) {
       //if(posting.story) m.tst.set(postingURL, "schema:comment", posting.story);
       //if(posting.status_type) m.tst.set(postingURL, "schema:eventStatus", posting.status_type);
       if(object.attachments && object.attachments.length) {
+        if(object.attachments[0].url) {
+          m.tst.set(postingURL, "schema:citation", object.attachments[0].url)
+        }
         if(object.attachments[0].image) {
           m.tst.set(postingURL, "schema:image", object.attachments[0].image.url);
         } else if(object.attachments[0].thumnails && object.attachments[0].thumnails[0]) {
@@ -600,7 +619,7 @@ Options.saveGoogleAlbums = function(subject, access_token) {
       var title = $entry.find("title").text();
       var summary = $entry.find("summary").text();
       
-      m.tst.set(subject, "__type", "http://schema.org/ImageObject");
+      m.tst.set(subject, "schema:type", "http://schema.org/ImageObject");
       m.tst.set(subject, "schema:name", title);
       m.tst.set(subject, "schema:description", summary);
       
@@ -656,8 +675,9 @@ Options.saveGoogleGraph = function(access_token) {
     var subject = Manager.GL_BASE_URL + obj.id;
     
     localStorage["__GL_USERID"] = subject;
-    m.tst.set(subject, "__type", "http://xmlns.com/foaf/0.1/Person");
+    m.tst.set(subject, "schema:type", "http://xmlns.com/foaf/0.1/Person");
     m.tst.set(subject, "google-account", subject);
+    m.tst.set(subject, Manager.PROP_FAVICON, Manager.APP_URL + "images/google-plus.png");
     
     if(obj.displayName)        { m.tst.set(subject, "foaf:name", obj.displayName); }
     //if(obj.first_name) { m.tst.set(subject, "foaf:firstName", obj.first_name); }

@@ -221,6 +221,7 @@ Viewer.getTypeImg = function(m, type) {
         || tail.search(/^rightsholder$/i) != -1) {
       res = "images/person.png";
     } else if(tail.search(/^image$/i) != -1
+        || tail.search(/^ImageObject$/i) != -1
         || tail.search(/^photo$/i) != -1
         || tail.search(/^photograph$/i) != -1) {
       res = "images/picture.png";
@@ -458,8 +459,8 @@ Viewer.getSubjectHTML = function(m, projection, className, useAnchor, emailQuery
   
   {//Set item icon/favicon
     var imgFile = null;
-    if(favicon) {
-      imgFile = favicon;
+    if(favicon.length) {
+      imgFile = favicon[0];
     } else if(type[0]) {
       imgFile = Viewer.getTypeImg(m, type[0]);
     }
@@ -467,7 +468,9 @@ Viewer.getSubjectHTML = function(m, projection, className, useAnchor, emailQuery
       $item.append($("<img/>", {"src" : imgFile, "class" : "related_type"}));
     }
   }
-  $item.append($("<span/>", {"class": "related_name"}).html("" + (title.length?title[0]:(name[0]?name[0]:subject))));
+  var title_ui = title.length ? title[0] : (name.length ? name[0] : subject);
+  $item.append($("<span/>", {"class": "related_name"}).
+      html("" + title_ui.substr(0,50)));
   $item.append($("<br/>"));
   if(img[0]) {
     $item.append($("<img/>", {"src" : img[0], "class" : "related_img"}));

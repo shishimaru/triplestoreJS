@@ -27,24 +27,29 @@ function sortSnsAccount(m, subjects) {
   }
 }
 
-function getRelatedSubjects(m, title, rdfa, micro, anchors) {
+function getRelatedSubjects(m, title, url, rdfa, micro, anchors) {
   var items = [];
-  var MIN_SIMILARITY = 0.3;//0.5;
+  var MIN_SIMILARITY = 0.5;//0.3;
   var MAX_RESULT_SIZE =  20;
   
   function sanitize(items) {
     var MIN_PROPS_LEN = 2;//at least 2
     var i = 0;
     while(i < items.length) {
-      var props = m.projections[items[i].subject].getProperties();
-      var valid_prop_len = 0;
-      for(var j = 0; j < props.length; j++) {
-        if(!props[j].match(/^__/)) {
-          valid_prop_len++;
+      var proj = m.projections[items[i].subject];
+      if(proj) {
+        var props = proj.getProperties();
+        var valid_prop_len = 0;
+        for(var j = 0; j < props.length; j++) {
+          if(!props[j].match(/^__/)) {
+            valid_prop_len++;
+          }
         }
-      }
-      if(valid_prop_len < MIN_PROPS_LEN) {
-        items.splice(i, 1);
+        if(valid_prop_len < MIN_PROPS_LEN) {
+          items.splice(i, 1);
+        } else {
+          i++;
+        }
       } else {
         i++;
       }
@@ -55,13 +60,17 @@ function getRelatedSubjects(m, title, rdfa, micro, anchors) {
   if(title) {
     items = items.concat(m.getSimilarItems([title], MIN_SIMILARITY));
   }
+  //find postings about visiting site
+  if(url) {
+    items = items.concat(m.getCitingPosting([url], 1.0));
+  }
   //private items RDFa refers to
   if(rdfa) {
     for(var subject in rdfa) {
       if(m.projections[subject]) {
         items = items.concat({
           subject: subject,
-          similarity: 1.0
+          similarity: 0.9
         });
       } else {
         var itemValues = [];
@@ -138,7 +147,6 @@ function getRelatedSubjects(m, title, rdfa, micro, anchors) {
   for(var i = 0; i < items.length; i++) {
     subjects.push(items[i]["subject"]);
   }
-  sortSnsAccount(m, subjects);
   subjects = Manager.trimDuplicate(subjects);
   subjects = subjects.slice(0, MAX_RESULT_SIZE);
   
@@ -217,8 +225,8 @@ chrome.runtime.onMessage.addListener(
         if(visit && getVisitNumber(request.url) >= visit * 3) {
           m.save();
         }
-      //feedback related items to content script
-        var subjects = getRelatedSubjects(m, request.title,
+        //feedback related items to content script
+        var subjects = getRelatedSubjects(m, request.title, request.url,
             bg_res[request.url].rdfa, bg_res[request.url].micro,
             request.anchors);
         
