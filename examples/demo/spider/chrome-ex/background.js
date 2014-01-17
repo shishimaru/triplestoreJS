@@ -410,7 +410,7 @@ document.addEventListener('DOMContentLoaded', function () {
   saveSyncItems();
   setInterval(function() {
     saveSyncItems();
-  }, 20 * 1000);
+  }, 60 * 1000);
   //show introduction page
   chrome.runtime.onInstalled.addListener(function(details) {
     if(details.reason == "install") {
