@@ -152,6 +152,25 @@ function getRelatedSubjects(m, title, url, rdfa, micro, anchors) {
   
   return subjects;
 }
+function getRelatedKeywords(keyword, itemtype) {
+  var m = bg_res.m;
+  keyword = keyword.split(" ");
+  var subjects = null;
+  if(itemtype) {
+    subjects = m.getSubjects(null, itemtype, true);  
+  } else {
+    subjects = m.getSubjects(null);
+  }
+  subjects.sort(function(s1, s2) {//sort with select number history
+    return m.getSelectNumber(s2) - m.getSelectNumber(s1);
+  });
+  var values = [];
+  for(var i = 0; i < subjects.length; i++) {
+    values = values.concat(m.getFilteredValues(subjects[i], ["name","title"], true));
+  }
+  values = Manager.filter(keyword, values);
+  return values;
+}
 function generateInsertedHTML(m, v, subjects, emailQuery, fb_request, gl_request) {
   if(!subjects.length) {
     return null;
@@ -249,21 +268,7 @@ chrome.runtime.onMessage.addListener(
       }
       else if(request.action == "getKeyword") {
         if(request.keyword && request.keyword.length) {
-          var keywords = request.keyword.split(" ");
-          var subjects = null;
-          if(request.itemtype) {
-            subjects = m.getSubjects(null, request.itemtype, true);  
-          } else {
-            subjects = m.getSubjects(null);
-          }
-          subjects.sort(function(s1, s2) {//sort with select number history
-            return m.getSelectNumber(s2) - m.getSelectNumber(s1);
-          });
-          var values = [];
-          for(var i = 0; i < subjects.length; i++) {
-            values = values.concat(m.getFilteredValues(subjects[i], ["name","title"], true));
-          }
-          values = Manager.filter(keywords, values);
+          var values = getRelatedKeywords(request.keyword, request.itemtype);
           for(var i = 0; i < values.length; i++) {
             values[i] = values[i].substr(0, 45);//shorten long keyword
             values[i] = Manager.sanitizeString(values[i]);//delete low priority characters
@@ -418,6 +423,35 @@ document.addEventListener('DOMContentLoaded', function () {
       chrome.tabs.create({url : Manager.APP_HOMEPAGE});
     }
   });
+  //keyword suggestion in omnibox
+  chrome.omnibox.onInputChanged.addListener(function(text, suggest) {
+    var keywords = getRelatedKeywords(text, null);
+    for(var i = 0; i < keywords.length; i++) {//delete &<>'"\n
+      keywords[i] = keywords[i].replace(/[&<>'"\n]/g, " ");
+    }
+    keywords = Manager.trimSimilar(keywords, 0.8);
+    var suggestions = [] 
+    for(var i = 0; i < keywords.length; i++) {
+      suggestions.push({content: keywords[i], description: keywords[i]});
+    }
+    suggest(suggestions);
+  });
+  chrome.omnibox.onInputEntered.addListener(
+      function(text) {
+        chrome.tabs.getSelected(null, function(tab) {
+          //open Google to search the keyword
+          var baseURL = "https://www.google.com/#" +
+          Manager.encode({q: text});
+          chrome.tabs.update(tab.id, {url: baseURL});
+          
+          //increment the priority of the keyword
+          var subjects = m.getSubjects(null, text, true);
+          for(var i = 0; i < subjects.length; i++) {
+            m.incrementSelectNumber(subjects[i]);
+          }
+        });
+      }
+  );
 });
 
 function menu_share(info, tab) {

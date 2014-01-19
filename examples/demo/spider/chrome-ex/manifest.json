@@ -10,6 +10,7 @@
     "permissions": ["tabs", "webRequest", "storage", "unlimitedStorage", "contextMenus", "idle",
                     "http://*/*", "https://*/*"],
     "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
+    "omnibox" : { "keyword" : "spider" },
     "options_page": "options.html",
     "content_scripts": [
         {
