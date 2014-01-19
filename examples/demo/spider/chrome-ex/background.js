@@ -406,11 +406,12 @@ document.addEventListener('DOMContentLoaded', function () {
   if(Options.is_remove()) {
     cleanOldItems(m);
   }
-  //start monitoring synced items
-  saveSyncItems();
-  setInterval(function() {
-    saveSyncItems();
-  }, 60 * 1000);
+  //if chrome is idle, start to synchronize items
+  chrome.idle.onStateChanged.addListener(function(state) {
+    if(state != "active") {
+      saveSyncItems();
+    }
+  });
   //show introduction page
   chrome.runtime.onInstalled.addListener(function(details) {
     if(details.reason == "install") {
