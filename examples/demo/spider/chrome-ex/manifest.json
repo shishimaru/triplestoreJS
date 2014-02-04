@@ -21,12 +21,14 @@
                    "green-turtle/RDFaProcessor.0.21.0.js",
                    "microdataJS/jquery.microdata.js",
                    "microdataJS/jquery.microdata.json.js",
+                   "ccv.js",
+                   "face.js",
                    "manager.js",
                    "viewer.js",
                    "content.js"
                    ],
             "css": ["content.css", "suggest.css"],
-            "run_at": "document_end"
+            "run_at": "document_idle"
         }
     ],
     "web_accessible_resources": [

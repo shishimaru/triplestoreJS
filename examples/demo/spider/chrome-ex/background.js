@@ -309,6 +309,20 @@ chrome.runtime.onMessage.addListener(
           });
         }
       }
+      else if(request.action == "getImageProps") {
+        var img = request.img;
+        var pos = img.pos;
+        var offset = img.offset;
+        var x = pos.x, y = pos.y, w = pos.w, h = pos.h;
+        sendResponse({
+          imgElement: img.element,
+          name: "Hitoshi Uchida",
+          offset: offset,
+          pos: {
+            x:x, y:y, w:w, h:h
+          }
+        });
+      }
       else if(request.action == "post-facebook") {//TODO:delete
         var requestURL = request.url + '&' +
         Manager.encode({access_token: Options.getFacebookAccessToken()});

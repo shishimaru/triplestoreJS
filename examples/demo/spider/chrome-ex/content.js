@@ -283,10 +283,17 @@ Assist.search = function() {
               var html = res.html;
               if(html && html.length) {
                 //insert keywords
+                var pos_left;
+                //have enough space in right side for suggest box
+                if(window.innerWidth - (offset.left + input_width) >= 300) {
+                  pos_left = offset.left + input_width - window.scrollX;
+                } else {//have enough space for suggest box
+                  pos_left = offset.left - 300 - window.scrollX;                  
+                }
                 var $keywords_container = $("<div class='spider-keyword-search'" +
                     " style='position:fixed; width:300px;" + 
                     " top:" +  (offset.top + input_height - window.scrollY) + "px;" +
-                    " left:" + (offset.left + input_width - window.scrollX) + "px;'>" +
+                    " left:" + pos_left + "px;'>" +
                     "<a href='http://www.w3.org/2013/04/semweb-html5/spider/index.html'>" + 
                     "<img src='" + Manager.APP_URL + "images/spider.png" + "'></a>" +
                     html + "</div>");
@@ -315,6 +322,135 @@ Assist.search = function() {
     });
   }
 }
+function SpiderCV() {};
+SpiderCV.showImage = function(imgData,w,h) {
+  var canvas = document.createElement("canvas");
+  canvas.setAttribute("width", w);
+  canvas.setAttribute("height", h);
+  var ctx = canvas.getContext('2d');
+  ctx.putImageData(imgData, 0, 0);
+  ctx.drawImage(canvas, 0, 0);;
+  document.body.appendChild(canvas);
+};
+SpiderCV.grayscale = function(data) {
+  for(var i = 0; i < data.length; i += 4) {
+    var brightness = 0.34 * data[i] + 0.5 * data[i + 1] + 0.16 * data[i + 2];
+    // red
+    data[i] = brightness;
+    // green
+    data[i + 1] = brightness;
+    // blue
+    data[i + 2] = brightness;
+  }
+  return data;
+}
+SpiderCV.annotate = function() {
+  if(!document.getElementById("spider-annotation-done")) {
+    $('body').append($('<div>', {id: 'spider-annotation-done'}));
+    //alert("image number : " + document.images.length);
+    
+    for(var i = 0; i < document.images.length; i++) {
+      //create Canvas object
+      var image = document.images[i];      
+      if(!image) { continue; }
+      if(parseInt(image.width) < 480 && parseInt(image.height) < 320) {
+        //alert("too small : " + image.src);
+        continue;
+      }
+      var $image = $(image);
+      var offset = $image.offset();
+      var canvas = document.createElement("canvas");
+      
+      var ctx = canvas.getContext('2d');
+      canvas.width = image.offsetWidth;
+      canvas.style.width = image.offsetWidth.toString() + "px";
+      canvas.height = image.offsetHeight;
+      canvas.style.height = image.offsetHeight.toString() + "px";
+      ctx.drawImage(image, 0, 0);
+
+      // 顔検出                                                                   
+      var comp = ccv.detect_objects({
+        "canvas": ccv.grayscale(canvas),
+        "cascade": cascade,
+        "interval": 0,
+        "min_neighbors": 1
+      });
+      
+      // show result
+      console.log(comp.length);
+      for (var j = 0; j < comp.length; j++) {
+        var x = comp[j].x, y = comp[j].y, w = comp[j].width, h = comp[j].height;
+        if(w < 30 && h < 30) { //eliminate small bndbox
+          continue;
+        }
+        var imgData = ctx.getImageData(x, y, w, h);
+        //grayscale
+        imgData = SpiderCV.grayscale(imgData);
+        SpiderCV.showImage(imgData,w,h)
+        
+        chrome.runtime.sendMessage({
+          action : "getImageProps",
+          url: document.URL,
+          title: document.title,
+          img: {
+            data: imgData,
+            offset : {
+              top: offset.top, left: offset.left 
+            },
+            pos : {
+              x:x, y:y, w:w, h:h
+            }
+          }
+        },
+        function(res) {
+          console.log(res);
+          var offset = res.offset;
+          var pos = res.pos;
+          var x = pos.x, y = pos.y, w = pos.w, h = pos.h;
+          function getContainerStyle() {
+            return "position:fixed;" +
+            "width:" + (w+h)/2 + "px;" + "height:" + (w+h)/2 + "px;" +
+            "top:" +  (offset.top + y - window.scrollY) + "px;" +
+            "left:" + (offset.left + x - window.scrollX) + "px;";
+          }
+          function getFaceAreaStyle(color, opacity) {
+            if(!color) color = "#ffffff";
+            if(!opacity) opacity = 0.1;
+            return "width:100%; height:100%;" +
+            "border-width:10px; border-radius: 50%;" +
+            "border-style:solid; border-color:" + color + ";" +
+            "opacity:" + opacity + ";";
+          }
+          
+          //write semantic data
+          var $div = $("<div>", {style: getContainerStyle()});
+          var $box = $("<div>", {style: getFaceAreaStyle()});
+          var $detail = $("<div>", {style:
+            "background-color:white;text-align:center;"})
+            .text(res.name).hide();
+          $div.append($box);
+          $div.append($detail);
+          $('body').append($div);  
+          
+          //synch with scroll
+          $(window).on("scroll", function () {
+            $div.attr('style', getContainerStyle());
+          });
+          //popup the item detail information 
+          $div.mouseover(function(e) {
+            $box.attr('style', getFaceAreaStyle("lightgray", 1.0));
+            $detail.show();
+          }).mouseleave(function(e) {
+            $box.attr('style', getFaceAreaStyle());
+            $detail.hide();
+          });
+          
+        });
+      }
+    }
+  }
+};
 
 extract();
 Assist.search();
+SpiderCV.annotate();
