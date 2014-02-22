@@ -43,8 +43,9 @@
     vertical-align: top;  
     word-break: break-all;  
 }
-.related_type {
-    height: 1em;
+.related_type  {
+	width: 1em;
+	height: 1em;
     margin: 0px 4px 0px 4px;
     padding: 0;
 }

@@ -11,8 +11,8 @@ var Manager = function(){
     this.tst.setMapping("dc", "http://purl.org/dc/elements/1.1/");
   }
 };
-Manager.DEV_MODE = "debug";
-//Manager.DEV_MODE = "product";
+//Manager.DEV_MODE = "debug";
+Manager.DEV_MODE = "product";
 Manager.APP_ID = chrome.i18n.getMessage("@@extension_id");
 Manager.APP_URL = "chrome-extension://" + Manager.APP_ID + "/";
 Manager.APP_HOMEPAGE = "http://www.w3.org/2013/04/semweb-html5/spider/";
@@ -22,21 +22,24 @@ Manager.PROP_TITLE =   "__TITLE__";
 Manager.PROP_EXPIRES = "__EXPIRES__";
 Manager.PROP_SELECT_NUM = "__SELECT_NUM__";
 Manager.PROP_SYNCING = "__SYNCING__";
-Manager.FB_APP_ID = "577151302344255";
+Manager.PROP_IMGDATA = "__IMGDATA__";
+Manager.IMGDATA_SIZE = {W:35, H:45};
+Manager.FACE_FEATURES = "__FACE_FEATURES__";
+
+Manager.FB_APP_ID = "272938312872643";
 Manager.FB_BASE_URL = "https://www.facebook.com/";
 Manager.FB_GRAPH_URL = "https://graph.facebook.com/";
-Manager.FB_LOGIN_URL = "https://semantic-spider.appspot.com/c/fb-login";
-Manager.FB_REDIRECT_URL = "https://semantic-spider.appspot.com/c/fb-post";
 Manager.FB_DIALOG_FEED_URL = "https://www.facebook.com/dialog/feed";
 Manager.FB_DIALOG_SEND_URL = "https://www.facebook.com/dialog/send";
+Manager.FB_POST_URL = "https://semantic-spider.appspot.com/c/fb-post";
+Manager.FB_REDIRECT_URL = Manager.DEV_MODE == "product" ?
+    'https://ckdnmkbanbampnifpddcfdphonmfibkb.chromiumapp.org/callback':
+    'https://flkmphkcppbjjamopnpbmppbiohnmjkn.chromiumapp.org/callback';
 
-Manager.GL_API_KEY = "AIzaSyB0WP9D7xfLy2OZhT0q2GCvJKdeMfqsyj8"
+Manager.GL_API_KEY = "AIzaSyAyf46iLrX1qs2kPokrrc5A-i6yhGqaj44"
 Manager.GL_BASE_URL = "https://plus.google.com/";
 Manager.GL_PEOPLE_URL = "https://www.googleapis.com/plus/v1/people/";
-Manager.GL_LOGIN_URL = "https://semantic-spider.appspot.com/c/g-login";
-
 Manager.GL_POST_URL = "https://semantic-spider.appspot.com/c/g-post";
-//Manager.GL_POST_URL = "http://localhost:8080/c/g-post";
 
 Manager.GL_CAL_LIST_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList/";
 Manager.GL_CAL_EVENT_URL = "https://www.googleapis.com/calendar/v3/calendars/";
@@ -299,7 +302,8 @@ Manager.prototype.filterSubjects = function (keywords, isAll) {
         }
       }
       for(var j = 0; !found && tmpValues[j] && j < tmpValues.length; j++) {
-        if(tmpValues[j].toLowerCase().indexOf(keywords[i].toLowerCase()) != -1) {
+        if(tmpValues[j].toLowerCase && keywords[i].toLowerCase &&
+            tmpValues[j].toLowerCase().indexOf(keywords[i].toLowerCase()) != -1) {
           found = true;
           break;
         }
@@ -625,6 +629,24 @@ Manager.isGoogleProperty = function(name, value) {
   }
   return false;
 }
+Manager.prototype.saveFrecogFeatures = function() {
+  var subjects = this.getSubjects(null, "http://xmlns.com/foaf/0.1/Person", false);
+  subjects = subjects.concat(this.getSubjects(null, "http://schema.org/Person", false));
+  var imgSet = [];
+  for(var i = 0; i < subjects.length; i++) {
+    var subject = subjects[i];
+    var faceDataList = this.tst.getValues(subject, Manager.PROP_IMGDATA);
+    for(var j = 0; j < faceDataList.length; j++) {
+      var faceData = faceDataList[j];
+      imgSet.push({userdata: subject, data: faceData});      
+    }
+  }
+  var features = frecog.createFeatures(imgSet);
+  //this.faceFeatures = features;
+  this.lst[Manager.FACE_FEATURES] = JSON.stringify(features);
+  return features;
+}
+
 Manager.dict_pronoun = ["i", "my", "me", "mine",
                         "we", "our", "us", "ours",
                         "you", "your", "yours",
@@ -692,7 +714,6 @@ Manager.sanitizeString = function(str) {
   return res;
 }
 Manager.prototype.getSimilarItems = function(targetValues, similarityThreshold) {
-  //var SEP = /[\s\d\t\n,\.\/!\?"#$%=&'"\(\):;\[\]\^®]+/;
   var SEP = /[\s\t\d\n,\.!\?"#$%=&'"\(\):;\[\]\^®]+/;
   var w1 = targetValues.join(" ").split(SEP);//sanitize
   Manager.sanitize(w1);//sanitize
@@ -706,7 +727,6 @@ Manager.prototype.getSimilarItems = function(targetValues, similarityThreshold) 
     for(var i = 0; i < props.length; i++) {
       if(props[i].match(/name$/) ||
           props[i].match(/title$/) ||
-          //props[i].match(/discription$/) ||
           props[i] == Manager.PROP_TITLE
       ){
         values = values.concat(projection.getAll(props[i]));
@@ -720,10 +740,6 @@ Manager.prototype.getSimilarItems = function(targetValues, similarityThreshold) 
     if(w1.length && w2.length) {
       var similarity = ML.jaccord(w1, w2);
       
-      //console.log("@similarity : " + similarity + " : " + subject);
-      //console.log("@s1: " + w1);
-      //console.log("@s2: " + w2);
-
       if(similarity > similarityThreshold) {
         res.push({
           subject: subject,

@@ -108,17 +108,156 @@ Options.clear_storage = function() {
   Options.logoutGoogle();
   m.renew();
 }
+function serialize(array, w, h) {
+  res = '[';
+  for(var i = 0; i < array.length; i++) {
+    if(i != 0 && i % (w*4) == 0) {
+      res += ";";
+    }
+    if(i % 4 == 0) {
+      res += array[i] + ' ';
+    }
+  }
+  res += ']';
+  return res;
+}
+Options.saveImageData = function(subject, imgURL) {
+  return;
+  var canvas = document.createElement("canvas");
+  canvas.width = 300;
+  canvas.height = 300;
+  canvas.style.width = 300;
+  canvas.style.height = 300;
+  if(1) {//??
+    document.body.appendChild(canvas);    
+  }  
+  var ctx = canvas.getContext('2d');
+  
+  var imgEl = new Image();
+  imgEl.subject = subject;
+  imgEl.onload = function(){
+    ctx.drawImage(imgEl, 0, 0, imgEl.width, imgEl.height, 0, 0, canvas.width, canvas.height);
+    
+    var x = y = w = h = -1;
+    {//detect face
+      var comp = ccv.detect_objects({
+        "canvas": ccv.grayscale(canvas),
+        //"canvas": canvas,
+        "cascade": cascade,
+        "interval": 5,
+        "min_neighbors": 1
+      });
+      // show result
+      var max_confidence = -10;
+      for (var i = 0; i < comp.length; i++) {
+        if(comp[i].confidence > max_confidence) {
+          max_confidence = comp[i].confidence;
+          x = comp[i].x, y = comp[i].y, w = comp[i].width, h = comp[i].height;
+        }
+      }
+    }
+    if(x == -1 || max_confidence < 0) {
+      ctx.font='12px Times New Roman';
+      ctx.fillStyle = 'white';
+      ctx.fillText("MAX-CONF:" + max_confidence, 0, canvas.height - 10);
+      return;
+    }
+
+    //collect rotated face images
+    var angles = [-20, -15, -10, -5, 0, 5, 10, 15, 20];
+    var imgDatas = [];
+    var cx = x + w / 2, cy = y + h / 2;
+    for(var i = 0; i < angles.length; i++) {
+      ctx.resetTransform();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.translate(cx, cy);
+      ctx.rotate(angles[i]/180*Math.PI);
+      ctx.drawImage(imgEl, 0, 0, imgEl.width, imgEl.height, -cx, -cy, canvas.width, canvas.height);
+      var imgData = ctx.getImageData(x, y, w, h);
+      imgDatas.push(imgData);
+    }
+    //DEBUG : show the faces
+    ctx.resetTransform();
+    ctx.drawImage(imgEl, 0, 0, imgEl.width, imgEl.height, 0, 0, canvas.width, canvas.height);
+    ctx.font='12px Times New Roman';
+    ctx.fillStyle = 'blue';
+    ctx.fillText("MAX-CONF:" + max_confidence, 0, canvas.height - 10);
+
+    //save the extracted and rotated images into triplestore
+    for(var i = 0; i < imgDatas.length; i++) {
+      var imgData = SpyImg.resize(imgDatas[i], Manager.IMGDATA_SIZE.W, Manager.IMGDATA_SIZE.H);
+      SpyImg.grayscale(imgData.data);
+      ctx.putImageData(imgData,
+          Math.floor(i%(canvas.width/Manager.IMGDATA_SIZE.W)) * Manager.IMGDATA_SIZE.W,
+          //Math.floor(i/(canvas.width/Manager.IMGDATA_SIZE.W)) * 80);
+          Math.floor(i/(canvas.width/Manager.IMGDATA_SIZE.W)) * Manager.IMGDATA_SIZE.H);
+      
+      var data = new Array(imgData.data.length / 4);
+      var ss = "[";
+      var j = 0;
+      for(var k = 0; k < imgData.data.length; k++) {
+        if(k % 4 == 0) {
+          data[j] = imgData.data[k]/255.0;//??
+          data[j] = parseFloat(data[j].toFixed(3));
+          if(k != 0 && k % (Manager.IMGDATA_SIZE.W*4) == 0) {
+            ss += ";";
+          }
+          ss += data[j] + " ";
+          j++;
+        }
+      }
+      ss += "]";
+      //console.log(ss);
+      m.tst.add(imgEl.subject, Manager.PROP_IMGDATA, data);
+    }
+  };
+  imgURL = imgURL.substr(0, imgURL.lastIndexOf('?')) + "?sz=300";
+  imgEl.src = imgURL;
+}
 Options.loginFacebook = function() {
   if(bt_login_facebook.innerText == "Log In") {
-    var fb_login_url = Manager.FB_LOGIN_URL + "?" + Manager.encode({state: Manager.DEV_MODE});
-    window.open(fb_login_url);
-    window.close();
+    var query = {
+        "client_id": Manager.FB_APP_ID,
+        "redirect_uri": Manager.FB_REDIRECT_URL,
+        "state": Manager.DEV_MODE,
+        "response_type": "token",
+        "scope": "email,user_about_me,user_friends,publish_stream"};
+    var fb_login_url = "http://www.facebook.com/dialog/oauth?" + Manager.encode(query);
+    
+    chrome.identity.launchWebAuthFlow(
+        {url: fb_login_url, interactive: true},
+        function(redirect_url) {/* Extract token from redirect_url */
+          var queries = redirect_url.substr(redirect_url.indexOf('#') + 1).split('&');
+          var access_token = null, expires = null;
+          for(var i = 0; i < queries.length; i++) {
+            var nv = queries[i].split('=');
+            var name = nv[0];
+            var value = nv[1];
+            if(name == "access_token")   { access_token = value; }
+            else if(name == "expires" || name == "expires_in") {
+              expires = value;
+            }
+          }
+          var fb_access_token = access_token;
+          var fb_expires = new Date().getTime() + expires * 1000;
+          localStorage["__FB_ACCESS_TOKEN"] = fb_access_token;
+          localStorage["__FB_EXPIRES"] = fb_expires;
+          Options.saveFacebookGraph(fb_access_token);
+          
+          bt_login_facebook.innerText = "Log Out";
+        });
   } else { //Log Out
     Options.logoutFacebook();
   }
 }
 Options.logoutFacebook = function() {
-  //TODO : revoke access token
+  //revoke access token
+  access_token = localStorage["__FB_ACCESS_TOKEN"];
+  if(access_token) {
+    chrome.identity.removeCachedAuthToken(
+        { 'token': access_token }, function() {});
+  }
+
   localStorage.removeItem("__FB_ACCESS_TOKEN");
   localStorage.removeItem("__FB_EXPIRES");
   localStorage.removeItem("__FB_USERID");
@@ -330,15 +469,24 @@ Options.saveFacebookGraph = function(access_token) {
 };
 Options.loginGoogle = function() {
   if(bt_login_google.innerText == "Log In") {
-    var gl_login_url = Manager.GL_LOGIN_URL + "?" + Manager.encode({state: Manager.DEV_MODE});
-    window.open(gl_login_url);
-    window.close();
+    chrome.identity.getAuthToken({'interactive': true }, function(token) {
+      localStorage["__GL_ACCESS_TOKEN"] = token;
+
+      //Get the Graph Information
+      Options.saveGoogleGraph(token);
+      bt_login_google.innerText = "Log Out";
+    });
   } else { //Log Out
     Options.logoutGoogle();
   }
 }
 Options.logoutGoogle = function() {
-  //TODO : revoke access token
+  //revoke access token
+  access_token = localStorage["__GL_ACCESS_TOKEN"];
+  if(access_token) {
+    chrome.identity.removeCachedAuthToken(
+        { 'token': access_token }, function() {});
+  }
   localStorage.removeItem("__GL_ACCESS_TOKEN");
   localStorage.removeItem("__GL_EXPIRES");
   localStorage.removeItem("__GL_USERID");
@@ -346,7 +494,7 @@ Options.logoutGoogle = function() {
   Options.show_status("login_status_gl", "Logged out");
 }
 Options.saveGoogleFriends = function(subject, access_token) {
-  function save(me, obj) {
+  function saveFriends(me, obj) {
     for(var i = 0; i < obj.items.length; i++) {
       var friend = obj.items[i];
       var friend_subject = friend.url;
@@ -368,6 +516,7 @@ Options.saveGoogleFriends = function(subject, access_token) {
         if(friend.id)         { m.tst.set(friend_subject, "google-id", friend.id); }
         if(friend.image && friend.image.url) {
           m.tst.set(friend_subject, "foaf:img", friend.image.url);
+          Options.saveImageData(friend_subject, friend.image.url);
         }
       }
     }
@@ -383,7 +532,7 @@ Options.saveGoogleFriends = function(subject, access_token) {
     if (xhr.readyState == 4) {
       // JSON.parse does not evaluate the attacker's scripts.
       var resp = JSON.parse(xhr.responseText);
-      save(subject, resp);
+      saveFriends(subject, resp);
       Options.saveGoogleCalendar(subject, access_token);
     }
   }
@@ -456,8 +605,7 @@ Options.saveGoogleCalendar = function(subject, access_token) {
   var requestURL = Manager.GL_CAL_LIST_URL + "?";
   requestURL += Manager.encode(
       {key: Manager.GL_API_KEY});
-  
-  
+    
   xhr = new XMLHttpRequest();
   xhr.open("GET", requestURL, true);
   xhr.setRequestHeader("Authorization", "Bearer " + access_token);
@@ -536,7 +684,7 @@ Options.saveGoogleCalendar = function(subject, access_token) {
 }*/
 Options.saveGooglePosting = function(subject, access_token) {
   function savePostings(items) {
-    for(var i = 0; i < items.length; i++) {
+    for(var i = 0; items && i < items.length; i++) {
       var item = items[i];
       var postingURL = item.url;
       var object = item.object;
@@ -684,6 +832,8 @@ Options.saveGoogleGraph = function(access_token) {
     //if(obj.last_name)  { m.tst.set(subject, "foaf:lastName", obj.last_name); }
     if(obj.image && obj.image.url) {
       m.tst.set(subject, "foaf:img", obj.image.url);
+      //save img raw data
+      Options.saveImageData(subject, obj.image.url);
     }
     if(obj.gender)      { m.tst.set(subject, "foaf:gender", obj.gender); }
     if(obj.id)          { m.tst.set(subject, "google-id", obj.id); }
@@ -720,8 +870,8 @@ Options.saveGoogleGraph = function(access_token) {
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
       if(xhr.status >= 400) {
-        Options.removeGlSession();
-        Options.logoutGoogle();
+        //user would have changed his login password
+        Options.loginGoogle();
       } else {
         // JSON.parse does not evaluate the attacker's scripts.
         var resp = JSON.parse(xhr.responseText);
@@ -757,41 +907,6 @@ Options.loginSNS = function() {
     gl_userid = null;
     Options.logoutGoogle();
   }
-  
-  //Callback from OAuth Proxy
-  if(window.location.search.length) {
-    var queries = window.location.search.substr(1).split('&');
-    var access_token = null, expires = null, token_for = null;
-    for(var i = 0; i < queries.length; i++) {
-      var nv = queries[i].split('=');
-      var name = nv[0];
-      var value = nv[1];
-      if(name == "access_token")   { access_token = value; }
-      else if(name == "expires" || name == "expires_in") {
-        expires = value;
-      }
-      else if(name == "token_for") { token_for = value; }
-    }
-    if(token_for == "facebook") {
-      fb_access_token = access_token;
-      fb_expires = new Date().getTime() + expires * 1000;
-      localStorage["__FB_ACCESS_TOKEN"] = fb_access_token;
-      localStorage["__FB_EXPIRES"] = fb_expires;
-
-      //Get the Graph Information
-      Options.saveFacebookGraph(fb_access_token);
-    } else if(token_for == "google") {
-      gl_access_token = access_token;
-      gl_expires = new Date().getTime() + expires * 1000;
-
-      localStorage["__GL_ACCESS_TOKEN"] = gl_access_token;
-      localStorage["__GL_EXPIRES"] = gl_expires;
-
-      //Get the Graph Information
-      Options.saveGoogleGraph(gl_access_token);
-    }
-  }
-  
   //update button status
   if(fb_access_token) {
     bt_login_facebook.innerText = "Log Out";

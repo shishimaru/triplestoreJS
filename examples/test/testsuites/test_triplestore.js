@@ -47,6 +47,20 @@ TestCase('Test triplestore.js', {
       assertEquals("Boston", this.st.getValues("s2", "address")[0]);
       assertEquals("617", this.st.getValues("s2", "phone")[0]);
     }
+    {
+      this.st.set("s3", "data", 12.34);
+      //check
+      var props = this.st.getProperties("s3");
+      assertEquals(1, props.length);
+      assertEquals(12.34, this.st.getValues("s3", "data")[0]);
+    }
+    {
+      this.st.set("s4", "data", [1,2,3]);
+      //check
+      var props = this.st.getProperties("s4");
+      assertEquals(1, props.length);
+      assertEquals([1,2,3], this.st.getValues("s4", "data")[0]);
+    }
   },
   'test add': function() {
     this.st.setMapping("a", "http://a.org/");
@@ -83,6 +97,35 @@ TestCase('Test triplestore.js', {
       assertEquals("Boston", this.st.getValues("a:bob", "a:address")[0]);
       assertEquals("Cambridge", this.st.getValues("a:bob", "a:address")[1]);
       assertEquals("Brookline", this.st.getValues("a:bob", "a:address")[2]);
+    }
+
+    this.st.add("a:bob", "a:age", 30);
+    {//check
+      var props = this.st.getProperties("a:bob");
+      assertEquals(2, props.length);
+      assertEquals("http://a.org/address", props[0]);
+      
+      assertEquals(3, this.st.getValues("a:bob", "a:address").length);
+      assertEquals("Boston", this.st.getValues("a:bob", "a:address")[0]);
+      assertEquals("Cambridge", this.st.getValues("a:bob", "a:address")[1]);
+      assertEquals("Brookline", this.st.getValues("a:bob", "a:address")[2]);
+
+      assertEquals(30, this.st.getValues("a:bob", "a:age"));
+    }
+    
+    this.st.add("a:bob", "a:age", 40);
+    {//check
+      var props = this.st.getProperties("a:bob");
+      assertEquals(2, props.length);
+      assertEquals("http://a.org/address", props[0]);
+      
+      assertEquals(3, this.st.getValues("a:bob", "a:address").length);
+      assertEquals("Boston", this.st.getValues("a:bob", "a:address")[0]);
+      assertEquals("Cambridge", this.st.getValues("a:bob", "a:address")[1]);
+      assertEquals("Brookline", this.st.getValues("a:bob", "a:address")[2]);
+
+      assertEquals(30, this.st.getValues("a:bob", "a:age")[0]);
+      assertEquals(40, this.st.getValues("a:bob", "a:age")[1]);
     }
   },
   'test edit': function() {

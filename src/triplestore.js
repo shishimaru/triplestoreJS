@@ -24,6 +24,9 @@ var Triplestore = function() {
     if(!qname) {
       return null;
     }
+    if(qname.constructor.name != "String") {
+        return qname;
+    }
     var resolved = null;
     if(isAbsoluteURI(qname)) {
       resolved = qname;
@@ -217,11 +220,11 @@ var Triplestore = function() {
     var props_str = this.st[subject];
     if(props_str) {
       var props = JSON.parse(props_str);
-      props[property] = new Array(value);
+      props[property] = [value];
       this.st.setItem(subject, JSON.stringify(props));
     } else {
       var props = {};
-      props[property] = new Array(value);
+      props[property] = [value];
       this.st.setItem(subject, JSON.stringify(props)); 
     }
   };
@@ -248,12 +251,12 @@ var Triplestore = function() {
       if(props[property]) {
         props[property].push(value);
       } else {
-        props[property] = new Array(value);
+        props[property] = [value];
       }
       this.st.setItem(subject, JSON.stringify(props));
     } else {//not exist
       var props = {};
-      props[property] = new Array(value);
+      props[property] = [value];
       this.st.setItem(subject, JSON.stringify(props)); 
     }
   };

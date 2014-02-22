@@ -322,39 +322,27 @@ Assist.search = function() {
     });
   }
 }
-function SpiderCV() {};
-SpiderCV.showImage = function(imgData,w,h) {
+function showImage(imgData, confidence) {
+  var $div = $("<span>");
   var canvas = document.createElement("canvas");
-  canvas.setAttribute("width", w);
-  canvas.setAttribute("height", h);
+  canvas.setAttribute("width", imgData.width);
+  canvas.setAttribute("height", imgData.height);
   var ctx = canvas.getContext('2d');
   ctx.putImageData(imgData, 0, 0);
   ctx.drawImage(canvas, 0, 0);;
-  document.body.appendChild(canvas);
+  $div.append(canvas);
+  $div.append($("<div>").text(confidence));
+  $('body').append($div);
 };
-SpiderCV.grayscale = function(data) {
-  for(var i = 0; i < data.length; i += 4) {
-    var brightness = 0.34 * data[i] + 0.5 * data[i + 1] + 0.16 * data[i + 2];
-    // red
-    data[i] = brightness;
-    // green
-    data[i + 1] = brightness;
-    // blue
-    data[i + 2] = brightness;
-  }
-  return data;
-}
-SpiderCV.annotate = function() {
+function annotateImage() {
   if(!document.getElementById("spider-annotation-done")) {
     $('body').append($('<div>', {id: 'spider-annotation-done'}));
-    //alert("image number : " + document.images.length);
     
     for(var i = 0; i < document.images.length; i++) {
       //create Canvas object
       var image = document.images[i];      
       if(!image) { continue; }
       if(parseInt(image.width) < 480 && parseInt(image.height) < 320) {
-        //alert("too small : " + image.src);
         continue;
       }
       var $image = $(image);
@@ -363,16 +351,17 @@ SpiderCV.annotate = function() {
       
       var ctx = canvas.getContext('2d');
       canvas.width = image.offsetWidth;
-      canvas.style.width = image.offsetWidth.toString() + "px";
+      //canvas.style.width = image.offsetWidth.toString() + "px";
       canvas.height = image.offsetHeight;
-      canvas.style.height = image.offsetHeight.toString() + "px";
-      ctx.drawImage(image, 0, 0);
+      //canvas.style.height = image.offsetHeight.toString() + "px";
+      ctx.drawImage(image, 0, 0, image.offsetWidth, image.offsetHeight);      
 
-      // 顔検出                                                                   
+      //detect face locations
       var comp = ccv.detect_objects({
         "canvas": ccv.grayscale(canvas),
+        //"canvas": canvas,
         "cascade": cascade,
-        "interval": 0,
+        "interval": 5,
         "min_neighbors": 1
       });
       
@@ -380,20 +369,28 @@ SpiderCV.annotate = function() {
       console.log(comp.length);
       for (var j = 0; j < comp.length; j++) {
         var x = comp[j].x, y = comp[j].y, w = comp[j].width, h = comp[j].height;
-        if(w < 30 && h < 30) { //eliminate small bndbox
-          continue;
+        if(comp[j].confidence < 0) {//eliminate bndboxes whose confidence is low
+          //continue;
         }
-        var imgData = ctx.getImageData(x, y, w, h);
-        //grayscale
-        imgData = SpiderCV.grayscale(imgData);
-        SpiderCV.showImage(imgData,w,h)
+        //alert(w + ":" + h);
+        var imgData = ctx.getImageData(x+5, y, w-10, h);
+        SpyImg.grayscale(imgData.data);
+        showImage(imgData,comp[j].confidence)
+        var data = new Array(imgData.data.length);
+        for(var k = 0; k < imgData.data.length; k++) {
+          data[k] = imgData.data[k];
+        }
         
         chrome.runtime.sendMessage({
           action : "getImageProps",
           url: document.URL,
           title: document.title,
           img: {
-            data: imgData,
+            data: {
+              width: imgData.width,
+              height: imgData.height,
+              data: data
+            },
             offset : {
               top: offset.top, left: offset.left 
             },
@@ -403,31 +400,35 @@ SpiderCV.annotate = function() {
           }
         },
         function(res) {
-          console.log(res);
           var offset = res.offset;
           var pos = res.pos;
+          var subject = res.subject;
+          var name = res.name;
+          var html = res.html;
           var x = pos.x, y = pos.y, w = pos.w, h = pos.h;
+          if(!name || !name.length) {
+            return;
+          }          
           function getContainerStyle() {
-            return "position:fixed;" +
-            "width:" + (w+h)/2 + "px;" + "height:" + (w+h)/2 + "px;" +
+            return "font-family:sans-serif;font-size:14px;text-align:center;" +
+            "position:fixed;width:" + (w+h)/2 + "px;" + "height:" + (w+h)/2 + "px;" +
             "top:" +  (offset.top + y - window.scrollY) + "px;" +
             "left:" + (offset.left + x - window.scrollX) + "px;";
           }
           function getFaceAreaStyle(color, opacity) {
-            if(!color) color = "#ffffff";
-            if(!opacity) opacity = 0.1;
+            if(!color) color = "#f0f0f0";
+            if(!opacity) opacity = 0.4;
             return "width:100%; height:100%;" +
-            "border-width:10px; border-radius: 50%;" +
+            "border-width:2px; border-radius: 10%;" +
             "border-style:solid; border-color:" + color + ";" +
             "opacity:" + opacity + ";";
           }
-          
+                    
           //write semantic data
           var $div = $("<div>", {style: getContainerStyle()});
           var $box = $("<div>", {style: getFaceAreaStyle()});
           var $detail = $("<div>", {style:
-            "background-color:white;text-align:center;"})
-            .text(res.name).hide();
+            "min-width:120px;"}).html(html).hide();
           $div.append($box);
           $div.append($detail);
           $('body').append($div);  
@@ -438,13 +439,12 @@ SpiderCV.annotate = function() {
           });
           //popup the item detail information 
           $div.mouseover(function(e) {
-            $box.attr('style', getFaceAreaStyle("lightgray", 1.0));
+            $box.attr('style', getFaceAreaStyle("#ffffff", 0.8));
             $detail.show();
           }).mouseleave(function(e) {
             $box.attr('style', getFaceAreaStyle());
             $detail.hide();
           });
-          
         });
       }
     }
@@ -453,4 +453,4 @@ SpiderCV.annotate = function() {
 
 extract();
 Assist.search();
-SpiderCV.annotate();
+//annotateImage();

@@ -1,6 +1,7 @@
 /* $Id$ */
 var bg_res = {};
 var expires = {};
+var face_features = null;
 
 //sort subjects based on priority
 function sortSnsAccount(m, subjects) {
@@ -310,18 +311,90 @@ chrome.runtime.onMessage.addListener(
         }
       }
       else if(request.action == "getImageProps") {
-        var img = request.img;
-        var pos = img.pos;
-        var offset = img.offset;
-        var x = pos.x, y = pos.y, w = pos.w, h = pos.h;
-        sendResponse({
-          imgElement: img.element,
-          name: "Hitoshi Uchida",
-          offset: offset,
-          pos: {
-            x:x, y:y, w:w, h:h
+        function makeImageData(imgData) {
+          var canvas = document.createElement("canvas");          
+          var ctx = canvas.getContext('2d');
+          newImgData = ctx.createImageData(imgData.width, imgData.height);
+          
+          //newImgData.data.set(imgData.data);
+          //newImgData.data = imgData.data;
+          for (var i = 0; i < imgData.data.length; i+=4) {//TODO
+            newImgData.data[i]=imgData.data[i];
+            newImgData.data[i+1]=imgData.data[i+1];
+            newImgData.data[i+2]=imgData.data[i+2];
+            newImgData.data[i+3]=imgData.data[i+3];
           }
-        });
+          return newImgData;
+        }
+        var photoImg = request.img.data;
+        photoImg = makeImageData(photoImg);
+        //SpyImg.grayscale(photoImg.data);
+        photoImg = SpyImg.resize(photoImg, Manager.IMGDATA_SIZE.W, Manager.IMGDATA_SIZE.H);        
+
+        var photoData = new Array(photoImg.data.length / 4);
+        ss = "[";
+        var j = 0;
+        for(var i = 0; i < photoImg.data.length; i++) {
+          if(i % 4 == 0) {
+            photoData[j] = photoImg.data[i]/255.0;//??
+            photoData[j] = parseFloat(photoData[j].toFixed(3));
+          
+            if(i != 0 && i % (Manager.IMGDATA_SIZE.W*4) == 0) {
+              ss += ";";
+            }
+            ss += photoData[j] + " ";
+            
+            j++;
+          }
+        }
+        ss += "];";
+        
+        var pos = request.img.pos;
+        //recognize face
+        if(!face_features) {
+          face_features = localStorage[Manager.FACE_FEATURES];
+          faceFeatures = face_features ?
+              JSON.parse(face_features) : m.saveFrecogFeatures();
+        }
+        if(faceFeatures) {
+          var faceResult = frecog.search(faceFeatures, photoData);
+        
+          //collect props
+          var subject = null;
+          var name = null;
+          var gl_account = null;
+          var fb_account = null;
+          var html = null;
+          if(faceResult && faceResult.length > 0) {
+            var distance = faceResult[0].distance;
+            if(distance < 7.0) {
+              subject = faceResult[0].userdata;              
+              name = m.getName(subject) + " D:" + distance;
+              gl_account = m.tst.getValues(subject, 'google-account');
+              fb_account = m.tst.getValues(subject, 'facebook-account');
+              var $html = Viewer.getSubjectHTML(m, m.projections[subject],  "referred_cell", true);
+              html = $("<div>").append($html).html();
+            }
+          }
+          /*if(faceResult) {//for debug
+            for(var i = 0; i < 3; i++) {
+              var subject = faceResult[i].userdata;
+              var distance = faceResult[i].distance;
+              name += m.getName(subject) + "D:"+ distance + ", ";
+            }
+          }*/
+          //feedback to content script
+          sendResponse({
+            imgElement: request.img.element,
+            subject: subject,
+            name: name,
+            html: html,
+            offset: request.img.offset,
+            pos: {
+              x:pos.x, y:pos.y, w:pos.w, h:pos.h
+            }
+          });
+        }
       }
       else if(request.action == "post-facebook") {//TODO:delete
         var requestURL = request.url + '&' +
@@ -427,8 +500,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   //if chrome is idle, start to synchronize items
   chrome.idle.onStateChanged.addListener(function(state) {
-    if(state != "active") {
+    console.log(state);
+    if(state != "active") {      
       saveSyncItems();
+      m.saveFrecogFeatures();
     }
   });
   //show introduction page
@@ -492,10 +567,11 @@ function menu_share(info, tab) {
   var fb_request = {
       method: "dialog/send",
       query: {
+        //app_id: "577151302344255",
         app_id: Manager.FB_APP_ID,
         display: "popup",
         link: pageURL,
-        redirect_uri: Manager.FB_REDIRECT_URL
+        redirect_uri: Manager.FB_POST_URL
       }
   };
   var gl_request = {

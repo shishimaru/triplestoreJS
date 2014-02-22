@@ -1,14 +1,23 @@
 {
     "name": "Semantic Spider",
-    "version": "0.27",
+    "version": "0.28",
     "manifest_version": 2,
     "description": "Chrome becomes more intelligent and personalized with W3C Semantic Web",
     "icons": {
         "128": "images/spider-128.png",
         "16": "images/spider.png"},
     "offline_enabled": true,
-    "permissions": ["tabs", "webRequest", "storage", "unlimitedStorage", "contextMenus", "idle",
+    "permissions": ["tabs", "webRequest", "storage", "unlimitedStorage", "contextMenus", "idle", "identity",
                     "http://*/*", "https://*/*"],
+    "oauth2": {
+		"client_id_debug": "152513331772-vrseqb2d25bc56t4bg5bnpv365q6san9.apps.googleusercontent.com",
+		"client_id": "152513331772-m04ubjt3l4i9ikkpj976db5mh37lh74b.apps.googleusercontent.com",
+	    "scopes": [
+	      "https://www.googleapis.com/auth/plus.login",
+	      "https://www.googleapis.com/auth/calendar.readonly",
+	      "https://picasaweb.google.com/data/"
+	    ]
+	},
     "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
     "omnibox" : { "keyword" : "spider" },
     "options_page": "options.html",
@@ -23,6 +32,7 @@
                    "microdataJS/jquery.microdata.json.js",
                    "ccv.js",
                    "face.js",
+                   "img.js",
                    "manager.js",
                    "viewer.js",
                    "content.js"
@@ -37,8 +47,11 @@
     ],
     "background": {
         "scripts": ["jquery-1.10.2.min.js",
+                    "frecog_const.js",
+                    "frecog.js",
                     "options.js",
                     "ml.js",
+                    "img.js",
                     "background.js",
                     "triplestore.js",
                     "manager.js",
