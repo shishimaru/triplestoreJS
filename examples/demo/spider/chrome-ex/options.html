@@ -101,7 +101,7 @@ h3 {
 			<h3 style="text-align: center;">Auto storing items</h3>
 			<h4>
 				<input type="radio" name="enable_autostore" id="autostore_on">
-				<label for="autostore_on">enable</label>
+				<label for="autostore_on">Enable</label>
 			</h4>
 			<div id="autostore_setting">
 				<table>
@@ -117,21 +117,25 @@ h3 {
 			</div>
 			<h4>
 				<input type="radio" name="enable_autostore" id="autostore_off">
-				<label for="autostore_off">disable</label>
+				<label for="autostore_off">Disable</label>
 			</h4>
 			<h4>
 				<input type="checkbox" id="autostore_remove">
 				<label>Remove expired items</label>
 			</h4>
 			<button id="autostore_reset">Reset</button>
-			<button id="autostore_save">Save</button>
 			<span id="autostore_status"></span>
 		</div>
-		<div id="storage" class="fieldset">
-			<h3>Storage</h3>
-			<h4>Clear stored items</h4>
-			<button id="storage_clear">Clear</button>
-			<span id="storage_status"></span>
+		<div class="fieldset">
+			<h3>Others</h3>
+			<h4>
+				<input type="checkbox" id="photo_annotation">
+				<label>Enable photo annotation (experimental)</label>
+			</h4>
+			<h4>Clear stored items
+				<button id="storage_clear">Clear</button>
+				<span id="storage_status"></span>
+			</h4>
 		</div>
 	</div>
 	<footer>

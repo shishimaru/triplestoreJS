@@ -11,6 +11,7 @@ var el_autostore_visit = null;
 var el_autostore_remove = null;
 var el_status_fb = null;
 var el_status_gl = null;
+var el_photo_annotation = null;
 var bt_login_facebook = null;
 var bt_login_google = null;
 var m = null;
@@ -19,6 +20,7 @@ Options.DEFAULT_STORE = true;
 Options.DEFAULT_TIME = 5;
 Options.DEFAULT_VISIT = 5;
 Options.DEFAULT_REMOVE = false;
+Options.DEFAULT_PHOTO_ANNOTATION = true;
 
 Options.show_status = function(id, msg) {
   var status = document.getElementById(id);
@@ -32,11 +34,13 @@ Options.save_options = function() {
   var time = el_autostore_time.value ? el_autostore_time.value : Options.DEFAULT_TIME;
   var visit = el_autostore_visit.value ? el_autostore_visit.value : Options.DEFAULT_VISIT;
   var isAutoremove = el_autostore_remove.checked ? el_autostore_remove.checked : Options.DEFAULT_REMOVE;
+  var isPhotoAnnotation = el_photo_annotation.checked;
   
   localStorage["__OPTIONS_AUTOSTORE_ON"] = isAutosave;
   localStorage["__OPTIONS_AUTOSTORE_TIME"] = time;
   localStorage["__OPTIONS_AUTOSTORE_VISIT"] = visit;
-  localStorage["__OPTIONS_AUTOSTORE_REMOVE"] = isAutoremove; 
+  localStorage["__OPTIONS_AUTOSTORE_REMOVE"] = isAutoremove;
+  localStorage["__OPTIONS_PHOTO_ANNOTATION_ON"] = isPhotoAnnotation;
 }
 Options.reset_options = function() {
   el_autostore_on.checked = Options.DEFAULT_STORE;
@@ -44,6 +48,7 @@ Options.reset_options = function() {
   el_autostore_time.value = Options.DEFAULT_TIME; 
   el_autostore_visit.value = Options.DEFAULT_VISIT;
   el_autostore_remove.checked = Options.DEFAULT_REMOVE;
+  el_photo_annotation.checked = Options.DEFAULT_PHOTO_ANNOTATION;
   
   if(Options.DEFAULT_STORE) {
     el_autostore_setting.removeAttribute("class");    
@@ -57,6 +62,7 @@ Options.restore_options = function() {
   var time = localStorage["__OPTIONS_AUTOSTORE_TIME"];
   var visit = localStorage["__OPTIONS_AUTOSTORE_VISIT"];
   var isAutoremove = localStorage["__OPTIONS_AUTOSTORE_REMOVE"];
+  var isPhotoAnnotation = localStorage["__OPTIONS_PHOTO_ANNOTATION_ON"]; 
 
   el_autostore_on.checked = isAutosave == undefined ?
       Options.DEFAULT_STORE : (isAutosave == "true" ? true : false);
@@ -67,6 +73,8 @@ Options.restore_options = function() {
       Options.DEFAULT_VISIT : parseInt(visit);
   el_autostore_remove.checked = isAutoremove == undefined ?
       Options.DEFAULT_REMOVE : (isAutoremove == "true" ? true : false);
+  el_photo_annotation.checked = isPhotoAnnotation == undefined ?
+      Options.DEFAULT_PHOTO_ANNOTATION : (isPhotoAnnotation == "true" ? true : false);
 
   //off setting field                                              
   if(el_autostore_on.checked == false) {
@@ -99,6 +107,13 @@ Options.is_remove = function() {
   var autoremove = localStorage["__OPTIONS_AUTOSTORE_REMOVE"];
   
   var res = autoremove == "true" ? true : Options.DEFAULT_REMOVE;
+  return res;
+}
+Options.isPhotoAnnotation = function() {
+  var isPhotoAnnotation = localStorage["__OPTIONS_PHOTO_ANNOTATION_ON"];
+  
+  var res = isPhotoAnnotation == undefined ?
+      Options.DEFAULT_PHOTO_ANNOTATION : (isPhotoAnnotation == "true" ? true : false);  
   return res;
 }
 Options.clear_storage = function() {
@@ -936,23 +951,31 @@ function init() {
   el_autostore_remove = document.getElementById("autostore_remove");
   el_status_fb = document.getElementById("login_status_fb");
   el_status_gl = document.getElementById("login_status_gl");
+  el_photo_annotation = document.getElementById("photo_annotation");
   bt_login_facebook = document.getElementById("login_facebook");
   bt_login_google = document.getElementById("login_google");
   
   if(el_autostore_setting) {//works only in option setting
-    document.querySelector('#autostore_save').addEventListener('click', function() {
-      Options.save_options();
-      Options.show_status("autostore_status", "Saved");
-    });
     document.querySelector('#autostore_reset').addEventListener('click', function() {
       Options.reset_options();
       Options.show_status("autostore_status", "Reset");
     });
     document.querySelector('#autostore_off').addEventListener('click', function() {
+      Options.save_options();
       el_autostore_setting.setAttribute("class", "disabled");
     });
     document.querySelector('#autostore_on').addEventListener('click', function() {
+      Options.save_options();
       el_autostore_setting.removeAttribute("class");
+    });
+    document.querySelector('#autostore_time').addEventListener('change', function() {
+      Options.save_options();
+    });
+    document.querySelector('#autostore_visit').addEventListener('change', function() {
+      Options.save_options();
+    });
+    document.querySelector('#autostore_remove').addEventListener('click', function() {
+      Options.save_options();
     });
     document.querySelector('#storage_clear').addEventListener('click', function() {
       Options.clear_storage();
@@ -963,6 +986,9 @@ function init() {
     });
     document.querySelector('#login_google').addEventListener('click', function() {
       Options.loginGoogle();
+    });
+    document.querySelector('#photo_annotation').addEventListener('click', function(e) {
+      Options.save_options();
     });
     Options.restore_options();
     

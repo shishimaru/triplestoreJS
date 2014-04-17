@@ -311,6 +311,9 @@ chrome.runtime.onMessage.addListener(
         }
       }
       else if(request.action == "getImageProps") {
+        if(!Options.isPhotoAnnotation()) {
+          return;
+        }
         function makeImageData(imgData) {
           var canvas = document.createElement("canvas");          
           var ctx = canvas.getContext('2d');
