@@ -314,14 +314,13 @@ chrome.runtime.onMessage.addListener(
         function makeImageData(imgData) {
           var canvas = document.createElement("canvas");          
           var ctx = canvas.getContext('2d');
-          newImgData = ctx.createImageData(imgData.width, imgData.height);
-          
-          for (var i = 0; i < imgData.data.length; i+=4) {//TODO
+          newImgData = ctx.createImageData(imgData.width, imgData.height);          
+          for (var i = 0; i < imgData.data.length; i+=4) {
             newImgData.data[i]=imgData.data[i];
             newImgData.data[i+1]=imgData.data[i+1];
             newImgData.data[i+2]=imgData.data[i+2];
             newImgData.data[i+3]=imgData.data[i+3];
-          }
+          }          
           return newImgData;
         }
         var photoImg = request.img.data;
