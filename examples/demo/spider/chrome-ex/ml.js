@@ -25,7 +25,7 @@ ML.jaccord = function(w1, w2) {
     sameNum++;
   }
   return sameNum / total_size;
-}
+};
 ML.distance = function(d1, d2) {
   if(d1.length != d2.length) {
     throw new Error("dimension mismatch:" +
@@ -33,10 +33,9 @@ ML.distance = function(d1, d2) {
   }
   var dist = 0;
   for(var i = 0; i < d1.length; i++) {
-    //dist += Math.abs(d1[i] - d2[i]);
     dist += Math.pow(d1[i] - d2[i], 2);
   }
   dist = Math.sqrt(dist);
   return dist;
-}
+};
 })();

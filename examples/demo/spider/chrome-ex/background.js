@@ -393,7 +393,7 @@ chrome.runtime.onMessage.addListener(
               alert(resp.error.message);
             }
           }
-        }
+        };
         xhr.send();
       }
     }
@@ -499,7 +499,7 @@ document.addEventListener('DOMContentLoaded', function () {
       keywords[i] = keywords[i].replace(/[&<>'"\n]/g, " ");
     }
     keywords = Manager.trimSimilar(keywords, 0.8);
-    var suggestions = [] 
+    var suggestions = [];
     for(var i = 0; i < keywords.length; i++) {
       suggestions.push({content: keywords[i], description: keywords[i]});
     }

@@ -28,7 +28,7 @@ Options.show_status = function(id, msg) {
   setTimeout(function() {
     status.innerHTML = "";
   }, 1000);
-}
+};
 Options.save_options = function() {
   var isAutosave = el_autostore_on.checked;
   var time = el_autostore_time.value ? el_autostore_time.value : Options.DEFAULT_TIME;
@@ -41,7 +41,7 @@ Options.save_options = function() {
   localStorage["__OPTIONS_AUTOSTORE_VISIT"] = visit;
   localStorage["__OPTIONS_AUTOSTORE_REMOVE"] = isAutoremove;
   localStorage["__OPTIONS_PHOTO_ANNOTATION_ON"] = isPhotoAnnotation;
-}
+};
 Options.reset_options = function() {
   el_autostore_on.checked = Options.DEFAULT_STORE;
   el_autostore_off.checked = !el_autostore_on.checked; 
@@ -56,7 +56,7 @@ Options.reset_options = function() {
     el_autostore_setting.setAttribute("class", "disabled");
   }
   Options.save_options();
-}
+};
 Options.restore_options = function() {
   var isAutosave = localStorage["__OPTIONS_AUTOSTORE_ON"];
   var time = localStorage["__OPTIONS_AUTOSTORE_TIME"];
@@ -80,7 +80,7 @@ Options.restore_options = function() {
   if(el_autostore_on.checked == false) {
     el_autostore_setting.setAttribute("class", "disabled");
   }
-}
+};
 Options.getAutostoreTime = function() {
   var autosave = localStorage["__OPTIONS_AUTOSTORE_ON"];
   var time = localStorage["__OPTIONS_AUTOSTORE_TIME"];
@@ -91,7 +91,7 @@ Options.getAutostoreTime = function() {
     res = time == undefined ? Options.DEFAULT_TIME : parseFloat(time);
   }
   return res;
-}
+};
 Options.getAutostoreVisit = function() {
   var autosave = localStorage["__OPTIONS_AUTOSTORE_ON"];
   var visit = localStorage["__OPTIONS_AUTOSTORE_VISIT"];
@@ -102,27 +102,27 @@ Options.getAutostoreVisit = function() {
     res = visit == undefined ? Options.DEFAULT_VISIT : parseInt(visit);
   }
   return res;
-}
+};
 Options.is_remove = function() {
   var autoremove = localStorage["__OPTIONS_AUTOSTORE_REMOVE"];
   
   var res = autoremove == "true" ? true : Options.DEFAULT_REMOVE;
   return res;
-}
+};
 Options.isPhotoAnnotation = function() {
   var isPhotoAnnotation = localStorage["__OPTIONS_PHOTO_ANNOTATION_ON"];
   
   var res = isPhotoAnnotation == undefined ?
       Options.DEFAULT_PHOTO_ANNOTATION : (isPhotoAnnotation == "true" ? true : false);  
   return res;
-}
+};
 Options.clear_storage = function() {
   localStorage.clear();
   Options.save_options();
   Options.logoutFacebook();
   Options.logoutGoogle();
   m.renew();
-}
+};
 function serialize(array, w, h) {
   res = '[';
   for(var i = 0; i < array.length; i++) {
@@ -251,7 +251,7 @@ Options.loginFacebook = function() {
   } else { //Log Out
     Options.logoutFacebook();
   }
-}
+};
 Options.logoutFacebook = function() {
   //revoke access token
   access_token = localStorage["__FB_ACCESS_TOKEN"];
@@ -265,7 +265,7 @@ Options.logoutFacebook = function() {
   localStorage.removeItem("__FB_USERID");
   bt_login_facebook.innerText = "Log In";
   Options.show_status("login_status_fb", "Logged out");
-}
+};
 Options.saveFacebookPosting = function(subject, access_token) {
   function savePosting($friend, data) {
     for(var i = 0; i < data.length; i++) {
@@ -335,9 +335,9 @@ Options.saveFacebookPosting = function(subject, access_token) {
               requestURL: resp.paging.next});
           }
           el_status_fb.innerText = "Accessing " + savedNum + " postings"; //UI
-          getPostings(fbFriends, i+1, savedNum)
+          getPostings(fbFriends, i+1, savedNum);
         }
-      }
+      };
       xhr.send();
     }
   }
@@ -389,7 +389,7 @@ Options.saveFacebookGraph = function(access_token) {
     if(obj.updated_time){ m.tst.set(subject, "updated-time", obj.updated_time); }
     if(obj.languages)   {
       for(var i = 0; i < obj.languages.length; i++) {
-        var lang = obj.languages[i]
+        var lang = obj.languages[i];
         if(lang && lang.name) {
           m.add(subject, "language", lang.name);
         }
@@ -463,10 +463,10 @@ Options.saveFacebookGraph = function(access_token) {
           el_status_fb.innerText = "Accessing friend graph"; //UI
           Options.saveFacebookPosting(subject, access_token);
         }
-      }
+      };
       xhr.send();
     }
-  }
+  };
   xhr.send();
 };
 Options.loginGoogle = function() {
@@ -481,7 +481,7 @@ Options.loginGoogle = function() {
   } else { //Log Out
     Options.logoutGoogle();
   }
-}
+};
 Options.logoutGoogle = function() {
   //revoke access token
   access_token = localStorage["__GL_ACCESS_TOKEN"];
@@ -494,7 +494,7 @@ Options.logoutGoogle = function() {
   localStorage.removeItem("__GL_USERID");
   bt_login_google.innerText = "Log In";
   Options.show_status("login_status_gl", "Logged out");
-}
+};
 Options.saveGoogleFriends = function(subject, access_token) {
   function saveFriends(me, obj) {
     for(var i = 0; i < obj.items.length; i++) {
@@ -537,9 +537,9 @@ Options.saveGoogleFriends = function(subject, access_token) {
       saveFriends(subject, resp);
       Options.saveGoogleCalendar(subject, access_token);
     }
-  }
+  };
   xhr.send();
-}
+};
 Options.saveGoogleEvent = function(cal_id, subject, access_token) {
   function save(me, obj) {
     for(var i = 0; i < obj.items.length; i++) {
@@ -594,7 +594,7 @@ Options.saveGoogleEvent = function(cal_id, subject, access_token) {
     }
   };
   xhr.send();
-}
+};
 Options.saveGoogleCalendar = function(subject, access_token) {
   function getCalendarIDs(calList) {
     var idList = [];
@@ -622,9 +622,9 @@ Options.saveGoogleCalendar = function(subject, access_token) {
         Options.saveGoogleEvent(ids[i], subject, access_token);
       }
     }
-  }
+  };
   xhr.send();
-}
+};
 /*Options.saveGooglePhotos = function(subject, access_token) {
   function savePhotos(doc) {
     var $doc = $(doc);
@@ -714,7 +714,7 @@ Options.saveGooglePosting = function(subject, access_token) {
       //if(posting.status_type) m.tst.set(postingURL, "schema:eventStatus", posting.status_type);
       if(object.attachments && object.attachments.length) {
         if(object.attachments[0].url) {
-          m.tst.set(postingURL, "schema:citation", object.attachments[0].url)
+          m.tst.set(postingURL, "schema:citation", object.attachments[0].url);
         }
         if(object.attachments[0].image) {
           m.tst.set(postingURL, "schema:image", object.attachments[0].image.url);
@@ -722,7 +722,7 @@ Options.saveGooglePosting = function(subject, access_token) {
           m.tst.set(postingURL, "schema:image", object.attachments[0].thumnails[0].image.url);
         }
         if(object.attachments[0].objectType == "video") {
-          m.tst.set(postingURL, "schema:video", object.attachments[0].url)
+          m.tst.set(postingURL, "schema:video", object.attachments[0].url);
         }
       }
       if(item.published) m.tst.set(postingURL, "schema:dateCreated", item.published);
@@ -751,13 +751,13 @@ Options.saveGooglePosting = function(subject, access_token) {
         savePostings(resp.items);
         savedNum += resp.items.length;
         el_status_gl.innerText = "Accessing my " + savedNum + " postings";
-        getPostings(url, resp.nextPageToken, savedNum)
+        getPostings(url, resp.nextPageToken, savedNum);
       }
-    }
+    };
     xhr.send();
   }
   getPostings(Manager.GL_POSTING_URL, -1, 0);
-}
+};
 Options.saveGoogleAlbums = function(subject, access_token) {
   function saveAlbums(doc) {
     var $doc = $(doc);
@@ -817,9 +817,9 @@ Options.saveGoogleAlbums = function(subject, access_token) {
       saveAlbums(resp);
       Options.saveGooglePosting(subject, access_token);
     }
-  }
+  };
   xhr.send();
-}
+};
 Options.saveGoogleGraph = function(access_token) {
   function saveMe(obj) {
     var subject = Manager.GL_BASE_URL + obj.id;
@@ -882,7 +882,7 @@ Options.saveGoogleGraph = function(access_token) {
         Options.saveGoogleFriends(subject, access_token);
       }
     }
-  }
+  };
   xhr.send();
 };
 Options.loginSNS = function() {
@@ -918,27 +918,27 @@ Options.loginSNS = function() {
     bt_login_google.innerText = "Log Out";
     el_status_gl.innerText = Options.getUserinfoGL();
   }
-}
+};
 Options.getFacebookAccessToken = function() {
   return localStorage["__FB_ACCESS_TOKEN"];
-}
+};
 Options.getGoogleAccessToken = function() {
   return localStorage["__GL_ACCESS_TOKEN"];
-}
+};
 Options.getFacebookAccount = function() {
   return localStorage["__FB_USERID"];
-}
+};
 Options.getGoogleAccount = function() {
   return localStorage["__GL_USERID"];
-}
+};
 Options.getUserinfoFB = function() {
   var subject = localStorage["__FB_USERID"];
   return subject ? "Facebook ID: " + m.tst.getValues(subject, "foaf:name") : "";
-}
+};
 Options.getUserinfoGL = function() {
   var subject = localStorage["__GL_USERID"];
   return subject ? "Google ID: " + m.tst.getValues(subject, "foaf:name") : "";
-}
+};
 function init() {
   var bg = chrome.extension.getBackgroundPage();
   m = bg.bg_res.m;

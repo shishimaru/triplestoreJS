@@ -36,7 +36,7 @@ Manager.FB_REDIRECT_URL = Manager.DEV_MODE == "product" ?
     'https://ckdnmkbanbampnifpddcfdphonmfibkb.chromiumapp.org/callback':
     'https://flkmphkcppbjjamopnpbmppbiohnmjkn.chromiumapp.org/callback';
 
-Manager.GL_API_KEY = "AIzaSyAyf46iLrX1qs2kPokrrc5A-i6yhGqaj44"
+Manager.GL_API_KEY = "AIzaSyAyf46iLrX1qs2kPokrrc5A-i6yhGqaj44";
 Manager.GL_BASE_URL = "https://plus.google.com/";
 Manager.GL_PEOPLE_URL = "https://www.googleapis.com/plus/v1/people/";
 Manager.GL_POST_URL = "https://semantic-spider.appspot.com/c/g-post";
@@ -150,8 +150,8 @@ Manager.prototype.getName = function(subject) {
       }
     }
   }
-  return name
-}
+  return name;
+};
 Manager.prototype.getObject = function(subject) {
   var obj = null;
   if(subject && this.projections[subject]) {
@@ -164,7 +164,7 @@ Manager.prototype.getObject = function(subject) {
     }
   }
   return obj;
-}
+};
 Manager.prototype.renew = function() {
   //this.subjects = [];
   this.projections = {};
@@ -209,9 +209,9 @@ Manager.prototype.add = function(subject, property, value) {
   if(!has) {
     this.tst.add(subject, property, value);
   }
-}
+};
 Manager.prototype.getReferredMap = function(projections) {
-  var referred = {}
+  var referred = {};
   for(var subject in projections) {
     var props = projections[subject].getProperties();
     for(var i = 0; i < props.length; i++) {
@@ -334,7 +334,6 @@ Manager.trimDuplicate = function(list) {
  * the specified similarity ratio.
  */
 Manager.trimSimilar = function(list, similarity) {
-  var res = []
   for(var i = 0; i < list.length - 1 ; i++) {
     for(var j = i + 1; j < list.length;) {
       var simValue = ML.jaccord(list[i], list[j]);
@@ -346,7 +345,7 @@ Manager.trimSimilar = function(list, similarity) {
     }
   }
   return list;
-}
+};
 Manager.isAbsoluteURI = function(url_str) {
   return (url_str && (url_str.indexOf("://") != -1)) ? true : false;
 };
@@ -411,7 +410,7 @@ function has(values, value) {
 Manager.hasKey = function(o) {
   for(var k in o) { return true; }
   return false;
-}
+};
 Manager.getItemLen = function(items) {
   var len = 0;
   if(items) {
@@ -424,7 +423,7 @@ Manager.getItemLen = function(items) {
     }
   }
   return len;
-}
+};
 Manager.prototype.save = function() {
   //save triple only which doesn't have same value  
   function _save(m, subject, property, value, isAdd) {
@@ -587,7 +586,7 @@ Manager.encode = function(kvMap) {
     }
   }
   return res;
-}
+};
 Manager.toRFC3339 = function(date) {
   //2013-10-10T00:00:00.000Z
   //("0" + num).slice(-2)
@@ -604,31 +603,31 @@ Manager.toRFC3339 = function(date) {
   res += hour + ":" + min + ":" + sec + "." + msec;
   res += "-" + zone + ":00";
   return res;
-}
+};
 Manager.isFacebookProperty = function(name, value) {
   if(name && value) {
     if(name.search(/^facebook-/) != -1 ||
         name.search(/holdsAccount$/) != -1 ||
         name.search(/knows$/) != -1){
       if(value.search(/^https?:\/\/www\.facebook\./) != -1) {
-        return true
+        return true;
       }
     }
   }
   return false;
-}
+};
 Manager.isGoogleProperty = function(name, value) {
   if(name && value) {
     if(name.search(/^google-/) != -1 ||
        name.search(/holdsAccount$/) != -1 ||
        name.search(/knows$/) != -1) {
       if(value.search(/^https?:\/\/plus.google\./) != -1) {
-        return true
+        return true;
       }
     }
   }
   return false;
-}
+};
 Manager.prototype.saveFrecogFeatures = function() {
   var subjects = this.getSubjects(null, "http://xmlns.com/foaf/0.1/Person", false);
   subjects = subjects.concat(this.getSubjects(null, "http://schema.org/Person", false));
@@ -645,7 +644,7 @@ Manager.prototype.saveFrecogFeatures = function() {
   //this.faceFeatures = features;
   this.lst[Manager.FACE_FEATURES] = JSON.stringify(features);
   return features;
-}
+};
 
 Manager.dict_pronoun = ["i", "my", "me", "mine",
                         "we", "our", "us", "ours",
@@ -703,7 +702,7 @@ Manager.sanitize = function(words) {
   }
   toLower(words);
   removeStopWord(words);
-}
+};
 Manager.sanitizeString = function(str) {
   var res = str;
   if(str) {
@@ -712,7 +711,7 @@ Manager.sanitizeString = function(str) {
     res = res.replace(/\s+/g," ");
   }
   return res;
-}
+};
 Manager.prototype.getSimilarItems = function(targetValues, similarityThreshold) {
   var SEP = /[\s\t\d\n,\.!\?"#$%=&'"\(\):;\[\]\^®]+/;
   var w1 = targetValues.join(" ").split(SEP);//sanitize
@@ -765,7 +764,7 @@ Manager.prototype.getCitingPosting = function(urls, similarity) {
     }
   }
   return res;
-}
+};
 Manager.prototype.export = function() {
   var res = '{"items":[';
   var flag = false;
@@ -780,7 +779,7 @@ Manager.prototype.export = function() {
   }
   res += ']}';
   return res;
-}
+};
 Manager.prototype.performance_info = function() {
   res = {};
   var subjects = this.tst.getSubjects();
@@ -878,10 +877,10 @@ Datatype.isPrice = function(s) {
 };
 Datatype.isPhone = function(s) {
   return s.trim().search(/^tel:\+\d+/) != -1;
-}
+};
 Datatype.isURL = function(s) {
   return s.trim().search(/^http[s]?:\/\//) != -1; 
-}
+};
 Datatype.isEmail = function(s) {
   return s.trim().search(/^mailto:/) != -1; 
-}
+};

@@ -476,7 +476,7 @@ Viewer.getSubjectHTML = function(m, projection, className, useAnchor, emailQuery
     $item.append($("<img/>", {"src" : img[0], "class" : "related_img"}));
   }
   return $td;
-}
+};
 Viewer.getSubjectsHTML = function(m, ex_subject, subjects, columNumber, className, useAnchor) {
   var table = null;
   var cells = [];
@@ -510,7 +510,7 @@ Viewer.getSubjectsHTML = function(m, ex_subject, subjects, columNumber, classNam
     }
   }
   return table;
-}
+};
 Viewer.getGraphHTML = function(m, subject) {
   var div = $("<div/>");
   //items this subject refers
@@ -521,7 +521,7 @@ Viewer.getGraphHTML = function(m, subject) {
   if(referringTable) {
     referringTable.addClass("related_table");
     var icon = $("img", {"src" : Manager.APP_URL + "images/referring.png", "class" : "related_icon"});
-    var section = $("<h4/>").append(icon).html("Refer to:")
+    var section = $("<h4/>").append(icon).html("Refer to:");
     div.append(section).append(referringTable);
   }
   
@@ -545,7 +545,7 @@ Viewer.getMessageHtml = function(message) {
   }
   res += "</div></div>";
   return res;
-}
+};
 Viewer.getKeywordSearchHTML = function(keywords) {
   var html = null;
   if(keywords && keywords.length) {
@@ -557,7 +557,7 @@ Viewer.getKeywordSearchHTML = function(keywords) {
     html += "</table>";
   }
   return html;
-}
+};
 Viewer.prototype.showItems = function(subjects) {
   //init
   var m = this.m;
@@ -650,4 +650,4 @@ Viewer.changeIcon = function(tabId, badgeText) {
   } else {
     chrome.browserAction.setBadgeText({tabId: tabId, text: ""});
   }
-}
+};
