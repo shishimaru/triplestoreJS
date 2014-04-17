@@ -316,8 +316,6 @@ chrome.runtime.onMessage.addListener(
           var ctx = canvas.getContext('2d');
           newImgData = ctx.createImageData(imgData.width, imgData.height);
           
-          //newImgData.data.set(imgData.data);
-          //newImgData.data = imgData.data;
           for (var i = 0; i < imgData.data.length; i+=4) {//TODO
             newImgData.data[i]=imgData.data[i];
             newImgData.data[i+1]=imgData.data[i+1];
@@ -328,37 +326,25 @@ chrome.runtime.onMessage.addListener(
         }
         var photoImg = request.img.data;
         photoImg = makeImageData(photoImg);
-        //SpyImg.grayscale(photoImg.data);
+        //TODO SpyImg.grayscale(photoImg.data);
         photoImg = SpyImg.resize(photoImg, Manager.IMGDATA_SIZE.W, Manager.IMGDATA_SIZE.H);        
 
         var photoData = new Array(photoImg.data.length / 4);
-        ss = "[";
-        var j = 0;
         for(var i = 0; i < photoImg.data.length; i++) {
           if(i % 4 == 0) {
-            photoData[j] = photoImg.data[i]/255.0;//??
-            photoData[j] = parseFloat(photoData[j].toFixed(3));
-          
-            if(i != 0 && i % (Manager.IMGDATA_SIZE.W*4) == 0) {
-              ss += ";";
-            }
-            ss += photoData[j] + " ";
-            
-            j++;
+            photoData[i/4] = photoImg.data[i]/255.0;
+            photoData[i/4] = parseFloat(photoData[i/4].toFixed(3));
           }
         }
-        ss += "];";
         
         var pos = request.img.pos;
         //recognize face
         if(!face_features) {
           face_features = localStorage[Manager.FACE_FEATURES];
-          faceFeatures = face_features ?
-              JSON.parse(face_features) : m.saveFrecogFeatures();
+          faceFeatures = face_features ? JSON.parse(face_features) : m.saveFrecogFeatures();
         }
         if(faceFeatures) {
           var faceResult = frecog.search(faceFeatures, photoData);
-        
           //collect props
           var subject = null;
           var name = null;
@@ -367,7 +353,7 @@ chrome.runtime.onMessage.addListener(
           var html = null;
           if(faceResult && faceResult.length > 0) {
             var distance = faceResult[0].distance;
-            if(distance < 7.0) {
+            if(distance < 4.0) {
               subject = faceResult[0].userdata;              
               name = m.getName(subject) + " D:" + distance;
               gl_account = m.tst.getValues(subject, 'google-account');
@@ -376,13 +362,6 @@ chrome.runtime.onMessage.addListener(
               html = $("<div>").append($html).html();
             }
           }
-          /*if(faceResult) {//for debug
-            for(var i = 0; i < 3; i++) {
-              var subject = faceResult[i].userdata;
-              var distance = faceResult[i].distance;
-              name += m.getName(subject) + "D:"+ distance + ", ";
-            }
-          }*/
           //feedback to content script
           sendResponse({
             imgElement: request.img.element,
@@ -500,7 +479,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   //if chrome is idle, start to synchronize items
   chrome.idle.onStateChanged.addListener(function(state) {
-    console.log(state);
     if(state != "active") {      
       saveSyncItems();
       m.saveFrecogFeatures();
@@ -548,17 +526,7 @@ function menu_share(info, tab) {
   var m = bg_res.m;
   var v = new Viewer(m, tab);
   var pageURL = info.pageUrl;
-  
   var prefilltext = tab.title;
-  //TODO : add tag using stored items
-  /*var related_subjects = getRelatedSubjects(m, tab.title,
-      bg_res[pageURL].rdfa, bg_res[pageURL].micro);
-  if(related_subjects.length) {
-    var name = m.getName(related_subjects[0])
-    if(name) {
-      prefilltext = name;
-    }
-  }*/
   
   var email_query = {
       subject: "Sharing ",

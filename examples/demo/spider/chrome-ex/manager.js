@@ -11,8 +11,8 @@ var Manager = function(){
     this.tst.setMapping("dc", "http://purl.org/dc/elements/1.1/");
   }
 };
-//Manager.DEV_MODE = "debug";
-Manager.DEV_MODE = "product";
+Manager.DEV_MODE = "debug";
+//Manager.DEV_MODE = "product";
 Manager.APP_ID = chrome.i18n.getMessage("@@extension_id");
 Manager.APP_URL = "chrome-extension://" + Manager.APP_ID + "/";
 Manager.APP_HOMEPAGE = "http://www.w3.org/2013/04/semweb-html5/spider/";
@@ -775,12 +775,100 @@ Manager.prototype.export = function() {
         res += ',';
       }
       flag = true;
-      res += '{"' + key + '":' + localStorage[key] + '}';
+      res += '{"' + key.substr(5) + '":' + localStorage[key] + '}';
     }
   }
   res += ']}';
   return res;
 }
+Manager.prototype.performance_info = function() {
+  res = {};
+  var subjects = this.tst.getSubjects();
+  res.itemNum = subjects.length;
+  res.propNum = 0; 
+  
+  for(var subject in this.projections) {
+    var proj = this.projections[subject];
+    var props = proj.getProperties();
+    for(var i = 0; i < props.length; i++) {
+      res.propNum++;
+    }
+  }
+  
+  //average number of properties per item
+  res.propAveNum = res.propNum / res.itemNum; 
+  
+  return res;
+};
+Manager.prototype.performance_search = function() {
+  var search = function() {
+    var propNum = 0;
+    window.performance.mark('start');
+    for(var subject in this.projections) {
+      var proj = this.projections[subject];
+      var props = proj.getProperties();
+      for(var i = 0; i < props.length; i++) {
+        var value = this.tst.getValues(subject, props[i]);
+        propNum++;
+      }
+    }
+    window.performance.mark('end');
+    window.performance.measure('search', 'start', 'end');
+    
+    var times = window.performance.getEntriesByName('search');
+    var time = times[times.length - 1].duration;
+    return {totalTime : time, propNum : propNum, aveTime : time / propNum};
+  }.bind(this);
+  var time = 0;
+  var aveTime = 0;
+  var propNum = 0;
+  var results = [];
+  var loopNum = 100;
+  for(var i = 0; i < loopNum; i++) {
+    var result = search();
+    results.push(result);
+    propNum = result.propNum;
+    time += result.totalTime;
+    aveTime += result.aveTime;
+  }
+  return {totalTime : time/loopNum, propNum : propNum, aveTime : aveTime/loopNum, results:results};
+};
+Manager.prototype.performance_save = function() {
+  var save = function() {
+    this.tst.remove();
+    window.performance.mark('start');
+    var propNum = 0;
+    for(var subject in this.projections) {
+      var proj = this.projections[subject];
+      var props = proj.getProperties();
+      propNum += props.length;
+      for(var i = 0; i < props.length; i++) {
+        var value = proj.get(props[i]);
+        this.tst.set(subject, props[i], value);
+      }
+    }
+    window.performance.mark('end');
+    window.performance.measure('save', 'start', 'end');
+    var times = window.performance.getEntriesByName('save');
+    var time = times[times.length - 1].duration;
+    return {totalTime : time, propNum : propNum, aveTime : time / propNum};
+  }.bind(this);
+  
+  var time = 0;
+  var aveTime = 0;
+  var propNum = 0;
+  var results = [];
+  var loopNum = 10;
+  for(var i = 0; i < loopNum; i++) {
+    var result = save();
+    results.push(result);
+    propNum = result.propNum;
+    time += result.totalTime;
+    aveTime += result.aveTime;
+  }
+  return {totalTime : time/loopNum, propNum : propNum, aveTime : aveTime/loopNum, results:results};
+};
+
 var Datatype = function() {};
 Datatype.isDate = function(s) {
   return s.trim().search(/\d+[\-\/]\d+([\-\/]\d+)?((\T\s)\d+:\d+)?/) != -1;

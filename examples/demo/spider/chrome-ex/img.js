@@ -10,7 +10,7 @@ SpyImg.grayscale = function(data) {
     data[i + 2] = brightness;
   }
   return data;
-}
+};
 SpyImg.resize = function(imgData, width, height) {
   var canvas = document.createElement("canvas");
   var ctx = canvas.getContext('2d');
@@ -18,5 +18,5 @@ SpyImg.resize = function(imgData, width, height) {
   ctx.drawImage(canvas, 0, 0, imgData.width, imgData.height,
       0, 0, width, height);
   newImgData = ctx.getImageData(0, 0, width, height);
-  return newImgData
-}
+  return newImgData;
+};

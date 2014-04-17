@@ -16,7 +16,7 @@ function frecog() {}
       row[i] = v;
     }
     return row;
-  }
+  };
   /**
    * Compute the distance between d1 and d2;
    * @param d1
@@ -34,7 +34,7 @@ function frecog() {}
     }
     dist = Math.sqrt(dist);
     return dist;
-  }
+  };
   /**
    * Construct face features used for face recognition
    * with specified training face images you
@@ -53,22 +53,6 @@ function frecog() {}
   /**
    * Find out a similar face with the specified face test image.
    */
-  /*frecog.search = function(features, imageData) {
-    //create feature of the test data
-    var f = computeEigen(imageData);
-    
-    var min_idx = -1;
-    var min_dist = Number.MAX_VALUE;
-    for(var i = 0; i < features.length; i++) {
-      var d = distance(f, features[i].feature);
-      if(d < min_dist) {
-        min_dist = d;
-        min_idx = i;
-      }
-    }
-    return min_idx == -1 ? null:
-           {userdata: features[min_idx].userdata, distance: min_dist};
-  }*/
   frecog.search = function(features, imageData) {
     //create feature of the test data
     var f = computeEigen(imageData);
@@ -82,5 +66,5 @@ function frecog() {}
       return a.distance - b.distance;
     });
     return pre;
-  }
+  };
 })();

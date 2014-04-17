@@ -122,32 +122,29 @@ function serialize(array, w, h) {
   return res;
 }
 Options.saveImageData = function(subject, imgURL) {
-  return;
   var canvas = document.createElement("canvas");
   canvas.width = 300;
   canvas.height = 300;
   canvas.style.width = 300;
   canvas.style.height = 300;
-  if(1) {//??
+  if(false) {//DEBUG : show the extracted face images from SNS
     document.body.appendChild(canvas);    
-  }  
-  var ctx = canvas.getContext('2d');
-  
+  }
   var imgEl = new Image();
   imgEl.subject = subject;
-  imgEl.onload = function(){
+  imgEl.onload = function() {
+    var ctx = canvas.getContext('2d');
     ctx.drawImage(imgEl, 0, 0, imgEl.width, imgEl.height, 0, 0, canvas.width, canvas.height);
     
     var x = y = w = h = -1;
     {//detect face
       var comp = ccv.detect_objects({
         "canvas": ccv.grayscale(canvas),
-        //"canvas": canvas,
         "cascade": cascade,
         "interval": 5,
         "min_neighbors": 1
       });
-      // show result
+      // find highest confidence face area
       var max_confidence = -10;
       for (var i = 0; i < comp.length; i++) {
         if(comp[i].confidence > max_confidence) {
@@ -189,31 +186,21 @@ Options.saveImageData = function(subject, imgURL) {
       SpyImg.grayscale(imgData.data);
       ctx.putImageData(imgData,
           Math.floor(i%(canvas.width/Manager.IMGDATA_SIZE.W)) * Manager.IMGDATA_SIZE.W,
-          //Math.floor(i/(canvas.width/Manager.IMGDATA_SIZE.W)) * 80);
           Math.floor(i/(canvas.width/Manager.IMGDATA_SIZE.W)) * Manager.IMGDATA_SIZE.H);
       
       var data = new Array(imgData.data.length / 4);
-      var ss = "[";
-      var j = 0;
       for(var k = 0; k < imgData.data.length; k++) {
         if(k % 4 == 0) {
-          data[j] = imgData.data[k]/255.0;//??
-          data[j] = parseFloat(data[j].toFixed(3));
-          if(k != 0 && k % (Manager.IMGDATA_SIZE.W*4) == 0) {
-            ss += ";";
-          }
-          ss += data[j] + " ";
-          j++;
+          data[k/4] = imgData.data[k]/255.0;
+          data[k/4] = parseFloat(data[k/4].toFixed(3));
         }
       }
-      ss += "]";
-      //console.log(ss);
       m.tst.add(imgEl.subject, Manager.PROP_IMGDATA, data);
     }
   };
   imgURL = imgURL.substr(0, imgURL.lastIndexOf('?')) + "?sz=300";
   imgEl.src = imgURL;
-}
+};
 Options.loginFacebook = function() {
   if(bt_login_facebook.innerText == "Log In") {
     var query = {

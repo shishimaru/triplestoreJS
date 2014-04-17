@@ -321,7 +321,7 @@ Assist.search = function() {
       }
     });
   }
-}
+};
 function showImage(imgData, confidence) {
   var $div = $("<span>");
   var canvas = document.createElement("canvas");
@@ -359,23 +359,20 @@ function annotateImage() {
       //detect face locations
       var comp = ccv.detect_objects({
         "canvas": ccv.grayscale(canvas),
-        //"canvas": canvas,
         "cascade": cascade,
         "interval": 5,
         "min_neighbors": 1
       });
       
       // show result
-      console.log(comp.length);
       for (var j = 0; j < comp.length; j++) {
         var x = comp[j].x, y = comp[j].y, w = comp[j].width, h = comp[j].height;
         if(comp[j].confidence < 0) {//eliminate bndboxes whose confidence is low
           //continue;
         }
-        //alert(w + ":" + h);
         var imgData = ctx.getImageData(x+5, y, w-10, h);
         SpyImg.grayscale(imgData.data);
-        showImage(imgData,comp[j].confidence)
+        showImage(imgData,comp[j].confidence);
         var data = new Array(imgData.data.length);
         for(var k = 0; k < imgData.data.length; k++) {
           data[k] = imgData.data[k];
@@ -453,4 +450,4 @@ function annotateImage() {
 
 extract();
 Assist.search();
-//annotateImage();
+annotateImage();
