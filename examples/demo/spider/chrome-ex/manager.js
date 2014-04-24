@@ -11,8 +11,8 @@ var Manager = function(){
     this.tst.setMapping("dc", "http://purl.org/dc/elements/1.1/");
   }
 };
-//Manager.DEV_MODE = "debug";
-Manager.DEV_MODE = "product";
+Manager.DEV_MODE = "debug";
+//Manager.DEV_MODE = "product";
 Manager.APP_ID = chrome.i18n.getMessage("@@extension_id");
 Manager.APP_URL = "chrome-extension://" + Manager.APP_ID + "/";
 Manager.APP_HOMEPAGE = "http://www.w3.org/2013/04/semweb-html5/spider/";
@@ -785,7 +785,7 @@ Manager.prototype.performance_info = function() {
   var subjects = this.tst.getSubjects();
   res.itemNum = subjects.length;
   res.propNum = 0; 
-  
+  this.renew();
   for(var subject in this.projections) {
     var proj = this.projections[subject];
     var props = proj.getProperties();
@@ -800,6 +800,7 @@ Manager.prototype.performance_info = function() {
   return res;
 };
 Manager.prototype.performance_search = function() {
+  this.renew();
   var search = function() {
     var propNum = 0;
     window.performance.mark('start');
@@ -822,7 +823,7 @@ Manager.prototype.performance_search = function() {
   var aveTime = 0;
   var propNum = 0;
   var results = [];
-  var loopNum = 100;
+  var loopNum = 10;//100
   for(var i = 0; i < loopNum; i++) {
     var result = search();
     results.push(result);
@@ -832,18 +833,23 @@ Manager.prototype.performance_search = function() {
   }
   return {totalTime : time/loopNum, propNum : propNum, aveTime : aveTime/loopNum, results:results};
 };
-Manager.prototype.performance_save = function() {
-  var save = function() {
+Manager.prototype.performance_save = function(times) {
+  if(!times) {
+    times = 1;
+  }
+  var save = function(times) {
     this.tst.remove();
     window.performance.mark('start');
     var propNum = 0;
     for(var subject in this.projections) {
       var proj = this.projections[subject];
       var props = proj.getProperties();
-      propNum += props.length;
+      propNum += props.length * times;
       for(var i = 0; i < props.length; i++) {
         var value = proj.get(props[i]);
-        this.tst.set(subject, props[i], value);
+        for(var j = 0; j < times; j++) {
+          this.tst.set(subject + '_' + new String(j), props[i], value);
+        }
       }
     }
     window.performance.mark('end');
@@ -857,9 +863,9 @@ Manager.prototype.performance_save = function() {
   var aveTime = 0;
   var propNum = 0;
   var results = [];
-  var loopNum = 10;
+  var loopNum = 10;//??
   for(var i = 0; i < loopNum; i++) {
-    var result = save();
+    var result = save(times);
     results.push(result);
     propNum = result.propNum;
     time += result.totalTime;
