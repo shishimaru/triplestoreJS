@@ -142,7 +142,7 @@ Options.saveImageData = function(subject, imgURL) {
   canvas.height = 300;
   canvas.style.width = 300;
   canvas.style.height = 300;
-  if(false) {//DEBUG : show the extracted face images from SNS
+  if(Manager.DEBUG_MODE) {//DEBUG : show the extracted face images from SNS
     document.body.appendChild(canvas);    
   }
   var imgEl = new Image();
@@ -221,7 +221,7 @@ Options.loginFacebook = function() {
     var query = {
         "client_id": Manager.FB_APP_ID,
         "redirect_uri": Manager.FB_REDIRECT_URL,
-        "state": Manager.DEV_MODE,
+        //"state": Manager.DEV_MODE,
         "response_type": "token",
         "scope": "email,user_about_me,user_friends,publish_stream"};
     var fb_login_url = "http://www.facebook.com/dialog/oauth?" + Manager.encode(query);

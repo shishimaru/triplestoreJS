@@ -11,8 +11,7 @@ var Manager = function(){
     this.tst.setMapping("dc", "http://purl.org/dc/elements/1.1/");
   }
 };
-Manager.DEV_MODE = "debug";
-//Manager.DEV_MODE = "product";
+Manager.DEBUG_MODE = true;
 Manager.APP_ID = chrome.i18n.getMessage("@@extension_id");
 Manager.APP_URL = "chrome-extension://" + Manager.APP_ID + "/";
 Manager.APP_HOMEPAGE = "http://www.w3.org/2013/04/semweb-html5/spider/";
@@ -32,9 +31,9 @@ Manager.FB_GRAPH_URL = "https://graph.facebook.com/";
 Manager.FB_DIALOG_FEED_URL = "https://www.facebook.com/dialog/feed";
 Manager.FB_DIALOG_SEND_URL = "https://www.facebook.com/dialog/send";
 Manager.FB_POST_URL = "https://semantic-spider.appspot.com/c/fb-post";
-Manager.FB_REDIRECT_URL = Manager.DEV_MODE == "product" ?
-    'https://ckdnmkbanbampnifpddcfdphonmfibkb.chromiumapp.org/callback':
-    'https://flkmphkcppbjjamopnpbmppbiohnmjkn.chromiumapp.org/callback';
+Manager.FB_REDIRECT_URL = Manager.DEBUG_MODE ?
+    'https://flkmphkcppbjjamopnpbmppbiohnmjkn.chromiumapp.org/callback':
+    'https://ckdnmkbanbampnifpddcfdphonmfibkb.chromiumapp.org/callback';
 
 Manager.GL_API_KEY = "AIzaSyAyf46iLrX1qs2kPokrrc5A-i6yhGqaj44";
 Manager.GL_BASE_URL = "https://plus.google.com/";
