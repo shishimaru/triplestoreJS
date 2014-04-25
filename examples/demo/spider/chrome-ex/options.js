@@ -136,7 +136,7 @@ function serialize(array, w, h) {
   res += ']';
   return res;
 }
-Options.saveImageData = function(subject, imgURL) {
+Options.saveImageData = function(m, subject, imgURL) {
   var canvas = document.createElement("canvas");
   canvas.width = 300;
   canvas.height = 300;
@@ -213,7 +213,6 @@ Options.saveImageData = function(subject, imgURL) {
       m.tst.add(imgEl.subject, Manager.PROP_IMGDATA, data);
     }
   };
-  imgURL = imgURL.substr(0, imgURL.lastIndexOf('?')) + "?sz=300";
   imgEl.src = imgURL;
 };
 Options.loginFacebook = function() {
@@ -518,7 +517,10 @@ Options.saveGoogleFriends = function(subject, access_token) {
         if(friend.id)         { m.tst.set(friend_subject, "google-id", friend.id); }
         if(friend.image && friend.image.url) {
           m.tst.set(friend_subject, "foaf:img", friend.image.url);
-          Options.saveImageData(friend_subject, friend.image.url);
+          //save image data
+          var imgURL = friend.image.url;
+          imgURL= imgURL.substr(0, imgURL.lastIndexOf('?')) + "?sz=300";
+          Options.saveImageData(m, friend_subject, imgURL);
         }
       }
     }
@@ -835,7 +837,9 @@ Options.saveGoogleGraph = function(access_token) {
     if(obj.image && obj.image.url) {
       m.tst.set(subject, "foaf:img", obj.image.url);
       //save img raw data
-      Options.saveImageData(subject, obj.image.url);
+      var imgURL = obj.image.url;
+      imgURL= imgURL.substr(0, imgURL.lastIndexOf('?')) + "?sz=300";
+      Options.saveImageData(m, subject, imgURL);
     }
     if(obj.gender)      { m.tst.set(subject, "foaf:gender", obj.gender); }
     if(obj.id)          { m.tst.set(subject, "google-id", obj.id); }

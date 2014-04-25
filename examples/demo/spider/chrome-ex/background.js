@@ -341,12 +341,9 @@ chrome.runtime.onMessage.addListener(
         
         var pos = request.img.pos;
         //recognize face
-        if(!face_features) {
-          face_features = localStorage[Manager.FACE_FEATURES];
-          faceFeatures = face_features ? JSON.parse(face_features) : m.saveFrecogFeatures();
-        }
-        if(faceFeatures) {
-          var faceResult = frecog.search(faceFeatures, photoData);
+        var face_features = m.saveFrecogFeatures();
+        if(face_features && face_features.length) {
+          var faceResult = frecog.search(face_features, photoData);
           //collect props
           var subject = null;
           var name = null;
@@ -355,7 +352,7 @@ chrome.runtime.onMessage.addListener(
           var html = null;
           if(faceResult && faceResult.length > 0) {
             var distance = faceResult[0].distance;
-            if(distance < 4.0) {
+            if(distance < 3.0) {//TODO
               subject = faceResult[0].userdata;              
               name = m.getName(subject) + " D:" + distance;
               gl_account = m.tst.getValues(subject, 'google-account');

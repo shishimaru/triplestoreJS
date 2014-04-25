@@ -51,6 +51,8 @@
                     "frecog.js",
                     "options.js",
                     "ml.js",
+                    "ccv.js",
+                    "face.js",	
                     "img.js",
                     "background.js",
                     "triplestore.js",

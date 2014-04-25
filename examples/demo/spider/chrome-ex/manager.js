@@ -437,10 +437,15 @@ Manager.prototype.save = function() {
       }
     }
     if(!found) {
+      //save the triple
       if(isAdd) {
         m.tst.add(subject, property, value);
       } else {
         m.tst.set(subject, property, value);
+      }
+      //save the raw image data of foaf:img
+      if(property == 'http://xmlns.com/foaf/0.1/img') {
+        Options.saveImageData(m, subject, value);
       }
     }
   }
@@ -640,7 +645,6 @@ Manager.prototype.saveFrecogFeatures = function() {
     }
   }
   var features = frecog.createFeatures(imgSet);
-  //this.faceFeatures = features;
   this.lst[Manager.FACE_FEATURES] = JSON.stringify(features);
   return features;
 };

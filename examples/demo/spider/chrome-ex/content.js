@@ -342,7 +342,7 @@ function annotateImage() {
       //create Canvas object
       var image = document.images[i];      
       if(!image) { continue; }
-      if(parseInt(image.width) < 480 && parseInt(image.height) < 320) {
+      if(parseInt(image.height) < 300) {
         continue;
       }
       var $image = $(image);
