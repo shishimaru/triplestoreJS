@@ -383,6 +383,7 @@ function annotateImage() {
           url: document.URL,
           title: document.title,
           img: {
+            src : image.src,
             data: {
               width: imgData.width,
               height: imgData.height,
@@ -405,17 +406,16 @@ function annotateImage() {
           var x = pos.x, y = pos.y, w = pos.w, h = pos.h;
           if(!name || !name.length) {
             return;
-          }          
+          }
           function getContainerStyle() {
-            return "font-family:sans-serif;font-size:14px;text-align:center;" +
-            "position:fixed;width:" + (w+h)/2 + "px;" + "height:" + (w+h)/2 + "px;" +
+            return "font-family:sans-serif;font-size:14px;text-align:center;position:fixed;" +
             "top:" +  (offset.top + y - window.scrollY) + "px;" +
             "left:" + (offset.left + x - window.scrollX) + "px;";
           }
           function getFaceAreaStyle(color, opacity) {
             if(!color) color = "#f0f0f0";
             if(!opacity) opacity = 0.4;
-            return "width:100%; height:100%;" +
+            return "width:" + (w+h)/2 + "px;" + "height:" + (w+h)/2 + "px;" +
             "border-width:2px; border-radius: 10%;" +
             "border-style:solid; border-color:" + color + ";" +
             "opacity:" + opacity + ";";

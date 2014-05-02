@@ -263,7 +263,7 @@ Manager.sortProjections = function(projections, rating) {
 Manager.filter = function(keywords, list, onlyTail, isOr) {
   var res = [];
   for(var i = 0; i < list.length; i++) {
-    if(list[i]) {
+    if(list[i] && typeof list[i] == "string") {
       var findNum = 0;
       for(var j = 0; j < keywords.length; j++) {
         var regex = new RegExp(keywords[j] + (onlyTail ? "$" : ""), "i");

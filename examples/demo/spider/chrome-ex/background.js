@@ -339,6 +339,7 @@ chrome.runtime.onMessage.addListener(
           }
         }
         
+        var imgSrc = request.img.src;
         var pos = request.img.pos;
         //recognize face
         var face_features = m.saveFrecogFeatures();
@@ -347,18 +348,38 @@ chrome.runtime.onMessage.addListener(
           //collect props
           var subject = null;
           var name = null;
-          var gl_account = null;
-          var fb_account = null;
           var html = null;
           if(faceResult && faceResult.length > 0) {
             var distance = faceResult[0].distance;
             if(distance < 3.0) {//TODO
               subject = faceResult[0].userdata;              
               name = m.getName(subject) + " D:" + distance;
-              gl_account = m.tst.getValues(subject, 'google-account');
-              fb_account = m.tst.getValues(subject, 'facebook-account');
-              var $html = Viewer.getSubjectHTML(m, m.projections[subject],  "referred_cell", true);
-              html = $("<div>").append($html).html();
+              
+              var email_query = {
+                  subject: "Sharing ",
+                  body: ""
+              };
+              var fb_request = {
+                  method: "dialog/send",
+                  query: {
+                    app_id: Manager.FB_APP_ID,
+                    display: "popup",
+                    link: request.url,
+                    redirect_uri: Manager.FB_POST_URL,
+                    link: request.img.src
+                  }
+              };
+              var gl_request = {
+                  query: {
+                    contenturl: request.url,
+                    contenturl: request.img.src
+                  }
+              };
+              var detail = v.getSummaryHTML(subject, email_query, fb_request, gl_request);
+              var $detail = $($(detail).find(".item-detail")[0]);
+              $detail.attr("class", "item-detail");
+              var $html = $("<div>", {"class" : "spider-detail"}).append($detail);
+              var html = $("<div>").append($html).html();
             }
           }
           //feedback to content script
@@ -519,7 +540,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
   );
 });
-
 function menu_share(info, tab) {
   var MAX_RESULT_SIZE =  100;
   var m = bg_res.m;
