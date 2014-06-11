@@ -11,7 +11,7 @@ var Manager = function(){
     this.tst.setMapping("dc", "http://purl.org/dc/elements/1.1/");
   }
 };
-Manager.DEBUG_MODE = true;
+Manager.DEBUG_MODE = false;
 Manager.APP_ID = chrome.i18n.getMessage("@@extension_id");
 Manager.APP_URL = "chrome-extension://" + Manager.APP_ID + "/";
 Manager.APP_HOMEPAGE = "http://www.w3.org/2013/04/semweb-html5/spider/";

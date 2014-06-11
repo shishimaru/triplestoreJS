@@ -1,3 +1,3 @@
 * TODO for releasing
- - Change Manager.DEV_MODE from "debug" to "product"
+ - Change Manager.DEV_MODE from true to false
  - Change Google OAuth2 client_id from debug ID to product ID
