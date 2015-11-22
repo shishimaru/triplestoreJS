@@ -9,12 +9,12 @@ Benefit
 -------
 triplestoreJS reduces development cost of web applications
 which store triples ``subject-property-value`` into WebStorage.
-  
+
 * WebStorage API doesn't fit to store triples well because handing triples
   requires applications to manage two keys of subject and property for
   the corresponding value though WebStorage API supports only one key.
 * triplestoreJS conceals the routine work to resolve CURIE syntax.
-  
+
 Functionality
 -------------
 * Save semantic data as triples into WebStorage
@@ -42,6 +42,7 @@ Sample Application
 ------------------
 
 * Chrome Extension `Semantic Spider`_
+  - Nominated as one of best papers in `ISWC2014`_
 
 License
 -------
@@ -57,3 +58,4 @@ Hitoshi Uchida <uchida@w3.org>
 .. _`library web site`: http://www.w3.org/2013/04/semweb-html5/triplestoreJS/index.html
 .. _`W3C Software Notice and License`: http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 .. _`Semantic Spider`: https://chrome.google.com/webstore/detail/semantic-spider/ckdnmkbanbampnifpddcfdphonmfibkb
+.. _`ISWC2014`:http://iswc2014.semanticweb.org/
