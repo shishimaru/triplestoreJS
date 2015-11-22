@@ -42,6 +42,7 @@ Sample Application
 ------------------
 
 * Chrome Extension `Semantic Spider`_
+
   - Nominated as one of best papers in `ISWC2014`_
 
 License
@@ -58,4 +59,4 @@ Hitoshi Uchida <uchida@w3.org>
 .. _`library web site`: http://www.w3.org/2013/04/semweb-html5/triplestoreJS/index.html
 .. _`W3C Software Notice and License`: http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
 .. _`Semantic Spider`: https://chrome.google.com/webstore/detail/semantic-spider/ckdnmkbanbampnifpddcfdphonmfibkb
-.. _`ISWC2014`:http://iswc2014.semanticweb.org/
+.. _`ISWC2014`: http://iswc2014.semanticweb.org/
