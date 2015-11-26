@@ -18,7 +18,7 @@
 	      "https://picasaweb.google.com/data/"
 	    ]
 	},
-    "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
+    "content_security_policy": "script-src 'self' https://www.google-analytics.com https://js1.nend.net/js/; object-src 'self'",
     "omnibox" : { "keyword" : "spider" },
     "options_page": "options.html",
     "content_scripts": [
@@ -52,7 +52,7 @@
                     "options.js",
                     "ml.js",
                     "ccv.js",
-                    "face.js",	
+                    "face.js",
                     "img.js",
                     "background.js",
                     "triplestore.js",
