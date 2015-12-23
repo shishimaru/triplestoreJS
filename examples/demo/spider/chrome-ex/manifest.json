@@ -1,6 +1,6 @@
 {
     "name": "Semantic Spider",
-    "version": "0.31",
+    "version": "0.32",
     "manifest_version": 2,
     "description": "Chrome becomes more intelligent and personalized with W3C Semantic Web",
     "icons": {
@@ -10,14 +10,14 @@
     "permissions": ["tabs", "webRequest", "storage", "unlimitedStorage", "contextMenus", "idle", "identity",
                     "http://*/*", "https://*/*"],
     "oauth2": {
-		"client_id_DEBUG": "152513331772-vrseqb2d25bc56t4bg5bnpv365q6san9.apps.googleusercontent.com",
-		"client_id": "152513331772-m04ubjt3l4i9ikkpj976db5mh37lh74b.apps.googleusercontent.com",
-	    "scopes": [
-	      "https://www.googleapis.com/auth/plus.login",
-	      "https://www.googleapis.com/auth/calendar.readonly",
-	      "https://picasaweb.google.com/data/"
-	    ]
-	},
+        "client_id_DEBUG": "152513331772-vrseqb2d25bc56t4bg5bnpv365q6san9.apps.googleusercontent.com",
+        "client_id": "152513331772-m04ubjt3l4i9ikkpj976db5mh37lh74b.apps.googleusercontent.com",
+        "scopes": [
+          "https://www.googleapis.com/auth/plus.login",
+          "https://www.googleapis.com/auth/calendar.readonly",
+          "https://picasaweb.google.com/data/"
+        ]
+    },
     "content_security_policy": "script-src 'self' https://www.google-analytics.com https://js1.nend.net/js/; object-src 'self'",
     "omnibox" : { "keyword" : "spider" },
     "options_page": "options.html",
@@ -60,8 +60,8 @@
                     "viewer.js"]
     },
     "browser_action": {
-    	"default_icon": "images/spider.png",
-    	"default_popup": "popup.html",
-    	"default_title": "Semantic Spider"
+        "default_icon": "images/spider.png",
+        "default_popup": "popup.html",
+        "default_title": "Semantic Spider"
     }
 }
