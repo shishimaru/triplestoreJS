@@ -15,7 +15,7 @@ function sortSnsAccount(m, subjects) {
     n2 = n2 ? parseInt(n2) : 0;
     return n2 - n1;
   });
-  
+
   //put user's SNS account on top
   var fb_account = Options.getFacebookAccount();
   var gl_account = Options.getGoogleAccount();
@@ -32,7 +32,7 @@ function getRelatedSubjects(m, title, url, rdfa, micro, anchors) {
   var items = [];
   var MIN_SIMILARITY = 0.5;//0.3;
   var MAX_RESULT_SIZE =  20;
-  
+
   function sanitize(items) {
     var MIN_PROPS_LEN = 2;//at least 2
     var i = 0;
@@ -54,9 +54,9 @@ function getRelatedSubjects(m, title, url, rdfa, micro, anchors) {
       } else {
         i++;
       }
-    } 
+    }
   }
-  
+
   //find similar items using site title
   if(title) {
     items = items.concat(m.getSimilarItems([title], MIN_SIMILARITY));
@@ -106,10 +106,10 @@ function getRelatedSubjects(m, title, url, rdfa, micro, anchors) {
         var itemValues = [];
         for(var prop in props) {
           var values = props[prop];
-          
+
           for(var j = 0; j < values.length; j++) {
             var value = values[j];
-            
+
             if(m.projections[value]) {//search with subject
               items.push({"subject": value,
                 "similarity": 1.0});
@@ -142,7 +142,7 @@ function getRelatedSubjects(m, title, url, rdfa, micro, anchors) {
   items = items.sort(function(item1, item2) {
     return item2.similarity - item1.similarity;
   });
-  
+
   //set subjects
   var subjects = [];
   for(var i = 0; i < items.length; i++) {
@@ -150,7 +150,7 @@ function getRelatedSubjects(m, title, url, rdfa, micro, anchors) {
   }
   subjects = Manager.trimDuplicate(subjects);
   subjects = subjects.slice(0, MAX_RESULT_SIZE);
-  
+
   return subjects;
 }
 function getRelatedKeywords(keyword, itemtype) {
@@ -158,7 +158,7 @@ function getRelatedKeywords(keyword, itemtype) {
   keyword = keyword.split(" ");
   var subjects = null;
   if(itemtype) {
-    subjects = m.getSubjects(null, itemtype, true);  
+    subjects = m.getSubjects(null, itemtype, true);
   } else {
     subjects = m.getSubjects(null);
   }
@@ -180,13 +180,13 @@ function generateInsertedHTML(m, v, subjects, emailQuery, fb_request, gl_request
   var $img = $("<img>", {"class" : "related_type", "src" : Manager.APP_URL + "images/spider.png"});
   $wrapper.append($("<div>", {"id" : "spider-visible", "title": "Toggle by ESC"}).append($img));
   var $container = $("<div>", {"id" : "spider-container"}).appendTo($wrapper);
-  
+
   var $items = $("<div id='spider-items'>").appendTo($container);
   var $summaries = $("<table>", {"id" : "spider-summaries"}).appendTo($items);
   for(var i = 0; i < subjects.length; i++) {
     var $summary = Viewer.getSubjectHTML(m, m.projections[subjects[i]], "referred_cell", true);
     $summaries.append($("<tr class='spider-summary'>").append($summary));
-    
+
     var detail = v.getSummaryHTML(subjects[i], emailQuery, fb_request, gl_request);
     var $detail = null;
     if(detail) {
@@ -214,7 +214,7 @@ chrome.runtime.onMessage.addListener(
       m.init(sender.tab);
       m.renew();
       var v = new Viewer(m, sender.tab);
-      
+
       if(request.action == "extracted") {
         if(!sender.tab || !sender.tab.id) {
           return;
@@ -239,7 +239,7 @@ chrome.runtime.onMessage.addListener(
         results.expires = expires[request.url];
         bg_res[request.url] = results;
         countVisitNumber(request.url);
-        
+
         //auto save the items based on visit number
         var visit = Options.getAutostoreVisit();
         if(visit && getVisitNumber(request.url) >= visit * 3) {
@@ -249,7 +249,7 @@ chrome.runtime.onMessage.addListener(
         var subjects = getRelatedSubjects(m, request.title, request.url,
             bg_res[request.url].rdfa, bg_res[request.url].micro,
             request.anchors);
-        
+
         var html = generateInsertedHTML(m, v, subjects);
         var time = Options.getAutostoreTime();
         sendResponse({html: html, time: time});
@@ -315,21 +315,21 @@ chrome.runtime.onMessage.addListener(
           return;
         }
         function makeImageData(imgData) {
-          var canvas = document.createElement("canvas");          
+          var canvas = document.createElement("canvas");
           var ctx = canvas.getContext('2d');
-          newImgData = ctx.createImageData(imgData.width, imgData.height);          
+          newImgData = ctx.createImageData(imgData.width, imgData.height);
           for (var i = 0; i < imgData.data.length; i+=4) {
             newImgData.data[i]=imgData.data[i];
             newImgData.data[i+1]=imgData.data[i+1];
             newImgData.data[i+2]=imgData.data[i+2];
             newImgData.data[i+3]=imgData.data[i+3];
-          }          
+          }
           return newImgData;
         }
         var photoImg = request.img.data;
         photoImg = makeImageData(photoImg);
         //TODO SpyImg.grayscale(photoImg.data);
-        photoImg = SpyImg.resize(photoImg, Manager.IMGDATA_SIZE.W, Manager.IMGDATA_SIZE.H);        
+        photoImg = SpyImg.resize(photoImg, Manager.IMGDATA_SIZE.W, Manager.IMGDATA_SIZE.H);
 
         var photoData = new Array(photoImg.data.length / 4);
         for(var i = 0; i < photoImg.data.length; i++) {
@@ -338,7 +338,7 @@ chrome.runtime.onMessage.addListener(
             photoData[i/4] = parseFloat(photoData[i/4].toFixed(3));
           }
         }
-        
+
         var imgSrc = request.img.src;
         var pos = request.img.pos;
         //recognize face
@@ -352,9 +352,9 @@ chrome.runtime.onMessage.addListener(
           if(faceResult && faceResult.length > 0) {
             var distance = faceResult[0].distance;
             if(distance < 3.0) {//TODO
-              subject = faceResult[0].userdata;              
+              subject = faceResult[0].userdata;
               name = m.getName(subject) + " D:" + distance;
-              
+
               var email_query = {
                   subject: "Sharing ",
                   body: ""
@@ -499,7 +499,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   //if chrome is idle, start to synchronize items
   chrome.idle.onStateChanged.addListener(function(state) {
-    if(state != "active") {      
+    if(state != "active") {
       saveSyncItems();
       m.saveFrecogFeatures();
     }
@@ -530,7 +530,7 @@ document.addEventListener('DOMContentLoaded', function () {
           var baseURL = "https://www.google.com/#" +
           Manager.encode({q: text});
           chrome.tabs.update(tab.id, {url: baseURL});
-          
+
           //increment the priority of the keyword
           var subjects = m.getSubjects(null, text, true);
           for(var i = 0; i < subjects.length; i++) {
@@ -546,7 +546,7 @@ function menu_share(info, tab) {
   var v = new Viewer(m, tab);
   var pageURL = info.pageUrl;
   var prefilltext = tab.title;
-  
+
   var email_query = {
       subject: "Sharing ",
       body: ""
@@ -566,23 +566,23 @@ function menu_share(info, tab) {
         contenturl: tab.url,
       }
   };
-  
+
   if(info.mediaType == "image" ||
       info.mediaType == "video" ||
       info.mediaType == "audio") {
     email_query.subject += "media : " + prefilltext;
     email_query.body = info.srcUrl;
-    
+
     fb_request.query.link = info.srcUrl;
     gl_request.query.contenturl = info.srcUrl;
-    
+
   } else if(info.linkUrl) {
     email_query.subject += "URL : " + prefilltext;
     email_query.body = info.linkUrl;
-    
+
     fb_request.query.link = info.linkUrl;
     gl_request.query.contenturl = info.linkUrl;
-    
+
   } else if(info.selectionText) {
     email_query.subject += "text : " + prefilltext;
     email_query.body = info.selectionText;
@@ -592,11 +592,11 @@ function menu_share(info, tab) {
   var subjects = m.filterSubjects(["mbox", "facebook-account", "google-account"]);
   sortSnsAccount(m, subjects);
   subjects = subjects.slice(0, MAX_RESULT_SIZE);
-  
+
   if(subjects.length) {
     var html = generateInsertedHTML(m, v, subjects, email_query,
         fb_request, gl_request);
-    
+
     chrome.tabs.sendMessage(tab.id, {
       "html": html,
       "action": "suggest-contact"

@@ -3,7 +3,7 @@ function getSubject(element, attrName) {
   if(element) {
     var id = element.getAttribute(attrName);
     if(id) {
-      return id; 
+      return id;
     } else {
       return getSubject(element.parentNode, attrName);
     }
@@ -38,7 +38,7 @@ function incrementSelectKeywordNumber(keyword) {
 }
 function showMessage(html, doFadeout) {
   jQuery("#spider-message").remove();
-  
+
   var $msg = jQuery(html);
   jQuery("html").append($msg);
   $msg.find(".dialog-close").click(function(e) {//click close button
@@ -69,18 +69,18 @@ function suggestHTML(html, type, opacity, postBaseURL, $msg) {
   var fadeSpeed = "fast";
   //resolve duplicated container
   jQuery("#spider-wrapper").remove();
-    
+
   //init
   var $wrapper = jQuery(html);
   jQuery("body").append($wrapper);
   $container = $wrapper.find("#spider-container").css({'opacity' : opacity});
   $container.attr("type", type);
   $details = $wrapper.find(".spider-detail");
-  
+
   //hide in default
   $container.hide();
   $details.hide();
-  
+
   $container.mouseover(function(e){
     $container.css({'opacity' : 1.0 });
   });
@@ -93,7 +93,7 @@ function suggestHTML(html, type, opacity, postBaseURL, $msg) {
   $("#spider-container a").click(function(e) {
     var subject = getSubject(e.target, "id");
     incrementSelectItemNumber(subject);
-    
+
     if($container.attr("type") == "contact") {
       chrome.runtime.sendMessage({
         action : "extracted",
@@ -142,10 +142,10 @@ function suggestHTML(html, type, opacity, postBaseURL, $msg) {
       $container.fadeToggle(fadeSpeed);
     }
   });
-  //popup the item detail information 
+  //popup the item detail information
   $("#spider-wrapper .spider-summary").mouseover(function(e) {
     $("#spider-wrapper .spider-detail").hide();
-    
+
     //show the detail of matched item
     var subject = $(this).children("td").attr("href");
     $detail = $("#spider-wrapper .spider-detail[id='" + subject + "']");
@@ -169,7 +169,7 @@ function extract() {
       var subject = projection.getSubject();
       var properties = projection.getProperties();
       var prop_value = {};
-      
+
       for ( var j = 0; j < properties.length; j++) {
         var property = properties[j];
         var object = projection.get(property);
@@ -245,7 +245,6 @@ Assist.search = function() {
   var $inputs = $(
       "input[type='text']" +
       ",input[type='search']" +
-      ",textarea" +
       ",input[id*='search']" + //Zappos
       ",input[id*='Search']" +
       ",input[id*='find']"     //Yelp
@@ -263,12 +262,12 @@ Assist.search = function() {
         var input_width = $input.outerWidth();
         var input_height = $input.outerHeight();
         var offset = $input.offset();
-        
+
         var itemtype = $(this).attr("itemtype");
         itemtype = itemtype == "" ? null : itemtype;
         var keyword = $(event.target).val().trim();
         keyword = keyword == "" ? null : keyword;
-        
+
         chrome.runtime.sendMessage(
             {
               action: "getKeyword",
@@ -279,7 +278,7 @@ Assist.search = function() {
             },
             function(res) {
               $("div.spider-keyword-search").detach();
-              
+
               var html = res.html;
               if(html && html.length) {
                 //insert keywords
@@ -288,20 +287,20 @@ Assist.search = function() {
                 if(window.innerWidth - (offset.left + input_width) >= 300) {
                   pos_left = offset.left + input_width - window.scrollX;
                 } else {//have enough space for suggest box
-                  pos_left = offset.left - 300 - window.scrollX;                  
+                  pos_left = offset.left - 300 - window.scrollX;
                 }
                 var $keywords_container = $("<div class='spider-keyword-search'" +
-                    " style='position:fixed; width:300px;" + 
+                    " style='position:fixed; width:300px;" +
                     " top:" +  (offset.top + input_height - window.scrollY) + "px;" +
                     " left:" + pos_left + "px;'>" +
-                    "<a href='http://www.w3.org/2013/04/semweb-html5/spider/index.html'>" + 
+                    "<a href='http://www.w3.org/2013/04/semweb-html5/spider/index.html'>" +
                     "<img src='" + Manager.APP_URL + "images/spider.png" + "'></a>" +
                     html + "</div>");
                 jQuery("body").append($keywords_container);
-                
+
                 //event : click keyword
                 $keywords_container.find("td").off("click.keyword.spider");
-                $keywords_container.find("td").on("click.keyword.spider", {input: $input}, function(e) {               
+                $keywords_container.find("td").on("click.keyword.spider", {input: $input}, function(e) {
                   var selectedKeyword = $(e.target).text();
                   e.data.input.val(selectedKeyword);
                   incrementSelectKeywordNumber(selectedKeyword);
@@ -337,10 +336,10 @@ function showImage(imgData, confidence) {
 function annotateImage() {
   if(!document.getElementById("spider-annotation-done")) {
     $('body').append($('<div>', {id: 'spider-annotation-done'}));
-    
+
     for(var i = 0; i < document.images.length; i++) {
       //create Canvas object
-      var image = document.images[i];      
+      var image = document.images[i];
       if(!image) { continue; }
       if(parseInt(image.height) < 300) {
         continue;
@@ -348,13 +347,13 @@ function annotateImage() {
       var $image = $(image);
       var offset = $image.offset();
       var canvas = document.createElement("canvas");
-      
+
       var ctx = canvas.getContext('2d');
       canvas.width = image.offsetWidth;
       //canvas.style.width = image.offsetWidth.toString() + "px";
       canvas.height = image.offsetHeight;
       //canvas.style.height = image.offsetHeight.toString() + "px";
-      ctx.drawImage(image, 0, 0, image.offsetWidth, image.offsetHeight);      
+      ctx.drawImage(image, 0, 0, image.offsetWidth, image.offsetHeight);
 
       //detect face locations
       var comp = ccv.detect_objects({
@@ -363,7 +362,7 @@ function annotateImage() {
         "interval": 5,
         "min_neighbors": 1
       });
-      
+
       // show result
       for (var j = 0; j < comp.length; j++) {
         var x = comp[j].x, y = comp[j].y, w = comp[j].width, h = comp[j].height;
@@ -377,7 +376,7 @@ function annotateImage() {
         for(var k = 0; k < imgData.data.length; k++) {
           data[k] = imgData.data[k];
         }
-        
+
         chrome.runtime.sendMessage({
           action : "getImageProps",
           url: document.URL,
@@ -390,7 +389,7 @@ function annotateImage() {
               data: data
             },
             offset : {
-              top: offset.top, left: offset.left 
+              top: offset.top, left: offset.left
             },
             pos : {
               x:x, y:y, w:w, h:h
@@ -420,7 +419,7 @@ function annotateImage() {
             "border-style:solid; border-color:" + color + ";" +
             "opacity:" + opacity + ";";
           }
-                    
+
           //write semantic data
           var $div = $("<div>", {style: getContainerStyle()});
           var $box = $("<div>", {style: getFaceAreaStyle()});
@@ -428,13 +427,13 @@ function annotateImage() {
             "min-width:120px;"}).html(html).hide();
           $div.append($box);
           $div.append($detail);
-          $('body').append($div);  
-          
+          $('body').append($div);
+
           //synch with scroll
           $(window).on("scroll", function () {
             $div.attr('style', getContainerStyle());
           });
-          //popup the item detail information 
+          //popup the item detail information
           $div.mouseover(function(e) {
             $box.attr('style', getFaceAreaStyle("#ffffff", 0.8));
             $detail.show();
